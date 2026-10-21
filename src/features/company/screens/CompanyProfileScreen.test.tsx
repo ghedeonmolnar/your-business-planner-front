@@ -95,10 +95,10 @@ test('căutarea după CUI precompletează datele și le salvează în profilul f
   );
   await waitForUi(() =>
     expect(
-      renderer.root.findAllByProps({
+      renderer.root.findByProps({
         accessibilityLabel: 'Completează datele fiscale',
-      }),
-    ).toHaveLength(1),
+      }).props.onPress,
+    ).toEqual(expect.any(Function)),
   );
   await ReactTestRenderer.act(async () => {
     renderer.root

@@ -100,6 +100,9 @@ test('intervalul se aplică explicit, păstrează totalul istoric și se elimin�
       ),
     ).toBe(true);
     expect(renderedText(renderer)).not.toContain('Zoe');
+    expect(
+      renderer.root.findAllByProps({ label: '7 rezervări' }).length,
+    ).toBeGreaterThan(0);
   });
   expect(renderer.root.findAllByType(DatePickerField)).toHaveLength(0);
   expect(
