@@ -62,6 +62,24 @@ export const formatCompanyInput = (value?: string | null) =>
 export const formatCompanyDateTime = (value?: string | null) =>
   value ? companyDate(value).format('DD.MM.YYYY HH:mm') : 'Program necompletat';
 
+export const formatCompanyTimeRange = (
+  start?: string | null,
+  end?: string | null,
+) => {
+  if (!start || !end) {
+    return null;
+  }
+  const from = companyDate(start);
+  const to = companyDate(end);
+  if (!from.isValid() || !to.isValid()) {
+    return null;
+  }
+  const extraDays = to.startOf('day').diff(from.startOf('day'), 'day');
+  const suffix =
+    extraDays > 0 ? ` (+${extraDays} ${extraDays === 1 ? 'zi' : 'zile'})` : '';
+  return `${from.format('HH:mm')} – ${to.format('HH:mm')}${suffix}`;
+};
+
 const TIME_REFERENCE_DATE = '2000-01-01';
 
 const capitalizedMonth = (date: dayjs.Dayjs) => {
@@ -125,6 +143,9 @@ export const formatMonthLabel = (value: string) => {
     ? `${capitalizedMonth(date)} ${date.format('YYYY')}`
     : value;
 };
+
+export const formatMonthName = (value: string) =>
+  capitalizedMonth(dayjs(`${value}-01`));
 
 export const formatEventDate = (
   dateStr: string,

@@ -56,10 +56,10 @@ export const calendarSummarySchema = z.object({
   ),
   days: z.array(
     z.object({
-      date: z.string(),
-      confirmed: z.number(),
-      tentative: z.number(),
-      free: z.number(),
+      date: z.iso.date(),
+      confirmed: z.number().int().nonnegative(),
+      tentative: z.number().int().nonnegative(),
+      free: z.number().int().nonnegative(),
     }),
   ),
 });

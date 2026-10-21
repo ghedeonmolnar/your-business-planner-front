@@ -1,36 +1,57 @@
 import React from 'react';
-import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useHallDay } from '@/features/bookings/hooks/useBookings';
-import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { CalendarHallRow } from '@/features/bookings/components/CalendarHallRow';
+import { calendarStyles } from '@/features/bookings/components/calendarStyles';
 import { QueryNotice } from '@/features/bookings/components/QueryNotice';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { Card } from '@/shared/components/Card';
 import { AppButton } from '@/shared/components/AppButton';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { formatLongDate } from '@/shared/utils/formatDate';
+import { theme } from '@/shared/theme/theme';
+import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
+import {
+  createCatalogLabelMap,
+  getCatalogLabel,
+} from '@/features/catalogs/utils/catalogLabels';
 
 export function CalendarDayHalls({
   date,
   hallId,
+  free,
   onReserve,
 }: {
   date: string;
   hallId?: string;
+  free?: number;
   onReserve: (hallId: string) => void;
 }) {
   const query = useHallDay(date, hallId);
+  const catalogs = useCatalogs();
+  const typeLabels = createCatalogLabelMap(catalogs.data?.event_types);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const halls = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
-    <View style={styles.section}>
+    <Card style={calendarStyles.card}>
+      <Text accessibilityRole="header" style={calendarStyles.title}>
+        {formatLongDate(date)}
+      </Text>
+      <Text style={calendarStyles.muted}>
+        Săli libere: <Text style={calendarStyles.primary}>{free ?? '—'}</Text>
+      </Text>
       <QueryNotice
         loading={query.isLoading}
         error={query.error}
         retry={() => query.refetch()}
+      />
+      <QueryNotice
+        loading={false}
+        error={catalogs.error}
+        retry={() => catalogs.refetch()}
       />
       {!query.isLoading && !query.error && !halls.length ? (
         <EmptyState
@@ -40,26 +61,18 @@ export function CalendarDayHalls({
         />
       ) : null}
       {halls.map(hall => (
-        <Card key={hall.id} style={styles.card}>
-          <Text style={styles.subtitle}>{hall.name}</Text>
-          <Text style={styles.muted}>
-            {hall.capacity} persoane ·{' '}
-            {hall.status === 'free'
-              ? 'Liberă'
-              : bookingStatusLabels[hall.status]}
-          </Text>
-          <AppButton
-            label={hall.booking_id ? 'Deschide rezervarea' : 'Rezervă sala'}
-            variant={hall.booking_id ? 'outline' : 'primary'}
-            onPress={() =>
-              hall.booking_id
-                ? navigation.navigate('EventDetails', {
-                    eventId: hall.booking_id,
-                  })
-                : onReserve(hall.id)
-            }
-          />
-        </Card>
+        <CalendarHallRow
+          key={hall.id}
+          hall={hall}
+          typeLabel={getCatalogLabel(typeLabels, hall.type)}
+          onPress={() =>
+            hall.booking_id
+              ? navigation.navigate('EventDetails', {
+                  eventId: hall.booking_id,
+                })
+              : onReserve(hall.id)
+          }
+        />
       ))}
       {query.hasNextPage ? (
         <AppButton
@@ -69,6 +82,15 @@ export function CalendarDayHalls({
           onPress={() => query.fetchNextPage()}
         />
       ) : null}
-    </View>
+      <AppButton
+        label="Rezervare nouă în această zi"
+        icon="add"
+        variant="soft"
+        shape="rounded"
+        backgroundColor={theme.colors.menu.primarySoft}
+        color={theme.colors.menu.primary}
+        onPress={() => onReserve('')}
+      />
+    </Card>
   );
 }

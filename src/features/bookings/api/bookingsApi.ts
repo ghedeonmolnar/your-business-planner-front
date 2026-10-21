@@ -60,7 +60,11 @@ export const hallDaySchema = z.object({
   capacity: z.number(),
   booking_id: z.string().nullable(),
   status: z.enum(['free', 'tentative', 'confirmed', 'completed']),
+  type: z.string().nullable().optional(),
+  starts_at: z.iso.datetime({ offset: true }).nullable().optional(),
+  ends_at: z.iso.datetime({ offset: true }).nullable().optional(),
 });
+export type HallDay = z.infer<typeof hallDaySchema>;
 export const getHallDayApi = (
   date: string,
   page: number,

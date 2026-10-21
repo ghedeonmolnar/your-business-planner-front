@@ -1,160 +1,140 @@
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import dayjs from 'dayjs';
 import { useCalendar } from '@/features/bookings/hooks/useBookings';
+import { useCalendarNavigation } from '@/features/bookings/hooks/useCalendarNavigation';
+import { CalendarControls } from '@/features/bookings/components/CalendarControls';
+import { CalendarLegend } from '@/features/bookings/components/CalendarLegend';
 import { CalendarMonth } from '@/features/bookings/components/CalendarMonth';
+import { CalendarYear } from '@/features/bookings/components/CalendarYear';
+import { CalendarMonthSummary } from '@/features/bookings/components/CalendarMonthSummary';
 import { CalendarDayHalls } from '@/features/bookings/components/CalendarDayHalls';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
 import { QueryNotice } from '@/features/bookings/components/QueryNotice';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { getMonthStatistics } from '@/features/bookings/utils/calendarStatistics';
 import { Screen } from '@/shared/components/Screen';
-import { AppButton } from '@/shared/components/AppButton';
-import { SearchableSelect } from '@/shared/components/ControlledSelectField';
-import {
-  companyNow,
-  formatLongDate,
-  formatMonthLabel,
-} from '@/shared/utils/formatDate';
-import { IconButton } from '@/shared/components/IconButton';
+import { theme } from '@/shared/theme/theme';
 
-const MONTHS_PER_YEAR = 12;
 export function CalendarScreen() {
-  const [period, setPeriod] = useState<'month' | 'year'>('month');
-  const [visible, setVisible] = useState(
-    companyNow().startOf('month').format('YYYY-MM-DD'),
-  );
-  const [selected, setSelected] = useState(companyNow().format('YYYY-MM-DD'));
+  const calendarView = useCalendarNavigation();
   const [hallId, setHallId] = useState('');
-  const [creating, setCreating] = useState(false);
-  const [newHallId, setNewHallId] = useState('');
-  const from = dayjs(visible).startOf(period).format('YYYY-MM-DD');
-  const to = dayjs(visible).endOf(period).format('YYYY-MM-DD');
-  const calendar = useCalendar({
-    date_from: from,
-    date_to: to,
+  const [reservationHall, setReservationHall] = useState<string | null>(null);
+  const filters = {
+    date_from: calendarView.from,
+    date_to: calendarView.to,
     hall_id: hallId || undefined,
-  });
-  const movePeriod = (direction: number) => {
-    const next = dayjs(visible).add(direction, period);
-    setVisible(next.startOf('month').format('YYYY-MM-DD'));
-    setSelected(dayjs(selected).add(direction, period).format('YYYY-MM-DD'));
   };
-  const months =
-    period === 'month'
-      ? [visible.slice(0, 7)]
-      : Array.from({ length: MONTHS_PER_YEAR }, (_, index) =>
-          dayjs(visible).startOf('year').add(index, 'month').format('YYYY-MM'),
-        );
+  const calendar = useCalendar(filters);
+  const selectedMonth = calendarView.selected.slice(0, 7);
+  const previousMonth = dayjs(calendarView.selected).subtract(1, 'month');
+  const needsPreviousYear =
+    calendarView.period === 'year' &&
+    previousMonth.year() !== dayjs(calendarView.selected).year();
+  const previousCalendar = useCalendar(
+    {
+      date_from: previousMonth.startOf('month').format('YYYY-MM-DD'),
+      date_to: previousMonth.endOf('month').format('YYYY-MM-DD'),
+      hall_id: hallId || undefined,
+    },
+    needsPreviousYear,
+  );
+  const days = calendar.data?.days ?? [];
+
   return (
-    <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Calendar săli</Text>
-        <Text style={styles.muted}>
-          Alege o zi pentru a vedea sălile libere și rezervările.
-        </Text>
-        <View style={styles.row}>
-          <AppButton
-            label="Lunar"
-            variant={period === 'month' ? 'primary' : 'outline'}
-            onPress={() => setPeriod('month')}
+    <Screen style={styles.screen}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={calendar.isRefetching}
+            onRefresh={() => calendar.refetch()}
           />
-          <AppButton
-            label="Anual"
-            variant={period === 'year' ? 'primary' : 'outline'}
-            onPress={() => setPeriod('year')}
-          />
-        </View>
-        <View style={styles.between}>
-          <IconButton
-            accessibilityLabel="Perioada anterioară"
-            icon="chevron-back"
-            onPress={() => movePeriod(-1)}
-          />
-          <Text style={[styles.subtitle, styles.grow]}>
-            {period === 'year'
-              ? dayjs(visible).format('YYYY')
-              : formatMonthLabel(visible.slice(0, 7))}
-          </Text>
-          <IconButton
-            accessibilityLabel="Perioada următoare"
-            icon="chevron-forward"
-            onPress={() => movePeriod(1)}
-          />
-        </View>
-        <SearchableSelect
-          label="Sală"
-          allowClear
-          single
-          options={
-            calendar.data?.halls.map(hall => ({
-              id: hall.id,
-              name: hall.name + (hall.is_active ? '' : ' · Arhivată'),
-            })) ?? []
-          }
-          selectedValues={hallId ? [hallId] : []}
-          onChange={values => setHallId(values[0] ?? '')}
-          placeholder="Toate sălile"
-          searchPlaceholder="Caută sala"
-          noItemsText="Adaugă prima sală din Mai multe → Săli."
+        }
+      >
+        <CalendarControls
+          period={calendarView.period}
+          selected={calendarView.selected}
+          hallId={hallId}
+          halls={calendar.data?.halls ?? []}
+          onPeriod={calendarView.setPeriod}
+          onMove={calendarView.move}
+          onHall={setHallId}
+          onToday={calendarView.today}
         />
+        <CalendarLegend period={calendarView.period} />
         <QueryNotice
           loading={calendar.isLoading}
           error={calendar.error}
           retry={() => calendar.refetch()}
         />
-        <Text style={styles.muted}>
-          Numărul de sub dată indică sălile libere.
-        </Text>
-        {months.map(month => (
-          <CalendarMonth
-            key={month}
-            month={month}
-            days={calendar.data?.days ?? []}
-            selected={selected}
-            onSelect={date => {
-              setSelected(date);
-              setVisible(dayjs(date).startOf('month').format('YYYY-MM-DD'));
-            }}
-          />
-        ))}
-        <Text style={styles.subtitle}>{formatLongDate(selected)}</Text>
-        <Text style={styles.text}>
-          Săli libere:{' '}
-          {calendar.data?.days.find(item => item.date === selected)?.free ??
-            '—'}
-        </Text>
-        <AppButton
-          label="Rezervare nouă în această zi"
-          onPress={() => {
-            setNewHallId('');
-            setCreating(true);
-          }}
-        />
-        <CalendarDayHalls
-          date={selected}
-          hallId={hallId || undefined}
-          onReserve={id => {
-            setNewHallId(id);
-            setCreating(true);
-          }}
-        />
+        {calendar.data ? (
+          calendarView.period === 'month' ? (
+            <>
+              <CalendarMonth
+                month={selectedMonth}
+                days={days}
+                selected={calendarView.selected}
+                onSelect={calendarView.selectDate}
+              />
+              <CalendarDayHalls
+                date={calendarView.selected}
+                hallId={hallId || undefined}
+                free={
+                  days.find(day => day.date === calendarView.selected)?.free
+                }
+                onReserve={setReservationHall}
+              />
+            </>
+          ) : (
+            <>
+              <CalendarYear
+                year={calendarView.selected.slice(0, 4)}
+                selectedMonth={selectedMonth}
+                days={days}
+                onSelect={calendarView.selectMonth}
+              />
+              {needsPreviousYear ? (
+                <QueryNotice
+                  loading={previousCalendar.isLoading}
+                  error={previousCalendar.error}
+                  retry={() => previousCalendar.refetch()}
+                />
+              ) : null}
+              <CalendarMonthSummary
+                statistics={getMonthStatistics(selectedMonth, days)}
+                previous={getMonthStatistics(
+                  previousMonth.format('YYYY-MM'),
+                  needsPreviousYear
+                    ? (previousCalendar.data?.days ?? [])
+                    : days,
+                )}
+                onOpen={() => calendarView.setPeriod('month')}
+              />
+            </>
+          )
+        ) : null}
       </ScrollView>
-      {creating ? (
+      {reservationHall !== null ? (
         <BookingForm
-          date={selected}
+          date={calendarView.selected}
           hallId={
-            newHallId ||
+            reservationHall ||
             (calendar.data?.halls.find(hall => hall.id === hallId)?.is_active
               ? hallId
               : undefined)
           }
-          onClose={() => {
-            setCreating(false);
-            setNewHallId('');
-          }}
+          onClose={() => setReservationHall(null)}
         />
       ) : null}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { backgroundColor: theme.colors.menu.background },
+  content: {
+    gap: theme.spacing.md,
+    padding: theme.spacing.lg,
+    paddingBottom: theme.spacing.xl,
+  },
+});

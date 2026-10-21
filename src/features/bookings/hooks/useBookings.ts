@@ -38,12 +38,14 @@ export const useBooking = (id: string) => {
     enabled: Boolean(id && user?.subscription?.active),
   });
 };
-export const useCalendar = (filters: BookingFilters) => {
+export const useCalendar = (filters: BookingFilters, enabled = true) => {
   const { user } = useAuth();
   return useQuery({
     queryKey: queryKeys.planner.calendar(user?.company?.id ?? '', filters),
     queryFn: ({ signal }) => getCalendarApi(filters, signal),
-    enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    enabled:
+      enabled &&
+      Boolean(user?.subscription?.active && user.role !== 'employee'),
     staleTime: 30_000,
   });
 };
