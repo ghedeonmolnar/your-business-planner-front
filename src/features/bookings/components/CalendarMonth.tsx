@@ -36,7 +36,7 @@ export function CalendarMonth({
           </Text>
         ))}
       </View>
-      {Array.from({ length: cellCount / DAYS_PER_WEEK }, (_, week) => (
+      {Array.from({ length: cellCount / DAYS_PER_WEEK }, (_week, week) => (
         <View key={week} style={styles.row}>
           {WEEKDAYS.map((_, weekday) => {
             const date = first.add(

@@ -120,3 +120,30 @@ Monitorizarea durabilă, restaurarea backupului extern, măsurătorile de perfor
 - [Laravel Sanctum 4.x](https://github.com/laravel/sanctum/tree/4.x), inclusiv verificarea și revocarea tokenurilor.
 - [React Native 0.88](https://reactnative.dev/blog/2026/10/19/react-native-0.88) și pachetul oficial @react-native-community/template 0.88.0.
 - [Chrome: bfcache și no-store](https://developer.chrome.com/docs/web-platform/bfcache-ccns).
+
+## Reverificare în 22 octombrie 2026
+
+La cererea utilizatorului au fost trimise pe main modificările existente ale API-ului și aplicației, apoi calendarul lunar/anual. Runda locală de verificări a fost cerută explicit. npm outdated în ambele proiecte și composer outdated --direct nu au identificat actualizări patch/minor pentru pachetele directe. Babel 8, resolvers 6, ESLint 10 și TypeScript 7 rămân în afara acestei runde; sunt actualizări majore, fără aprobare nouă de migrare și cu incompatibilitățile descrise anterior.
+
+| Verificare locală | Rezultat |
+| --- | --- |
+| TypeScript | Trecut. |
+| ESLint | Trecut, zero erori și avertismente. |
+| Jest | 109 suite și 439 de teste trecute. |
+| Pint | Trecut. |
+| PHP / SQLite | 115 teste și 990 de aserțiuni trecute; trei curse MySQL omise. |
+| Teste Node pentru panou | 6 teste trecute. |
+| Vite | Build reușit. |
+| Android debug arm64-v8a | assembleDebug reușit cu API 37 și Build Tools 37.0.0. |
+| Audit npm API și Composer | Fără advisories. |
+| Audit npm frontend | Blocat: 48 de intrări propagate, 17 moderate și 31 high. |
+
+Rularea GitHub [API quality pentru c1d599f](https://github.com/ghedeonmolnar/your-business-planner-api/actions/runs/39654932946) a trecut inclusiv testele MySQL și concurența pe baza dedicată _test, buildul panoului, auditurile API și scanarea secretelor. Prima rulare frontend a găsit incompatibilități de tip la liste și teste care serializau referințe React circulare sau verificau rezultatele înainte de încărcarea lor; acestea au fost corectate păstrând aserțiunile comportamentale. Avertismentul no-shadow din calendar a fost corectat prin redenumirea parametrului nefolosit.
+
+Buildul Android din CI cerea pachetul inexistent platforms;android-37. Instalarea locală furnizată de Android SDK declară în package.xml identificatorul platforms;android-37.0 și nivelul API 37.0. Workflow-ul folosește acum identificatorul corect, fără reducerea compile SDK, eliminarea pașilor sau ignorarea erorilor.
+
+Blocajul pentru dependențele frontend rămâne neschimbat: [sprintf-js / GHSA-hp3w-g68c-fv3c](https://github.com/advisories/GHSA-hp3w-g68c-fv3c) și [braces / GHSA-vfj7-8cjw-p6xm](https://github.com/advisories/GHSA-vfj7-8cjw-p6xm). Nu s-au adăugat excepții de audit și nu s-au forțat versiuni incompatibile. Următorul pas pentru lansare este remedierea compatibilă în lanțurile tranzitive sau o migrare majoră analizată separat; gate-ul dependencies rămâne blocant pentru lansare.
+
+Verificarea vizuală a calendarului a fost făcută în aplicația Android în 21 octombrie, inclusiv la 320 dp și fontScale 1.4. Au fost urmărite filtrul sălii, selecțiile, programul peste miezul nopții, statisticile reale și formularul de rezervare precompletat. Nu s-au salvat rezervări de probă. Setările emulatorului au fost restaurate. Jurnalul ReactNativeJS al aplicației repornite nu a conținut avertismente sau erori. În 22 octombrie emulatorul era închis; modificările din reluare nu schimbă aspectul ecranului.
+
+Logurile rundei sunt în .codex-run/verification-2026-10-22 în workspace-ul local. Verificările din această rundă reiau numărătoarea locală de la zero. Controalele de producție și limitările auditului inițial rămân valabile; push-ul pe main nu reprezintă o lansare publică.
