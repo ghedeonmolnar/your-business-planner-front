@@ -1,4 +1,5 @@
 import React from 'react';
+import { renderedText } from '@/shared/test/renderedText';
 import ReactTestRenderer from 'react-test-renderer';
 import { CustomersScreen } from '@/features/company/screens/CustomersScreen';
 import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
@@ -85,9 +86,7 @@ const requests = () =>
 
 test('intervalul se aplică explicit, păstrează totalul istoric și se elimină din indicator', async () => {
   const { renderer, unmount } = await renderWithProviders(<CustomersScreen />);
-  await waitForUi(() =>
-    expect(JSON.stringify(renderer.toJSON())).toContain('Zoe'),
-  );
+  await waitForUi(() => expect(renderedText(renderer)).toContain('Zoe'));
   expect(renderer.root.findAllByType(DatePickerField)).toHaveLength(0);
   await chooseRange(renderer, '2026-11-01', '2026-11-30');
   expect(requests().some(path => path.includes('date_from='))).toBe(false);
@@ -100,16 +99,14 @@ test('intervalul se aplică explicit, păstrează totalul istoric și se elimin�
           path.includes('date_to=2026-11-30'),
       ),
     ).toBe(true);
-    expect(JSON.stringify(renderer.toJSON())).not.toContain('Zoe');
+    expect(renderedText(renderer)).not.toContain('Zoe');
   });
   expect(renderer.root.findAllByType(DatePickerField)).toHaveLength(0);
   expect(
     renderer.root.findAllByProps({ label: '7 rezervări' }).length,
   ).toBeGreaterThan(0);
   await press(renderer, 'Elimină filtrul de evenimente');
-  await waitForUi(() =>
-    expect(JSON.stringify(renderer.toJSON())).toContain('Zoe'),
-  );
+  await waitForUi(() => expect(renderedText(renderer)).toContain('Zoe'));
   expect(
     renderer.root.findAllByProps({
       accessibilityLabel: 'Elimină filtrul de evenimente',
@@ -161,13 +158,11 @@ test('rezultatul gol oferă resetare și revine la lista completă', async () =>
   await chooseRange(renderer, '2027-01-01', '2027-01-31');
   await press(renderer, 'Aplică filtrul');
   await waitForUi(() =>
-    expect(JSON.stringify(renderer.toJSON())).toContain(
+    expect(renderedText(renderer)).toContain(
       'Niciun client pentru filtrele alese',
     ),
   );
   await press(renderer, 'Resetează filtrele');
-  await waitForUi(() =>
-    expect(JSON.stringify(renderer.toJSON())).toContain('Zoe'),
-  );
+  await waitForUi(() => expect(renderedText(renderer)).toContain('Zoe'));
   await unmount();
 });

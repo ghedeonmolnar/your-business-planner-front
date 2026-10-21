@@ -1,4 +1,5 @@
 import React from 'react';
+import { renderedText } from '@/shared/test/renderedText';
 import ReactTestRenderer from 'react-test-renderer';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -50,7 +51,7 @@ test('istoricul păstrează editarea profilului după compactarea cardurilor', a
     </NavigationContainer>,
   );
   await waitForUi(() =>
-    expect(JSON.stringify(renderer.toJSON())).toContain('Observații client'),
+    expect(renderedText(renderer)).toContain('Observații client'),
   );
   await ReactTestRenderer.act(async () => {
     renderer.root

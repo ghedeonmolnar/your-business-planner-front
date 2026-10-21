@@ -1,4 +1,5 @@
 import React from 'react';
+import { waitForUi } from '@/shared/test/waitForUi';
 import ReactTestRenderer from 'react-test-renderer';
 import { CompanyProfileScreen } from '@/features/company/screens/CompanyProfileScreen';
 import { CompanySettingsForm } from '@/features/company/components/CompanySettingsForm';
@@ -44,7 +45,9 @@ test('profilul ownerului precompletează formularul din datele fiscale salvate',
   const { renderer, unmount } = await renderWithProviders(
     <CompanyProfileScreen />,
   );
-  expect(JSON.stringify(renderer.toJSON())).toContain('Firma fiscală SRL');
+  await waitForUi(() =>
+    expect(JSON.stringify(renderer.toJSON())).toContain('Firma fiscală SRL'),
+  );
   await ReactTestRenderer.act(async () => {
     renderer.root
       .findByProps({ accessibilityLabel: 'Editează firma și datele fiscale' })
@@ -89,6 +92,13 @@ test('căutarea după CUI precompletează datele și le salvează în profilul f
   }) as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(
     <CompanyProfileScreen />,
+  );
+  await waitForUi(() =>
+    expect(
+      renderer.root.findAllByProps({
+        accessibilityLabel: 'Completează datele fiscale',
+      }),
+    ).toHaveLength(1),
   );
   await ReactTestRenderer.act(async () => {
     renderer.root

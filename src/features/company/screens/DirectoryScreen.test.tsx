@@ -1,4 +1,6 @@
 import React from 'react';
+import { waitForUi } from '@/shared/test/waitForUi';
+import { renderedText } from '@/shared/test/renderedText';
 import ReactTestRenderer from 'react-test-renderer';
 import { CustomersScreen } from '@/features/company/screens/DirectoryScreen';
 import { DirectoryForm } from '@/features/company/components/DirectoryForm';
@@ -36,7 +38,9 @@ test('lista compactă a clienților oferă istoric, creare și stare clară pent
     ),
   ) as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<CustomersScreen />);
-  expect(JSON.stringify(renderer.toJSON())).toContain('Telefon necompletat');
+  await waitForUi(() =>
+    expect(renderedText(renderer)).toContain('Telefon necompletat'),
+  );
   expect(
     renderer.root.findAllByProps({ accessibilityLabel: 'Înapoi' }),
   ).toHaveLength(0);

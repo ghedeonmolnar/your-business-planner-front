@@ -1,4 +1,6 @@
 import React from 'react';
+import { waitForUi } from '@/shared/test/waitForUi';
+import { renderedText } from '@/shared/test/renderedText';
 import { AgendaScreen } from '@/features/company/screens/AgendaScreen';
 import {
   plannerAccount,
@@ -40,8 +42,8 @@ test('agenda cere date valide când motorul returnează text localizat incompati
       calls.some(url => /\/events\?date_from=\d{4}-\d{2}-\d{2}/.test(url)),
     ).toBe(true);
     expect(calls.every(url => !url.includes('Invalid'))).toBe(true);
-    expect(JSON.stringify(renderer.toJSON())).toContain(
-      plannerBooking.client_name,
+    await waitForUi(() =>
+      expect(renderedText(renderer)).toContain(plannerBooking.client_name),
     );
     await unmount();
   } finally {
