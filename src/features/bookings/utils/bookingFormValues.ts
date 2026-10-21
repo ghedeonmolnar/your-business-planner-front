@@ -1,0 +1,68 @@
+import { Booking, BookingPayload } from '@/features/bookings/types';
+import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
+import {
+  formatCompanyInput,
+  toCompanyTimestamp,
+} from '@/shared/utils/formatDate';
+
+export const bookingFormDefaults = (
+  date: string,
+  hallId?: string,
+  booking?: Booking,
+): BookingFormValues => ({
+  hall_id: booking?.hall_id ?? hallId ?? '',
+  client_id: booking?.client_id ?? '',
+  date: booking?.date ?? date,
+  type: booking?.type ?? 'nunta',
+  status:
+    booking?.status === 'expired'
+      ? 'tentative'
+      : (booking?.status ?? 'tentative'),
+  starts_at: formatCompanyInput(booking?.starts_at),
+  ends_at: formatCompanyInput(booking?.ends_at),
+  expires_at: formatCompanyInput(booking?.expires_at),
+  minimum_guests: String(booking?.minimum_guests ?? 0),
+  final_guests:
+    booking?.final_guests == null ? '' : String(booking.final_guests),
+  menu_price: booking?.menu_price ?? '0',
+  menu_name: booking?.menu_name ?? '',
+  agreed_advance: booking?.agreed_advance ?? '0',
+  advance_due_at: booking?.advance_due_at ?? '',
+  extra_services: booking?.extra_services ?? [],
+  notes: booking?.notes ?? '',
+  staff:
+    booking?.staff.map(person => ({
+      employee_id: person.employee_id,
+      job_role: person.job_role,
+      pay_type: person.pay_type,
+      rate: person.rate,
+      starts_at: formatCompanyInput(person.starts_at),
+      ends_at: formatCompanyInput(person.ends_at),
+    })) ?? [],
+});
+
+export const bookingPayload = (values: BookingFormValues): BookingPayload => ({
+  ...values,
+  starts_at: toCompanyTimestamp(values.starts_at),
+  ends_at: toCompanyTimestamp(values.ends_at),
+  expires_at:
+    values.status === 'tentative'
+      ? toCompanyTimestamp(values.expires_at)
+      : null,
+  minimum_guests: Number(values.minimum_guests),
+  final_guests: values.final_guests ? Number(values.final_guests) : null,
+  menu_price: values.menu_price.replace(',', '.'),
+  menu_name: values.menu_name || null,
+  agreed_advance: values.agreed_advance.replace(',', '.'),
+  advance_due_at: values.advance_due_at || null,
+  extra_services: values.extra_services.map(service => ({
+    ...service,
+    amount: service.amount.replace(',', '.'),
+  })),
+  staff: values.staff.map(person => ({
+    ...person,
+    rate: person.rate.replace(',', '.'),
+    starts_at: toCompanyTimestamp(person.starts_at) ?? '',
+    ends_at: toCompanyTimestamp(person.ends_at) ?? '',
+  })),
+});

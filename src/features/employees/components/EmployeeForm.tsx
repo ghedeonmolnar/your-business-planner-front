@@ -1,0 +1,133 @@
+import React, { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  EmployeeFormInput,
+  EmployeeFormValues,
+  employeeSchema,
+  emptyEmployeeForm,
+} from '@/features/employees/schemas/employeeSchema';
+import { Employee } from '@/features/employees/types';
+import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
+import { ControlledBirthDateField } from '@/shared/components/ControlledBirthDateField';
+import { ControlledTextField } from '@/shared/components/ControlledTextField';
+import { ControlledSwitchField } from '@/shared/components/ControlledSwitchField';
+import { FormModalFrame } from '@/shared/components/FormModalFrame';
+import { AppButton } from '@/shared/components/AppButton';
+import { splitBirthDate } from '@/shared/utils/birthDate';
+
+type EmployeeFormProps = {
+  visible: boolean;
+  initialEmployee?: Employee | null;
+  saving: boolean;
+  onCancel: () => void;
+  onSubmit: (values: EmployeeFormValues) => void;
+};
+
+const genderOptions = [
+  { id: 'male', name: 'Masculin' },
+  { id: 'female', name: 'Feminin' },
+];
+
+const toFormValues = (employee?: Employee | null): EmployeeFormInput => {
+  if (!employee) {
+    return emptyEmployeeForm;
+  }
+
+  const birthDate = splitBirthDate(employee.birth_date);
+
+  return {
+    name: employee.name,
+    gender: employee.gender ?? '',
+    hourly_rate: employee.hourly_rate,
+    birth_year: birthDate.year,
+    birth_month: birthDate.month,
+    birth_day: birthDate.day,
+    is_active: employee.is_active ?? true,
+  };
+};
+
+export function EmployeeForm({
+  visible,
+  initialEmployee,
+  saving,
+  onCancel,
+  onSubmit,
+}: EmployeeFormProps) {
+  const {
+    control,
+    formState: { isDirty },
+    handleSubmit,
+    reset,
+  } = useForm<
+    EmployeeFormInput,
+    unknown,
+    EmployeeFormValues
+  >({
+    resolver: zodResolver(employeeSchema),
+    defaultValues: emptyEmployeeForm,
+  });
+  useEffect(() => {
+    if (visible) {
+      reset(toFormValues(initialEmployee));
+    }
+  }, [initialEmployee, reset, visible]);
+
+  return (
+    <FormModalFrame
+      footer={
+        <AppButton
+          disabled={saving}
+          fullWidth
+          label={saving ? 'Se salvează...' : 'Salvează'}
+          onPress={handleSubmit(onSubmit)}
+          size="large"
+        />
+      }
+      hasUnsavedChanges={isDirty}
+      onClose={onCancel}
+      title={initialEmployee ? 'Editează angajat' : 'Angajat nou'}
+      visible={visible}
+    >
+      <ControlledTextField
+        control={control}
+        label="Nume"
+        name="name"
+        placeholder="Numele angajatului"
+      />
+      <ControlledSelectField
+        control={control}
+        label="Sex"
+        name="gender"
+        noItemsText="Nu există opțiuni"
+        options={genderOptions}
+        placeholder="Alege sexul"
+        searchPlaceholder="Caută..."
+        single
+        singleEmptyValue=""
+      />
+      <ControlledTextField
+        control={control}
+        keyboardType="numeric"
+        label="Tarif pe oră"
+        name="hourly_rate"
+        numeric
+        placeholder="Ex: 120 sau lasă liber"
+      />
+      <ControlledBirthDateField
+        control={control}
+        dayName="birth_day"
+        label="Data nașterii"
+        monthName="birth_month"
+        yearName="birth_year"
+      />
+      <ControlledSwitchField
+        activeText="Activ"
+        control={control}
+        inactiveText="Inactiv"
+        label="Status"
+        name="is_active"
+      />
+    </FormModalFrame>
+  );
+}

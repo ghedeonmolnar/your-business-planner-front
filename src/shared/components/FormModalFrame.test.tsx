@@ -1,0 +1,120 @@
+import React from 'react';
+import { Dimensions, StyleSheet } from 'react-native';
+import ReactTestRenderer from 'react-test-renderer';
+import { Text } from 'react-native-paper';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
+import { AppDialog } from '@/shared/components/AppDialog';
+import { FormModalFrame } from '@/shared/components/FormModalFrame';
+import { IconButton } from '@/shared/components/IconButton';
+import { clearDialogs } from '@/shared/feedback/dialogStore';
+import { useKeyboardOverlap } from '@/shared/hooks/useKeyboardOverlap';
+import { theme } from '@/shared/theme/theme';
+
+jest.mock('@/shared/hooks/useKeyboardOverlap', () => ({
+  useKeyboardOverlap: jest.fn(() => 0),
+}));
+
+const insets = { top: 24, right: 0, bottom: 48, left: 0 };
+const windowHeight = Dimensions.get('window').height;
+const modalTop = insets.top + theme.spacing.lg;
+
+const renderFrame = async () => {
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      <SafeAreaInsetsContext.Provider value={insets}>
+        <FormModalFrame
+          footer={<Text>Salvează</Text>}
+          onClose={() => undefined}
+          title="Client nou"
+          visible
+        >
+          <Text>Formular</Text>
+        </FormModalFrame>
+      </SafeAreaInsetsContext.Provider>,
+    );
+  });
+
+  const modalBox = renderer?.root.find(node => {
+    const style = StyleSheet.flatten(node.props.style);
+
+    return (
+      typeof style?.maxHeight === 'number' &&
+      style?.borderRadius === theme.radius.lg
+    );
+  });
+
+  const maxHeight = StyleSheet.flatten(modalBox?.props.style)?.maxHeight;
+
+  await ReactTestRenderer.act(async () => {
+    renderer?.unmount();
+  });
+
+  return maxHeight;
+};
+
+beforeEach(() => {
+  (useKeyboardOverlap as jest.Mock).mockReturnValue(0);
+  clearDialogs();
+});
+
+test('opens at 90% of the window height while the keyboard is hidden', async () => {
+  expect(await renderFrame()).toBe(Math.round(windowHeight * 0.9));
+});
+
+test('stops above the keyboard so the focused input stays visible', async () => {
+  const keyboardOverlap = Math.round(windowHeight * 0.4);
+  (useKeyboardOverlap as jest.Mock).mockReturnValue(keyboardOverlap);
+
+  expect(await renderFrame()).toBe(
+    windowHeight - modalTop - keyboardOverlap - theme.spacing.sm,
+  );
+});
+
+test('keeps a usable height when the keyboard covers almost everything', async () => {
+  (useKeyboardOverlap as jest.Mock).mockReturnValue(windowHeight - 60);
+
+  expect(await renderFrame()).toBe(240);
+});
+
+test('cere confirmare înainte să închidă un formular modificat', async () => {
+  const onClose = jest.fn();
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      <SafeAreaInsetsContext.Provider value={insets}>
+        <FormModalFrame
+          hasUnsavedChanges
+          onClose={onClose}
+          title="Client nou"
+          visible
+        >
+          <Text>Formular</Text>
+        </FormModalFrame>
+      </SafeAreaInsetsContext.Provider>,
+    );
+  });
+
+  await ReactTestRenderer.act(async () => {
+    renderer?.root.findByType(IconButton).props.onPress();
+  });
+
+  expect(onClose).not.toHaveBeenCalled();
+  const dialog = renderer?.root.findByType(AppDialog);
+  expect(dialog?.props.dialog).toMatchObject({
+    title: 'Modificări nesalvate',
+    confirmLabel: 'Pleacă fără să salvezi',
+  });
+
+  await ReactTestRenderer.act(async () => {
+    dialog?.props.onConfirm();
+  });
+
+  expect(onClose).toHaveBeenCalledTimes(1);
+
+  await ReactTestRenderer.act(async () => {
+    renderer?.unmount();
+  });
+});
