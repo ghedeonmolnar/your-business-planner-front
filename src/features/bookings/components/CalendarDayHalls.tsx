@@ -84,6 +84,7 @@ export function CalendarDayHalls({
       ) : null}
       <AppButton
         label="Rezervare nouă în această zi"
+        multiline
         icon="add"
         variant="soft"
         shape="rounded"

@@ -47,7 +47,9 @@ export function CalendarScreen() {
         refreshControl={
           <RefreshControl
             refreshing={calendar.isRefetching}
-            onRefresh={() => calendar.refetch()}
+            onRefresh={async () => {
+              await calendar.refetch();
+            }}
           />
         }
       >

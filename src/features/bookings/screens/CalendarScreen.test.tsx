@@ -68,6 +68,9 @@ test('calendarul se montează pe date valide și schimbă împreună luna, ziua 
         .findByProps({ accessibilityLabel: 'Perioada următoare' })
         .props.onPress();
     });
+    await waitForUi(() =>
+      expect(renderer.root.findAllByType(CalendarMonth)).toHaveLength(1),
+    );
     expect(renderer.root.findByType(CalendarMonth).props.month).toBe(
       nextDate.slice(0, 7),
     );
@@ -77,6 +80,9 @@ test('calendarul se montează pe date valide și schimbă împreună luna, ziua 
     await ReactTestRenderer.act(async () => {
       renderer.root.findByType(SearchableSelect).props.onChange(['hall-1']);
     });
+    await waitForUi(() =>
+      expect(renderer.root.findAllByType(CalendarMonth)).toHaveLength(1),
+    );
     const calls = jest
       .mocked(globalThis.fetch)
       .mock.calls.map(([url]) => String(url));
