@@ -92,7 +92,7 @@ export function CustomersScreen() {
                 />
               ) : null}
             </View>
-          ) : null
+          ) : undefined
         }
         ListFooterComponent={
           query.hasNextPage ? (
@@ -102,7 +102,7 @@ export function CustomersScreen() {
               onPress={() => query.fetchNextPage()}
               style={styles.loadMore}
             />
-          ) : null
+          ) : undefined
         }
       />
       {creating ? (

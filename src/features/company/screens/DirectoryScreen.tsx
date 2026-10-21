@@ -99,7 +99,7 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
                     ' Folosește butonul de adăugare pentru a începe.'
               }
             />
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
           <DirectoryCard

@@ -64,7 +64,7 @@ export function AgendaScreen() {
               title="Agenda este liberă"
               message="Rezervările viitoare vor apărea aici, în ordinea datei."
             />
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
           <BookingCard
