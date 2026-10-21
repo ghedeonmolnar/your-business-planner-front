@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React from 'react';
 import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
 import { adaptNavigationTheme } from 'react-native-paper';
@@ -13,6 +14,7 @@ import {
 import { CustomerHistoryScreen } from '@/features/company/screens/CustomerHistoryScreen';
 import { TeamScreen } from '@/features/company/screens/TeamScreen';
 import { OverviewScreen } from '@/features/company/screens/OverviewScreen';
+import { CompanyProfileScreen } from '@/features/company/screens/CompanyProfileScreen';
 import { SubscriptionBlockedScreen } from '@/features/company/screens/SubscriptionBlockedScreen';
 import { EventRemindersSync } from '@/features/events/notifications/EventRemindersSync';
 import { useNotificationNavigation } from '@/features/events/notifications/useNotificationNavigation';
@@ -65,12 +67,18 @@ export default function RootNavigator() {
   }
   return (
     <NavigationContainer
-      theme={navigationTheme}
+      key={user ? `${user.company?.id}:${user.id}:${user.role}` : 'signed-out'}
+      theme={{ ...DefaultTheme, ...navigationTheme }}
       ref={navigationRef}
       onReady={flushPendingEventNavigation}
       onStateChange={flushPendingEventNavigation}
     >
-      {active && user ? <EventRemindersSync enabled role={user.role} /> : null}
+      {active && user ? (
+        <EventRemindersSync
+          enabled={hasCompanyFeature(user, 'reminders')}
+          role={user.role}
+        />
+      ) : null}
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {!isAuthenticated ? (
           <Stack.Screen name="Login" component={LoginScreen} />
@@ -88,15 +96,25 @@ export default function RootNavigator() {
                   component={CustomerHistoryScreen}
                 />
                 <Stack.Screen name="CompanyHalls" component={HallsScreen} />
-                <Stack.Screen name="CompanyStaff" component={StaffScreen} />
-                <Stack.Screen
-                  name="CompanyOverview"
-                  component={OverviewScreen}
-                />
+                {hasCompanyFeature(user, 'staff') ? (
+                  <Stack.Screen name="CompanyStaff" component={StaffScreen} />
+                ) : null}
+                {hasCompanyFeature(user, 'finance') ? (
+                  <Stack.Screen
+                    name="CompanyOverview"
+                    component={OverviewScreen}
+                  />
+                ) : null}
               </>
             ) : null}
             {user?.role === 'owner' ? (
-              <Stack.Screen name="CompanyTeam" component={TeamScreen} />
+              <>
+                <Stack.Screen name="CompanyTeam" component={TeamScreen} />
+                <Stack.Screen
+                  name="CompanyProfile"
+                  component={CompanyProfileScreen}
+                />
+              </>
             ) : null}
           </>
         )}

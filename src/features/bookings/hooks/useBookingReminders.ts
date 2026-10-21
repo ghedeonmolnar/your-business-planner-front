@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { getBookingRemindersApi } from '@/features/bookings/api/bookingRemindersApi';
@@ -11,7 +12,10 @@ export const useBookingReminders = (enabled: boolean) => {
       user?.id ?? '',
     ),
     queryFn: ({ signal }) => getBookingRemindersApi(signal),
-    enabled: enabled && Boolean(user?.subscription?.active),
+    enabled:
+      enabled &&
+      Boolean(user?.subscription?.active) &&
+      hasCompanyFeature(user, 'reminders'),
     refetchInterval: 60_000,
     staleTime: 30_000,
   });

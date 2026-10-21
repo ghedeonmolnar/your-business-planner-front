@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import {
   useInfiniteQuery,
   useMutation,
@@ -23,6 +24,7 @@ import { queryKeys } from '@/shared/api/queryKeys';
 import {
   invalidatePlannerDirectory,
   invalidatePlannerTeam,
+  invalidatePlannerCompany,
 } from '@/shared/api/queryInvalidation';
 
 export const useDirectory = (kind: DirectoryKind, search = '') => {
@@ -36,7 +38,11 @@ export const useDirectory = (kind: DirectoryKind, search = '') => {
     initialPageParam: 1,
     getNextPageParam: page =>
       page.page < page.lastPage ? page.page + 1 : undefined,
-    enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    enabled: Boolean(
+      user?.subscription?.active &&
+      user.role !== 'employee' &&
+      (kind !== 'employees' || hasCompanyFeature(user, 'staff')),
+    ),
     staleTime: 30_000,
   });
 };
@@ -85,7 +91,11 @@ export const useOverview = (from: string, to: string) => {
   return useQuery({
     queryKey: queryKeys.planner.overview(user?.company?.id ?? '', from, to),
     queryFn: ({ signal }) => getOverviewApi(from, to, signal),
-    enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    enabled: Boolean(
+      user?.subscription?.active &&
+      user.role !== 'employee' &&
+      hasCompanyFeature(user, 'finance'),
+    ),
   });
 };
 
@@ -117,13 +127,23 @@ export const useStaffAvailability = (
     getNextPageParam: page =>
       page.page < page.lastPage ? page.page + 1 : undefined,
     enabled: Boolean(
-      start && end && user?.subscription?.active && user.role !== 'employee',
+      start &&
+      end &&
+      user?.subscription?.active &&
+      user.role !== 'employee' &&
+      hasCompanyFeature(user, 'staff'),
     ),
   });
 };
 
-export const useSaveCompanySettings = () =>
-  useMutation({ mutationFn: saveCompanySettingsApi });
+export const useSaveCompanySettings = () => {
+  const client = useQueryClient();
+  const { user } = useAuth();
+  return useMutation({
+    mutationFn: saveCompanySettingsApi,
+    onSuccess: () => invalidatePlannerCompany(client, user?.company?.id ?? ''),
+  });
+};
 
 export const useAccountInvitations = () => {
   const { user } = useAuth();

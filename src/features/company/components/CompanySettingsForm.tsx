@@ -11,46 +11,45 @@ import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { AppButton } from '@/shared/components/AppButton';
 import { showError } from '@/shared/feedback/showError';
+import { CompanyProfile } from '@/features/company/schemas/companyProfileSchemas';
+import {
+  companyProfileDefaults,
+  companyProfilePayload,
+} from '@/features/company/utils/companyProfileForm';
+import { CompanyFiscalFields } from '@/features/company/components/CompanyFiscalFields';
 
-export function CompanySettingsForm({ onClose }: { onClose: () => void }) {
-  const { user, retryBootstrap } = useAuth();
+export function CompanySettingsForm({
+  company,
+  onClose,
+}: {
+  company: CompanyProfile;
+  onClose: () => void;
+}) {
+  const { retryBootstrap } = useAuth();
   const save = useSaveCompanySettings();
   const form = useForm<CompanySettingsValues>({
     resolver: zodResolver(companySettingsSchema),
-    defaultValues: {
-      name: user?.company?.name ?? '',
-      email: user?.company?.email ?? '',
-      phone: user?.company?.phone ?? '',
-      address: user?.company?.address ?? '',
-    },
+    defaultValues: companyProfileDefaults(company),
   });
   const submit = form.handleSubmit(values =>
-    save.mutate(
-      {
-        ...values,
-        email: values.email || null,
-        phone: values.phone || null,
-        address: values.address || null,
+    save.mutate(companyProfilePayload(values), {
+      onSuccess: () => {
+        onClose();
+        retryBootstrap();
       },
-      {
-        onSuccess: () => {
-          onClose();
-          retryBootstrap();
-        },
-        onError: error =>
-          showError(error, 'Nu am putut salva profilul companiei.'),
-      },
-    ),
+      onError: error =>
+        showError(error, 'Nu am putut salva profilul companiei.'),
+    }),
   );
   return (
     <FormModalFrame
       visible
-      title="Datele companiei"
+      title="Profilul firmei"
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
         <AppButton
-          label="Salvează"
+          label="Salvează profilul firmei"
           disabled={save.isPending}
           onPress={submit}
         />
@@ -83,6 +82,7 @@ export function CompanySettingsForm({ onClose }: { onClose: () => void }) {
         label="Adresă companie"
         placeholder="Adresă"
       />
+      <CompanyFiscalFields form={form} />
     </FormModalFrame>
   );
 }

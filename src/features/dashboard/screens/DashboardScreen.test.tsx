@@ -207,7 +207,7 @@ test('păstrează soldul lunar complet când evenimentele se încarcă paginat',
 
   const { renderer, unmount } = await renderDashboard();
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   expect(renderer.root.findByType(DashboardMonthHeader).props.balanceDue).toBe(
     300,
@@ -218,7 +218,7 @@ test('păstrează soldul lunar complet când evenimentele se încarcă paginat',
 
   await ReactTestRenderer.act(async () => {
     renderer.root.findByType(SectionList).props.onEndReached();
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   expect(
     renderer.root.findByType(SectionList).props.sections[0].data,

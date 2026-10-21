@@ -65,9 +65,10 @@ export const getHallDayApi = (
   date: string,
   page: number,
   signal?: AbortSignal,
+  hallId?: string,
 ) =>
   apiPageRequest(
-    '/calendar/day?date=' + encodeURIComponent(date),
+    '/calendar/day?' + bookingQuery({ date, hall_id: hallId }),
     page,
     undefined,
     { signal, itemSchema: hallDaySchema },

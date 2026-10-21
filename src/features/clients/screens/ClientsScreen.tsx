@@ -155,7 +155,7 @@ export function ClientsScreen() {
           )
         }
         ListFooterComponent={
-          clientsQuery.isFetchingNextPage ? <LoadingState /> : null
+          clientsQuery.isFetchingNextPage ? <LoadingState /> : undefined
         }
         contentContainerStyle={styles.listContent}
         data={clients}

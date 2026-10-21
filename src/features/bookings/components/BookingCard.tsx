@@ -1,12 +1,16 @@
 import React from 'react';
-
+import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Card } from '@/shared/components/Card';
 import { Booking } from '@/features/bookings/types';
 import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
 import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { AppButton } from '@/shared/components/AppButton';
-import { formatLongDate } from '@/shared/utils/formatDate';
+import { MetaPill } from '@/shared/components/MetaPill';
+import {
+  formatLongDate,
+  formatCompanyDateTime,
+} from '@/shared/utils/formatDate';
 
 export function BookingCard({
   booking,
@@ -17,15 +21,27 @@ export function BookingCard({
 }) {
   return (
     <Card style={styles.card}>
-      <Text style={styles.subtitle}>
-        {booking.client_name ?? 'Rezervare'} · {booking.hall_name}
-      </Text>
+      <View style={styles.row}>
+        <MetaPill
+          icon="calendar-outline"
+          label={formatLongDate(booking.date)}
+        />
+        <MetaPill label={bookingStatusLabels[booking.status]} />
+      </View>
+      <Text style={styles.subtitle}>{booking.client_name ?? 'Rezervare'}</Text>
       <Text style={styles.text}>
-        {formatLongDate(booking.date)} · {bookingStatusLabels[booking.status]}
+        {booking.hall_name ?? 'Sală necompletată'}
       </Text>
+      {booking.starts_at ? (
+        <Text style={styles.muted}>
+          {formatCompanyDateTime(booking.starts_at)}
+        </Text>
+      ) : null}
       <AppButton
         label="Deschide rezervarea"
-        variant="outline"
+        variant="ghost"
+        icon="arrow-forward"
+        iconPosition="right"
         onPress={onOpen}
       />
     </Card>

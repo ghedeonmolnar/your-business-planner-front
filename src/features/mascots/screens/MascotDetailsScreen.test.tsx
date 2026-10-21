@@ -35,11 +35,15 @@ test('afișează profilul mascotei încărcat din API', async () => {
   );
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
 
-  expect(renderer.root.findAllByProps({ children: 'Minnie' }).length).toBeGreaterThan(0);
-  expect(renderer.root.findAllByProps({ children: 'Detalii mascotă' }).length).toBeGreaterThan(0);
+  expect(
+    renderer.root.findAllByProps({ children: 'Minnie' }).length,
+  ).toBeGreaterThan(0);
+  expect(
+    renderer.root.findAllByProps({ children: 'Detalii mascotă' }).length,
+  ).toBeGreaterThan(0);
 
   await unmount();
 });

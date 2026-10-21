@@ -35,10 +35,12 @@ test('afișează detaliile evenimentului angajatului din API', async () => {
   );
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
 
-  expect(renderer.root.findAllByProps({ children: 'Echipă și program' }).length).toBeGreaterThan(0);
+  expect(
+    renderer.root.findAllByProps({ children: 'Echipă și program' }).length,
+  ).toBeGreaterThan(0);
   expect(JSON.stringify(renderer.toJSON())).toContain('Aniversare');
 
   await unmount();

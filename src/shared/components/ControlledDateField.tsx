@@ -1,6 +1,9 @@
 import React from 'react';
 import { Controller, Control, FieldPath, FieldValues } from 'react-hook-form';
-import { DatePickerField } from '@/shared/components/DatePickerField';
+import {
+  DatePickerField,
+  DatePickerFieldProps,
+} from '@/shared/components/DatePickerField';
 
 type ControlledDateFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
@@ -9,6 +12,9 @@ type ControlledDateFieldProps<T extends FieldValues> = {
   placeholder: string;
   maximumDate?: Date;
   minimumDate?: Date;
+  displayFormat?: DatePickerFieldProps['displayFormat'];
+  style?: DatePickerFieldProps['style'];
+  fieldStyle?: DatePickerFieldProps['fieldStyle'];
 };
 
 export function ControlledDateField<T extends FieldValues>({
@@ -18,6 +24,9 @@ export function ControlledDateField<T extends FieldValues>({
   placeholder,
   maximumDate,
   minimumDate,
+  displayFormat,
+  style,
+  fieldStyle,
 }: ControlledDateFieldProps<T>) {
   return (
     <Controller
@@ -36,6 +45,9 @@ export function ControlledDateField<T extends FieldValues>({
           onChange={onChange}
           placeholder={placeholder}
           value={value}
+          displayFormat={displayFormat}
+          style={style}
+          fieldStyle={fieldStyle}
         />
       )}
     />

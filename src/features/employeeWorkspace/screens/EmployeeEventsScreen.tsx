@@ -7,7 +7,10 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { EmployeeAgendaCalendar } from '@/features/employeeWorkspace/components/EmployeeAgendaCalendar';
 import { EmployeeEventCard } from '@/features/employeeWorkspace/components/EmployeeEventCard';
-import { useEmployeeEventsList, useEmployeeMonthEvents } from '@/features/employeeWorkspace/hooks/useEmployeeWorkspace';
+import {
+  useEmployeeEventsList,
+  useEmployeeMonthEvents,
+} from '@/features/employeeWorkspace/hooks/useEmployeeWorkspace';
 import { EmployeeEvent } from '@/features/employeeWorkspace/types';
 import { isUnauthorizedError } from '@/shared/api/client';
 import { AppSegmentedControl } from '@/shared/components/AppSegmentedControl';
@@ -28,7 +31,9 @@ export function EmployeeEventsScreen() {
   const { signOut } = useAuth();
   const [mode, setMode] = useState<'calendar' | 'list'>('calendar');
   const [timeframe, setTimeframe] = useState<'upcoming' | 'past'>('upcoming');
-  const [selectedDate, setSelectedDate] = useState(dayjs().format('YYYY-MM-DD'));
+  const [selectedDate, setSelectedDate] = useState(
+    dayjs().format('YYYY-MM-DD'),
+  );
   const [visibleMonth, setVisibleMonth] = useState(dayjs().format('YYYY-MM'));
   const monthQuery = useEmployeeMonthEvents(visibleMonth, mode === 'calendar');
   const listQuery = useEmployeeEventsList({ timeframe }, mode === 'list');
@@ -49,7 +54,7 @@ export function EmployeeEventsScreen() {
 
   const emptyList = listQuery.isLoading ? (
     <LoadingState />
-  ) : listQuery.error ? null : (
+  ) : listQuery.error ? undefined : (
     <EmptyState
       icon="calendar-outline"
       title="Nu ai evenimente"
@@ -78,7 +83,9 @@ export function EmployeeEventsScreen() {
       {mode === 'list' ? (
         <AppSegmentedControl
           containerStyle={styles.filter}
-          onChangeIndex={index => setTimeframe(index === 0 ? 'upcoming' : 'past')}
+          onChangeIndex={index =>
+            setTimeframe(index === 0 ? 'upcoming' : 'past')
+          }
           selectedIndex={timeframe === 'upcoming' ? 0 : 1}
           segments={[{ label: 'Următoare' }, { label: 'Trecute' }]}
         />
@@ -109,7 +116,9 @@ export function EmployeeEventsScreen() {
         <FlatList
           ListHeaderComponent={header}
           ListEmptyComponent={emptyList}
-          ListFooterComponent={listQuery.isFetchingNextPage ? <LoadingState /> : null}
+          ListFooterComponent={
+            listQuery.isFetchingNextPage ? <LoadingState /> : undefined
+          }
           contentContainerStyle={styles.content}
           data={events}
           keyExtractor={event => event.id}
@@ -126,9 +135,14 @@ export function EmployeeEventsScreen() {
           ListHeaderComponentStyle={styles.header}
         />
       )}
-      {mode === 'list' && listQuery.error && !isUnauthorizedError(listQuery.error) ? (
+      {mode === 'list' &&
+      listQuery.error &&
+      !isUnauthorizedError(listQuery.error) ? (
         <ErrorBanner
-          message={getErrorMessage(listQuery.error, 'Nu am putut încărca evenimentele.')}
+          message={getErrorMessage(
+            listQuery.error,
+            'Nu am putut încărca evenimentele.',
+          )}
           onRetry={() => listQuery.refetch()}
         />
       ) : null}

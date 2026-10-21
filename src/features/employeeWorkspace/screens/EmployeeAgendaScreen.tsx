@@ -133,10 +133,10 @@ export function EmployeeAgendaScreen() {
               title="Nu există evenimente viitoare"
               message="Evenimentele alocate vor apărea aici."
             />
-          ) : null
+          ) : undefined
         }
         ListFooterComponent={
-          agendaQuery.isFetchingNextPage ? <LoadingState /> : null
+          agendaQuery.isFetchingNextPage ? <LoadingState /> : undefined
         }
         contentContainerStyle={styles.content}
         keyExtractor={event => event.id}

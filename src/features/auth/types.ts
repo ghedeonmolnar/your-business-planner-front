@@ -10,10 +10,27 @@ export type AuthUser = {
     phone: string | null;
     address: string | null;
   } | null;
+  business_category?: {
+    code: 'VENUE' | 'ENTERTAINMENT' | 'PHOTO_VIDEO' | 'RENTAL';
+    name: string;
+  } | null;
+  features?: ('staff' | 'documents' | 'finance' | 'reminders')[];
+  plan?: {
+    id: string | null;
+    name: string;
+    user_limit: number | null;
+    users_used: number;
+  } | null;
+  trial?: {
+    days: number;
+    started_at: string | null;
+    ends_at: string | null;
+  } | null;
   subscription?: {
     active: boolean;
     ends_at: string | null;
     suspended: boolean;
+    trial?: boolean;
   } | null;
   blocked?: boolean;
   support_email?: string | null;

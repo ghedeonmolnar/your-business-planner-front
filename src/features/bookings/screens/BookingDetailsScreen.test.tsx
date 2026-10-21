@@ -6,6 +6,7 @@ import { BookingDetailsScreen } from '@/features/bookings/screens/BookingDetails
 import { BookingPaymentForm } from '@/features/bookings/components/BookingPaymentForm';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import { RootStackParamList } from '@/shared/navigation/types';
+import { waitForUi } from '@/shared/test/waitForUi';
 import {
   jsonResponse,
   paginatedResponse,
@@ -56,6 +57,13 @@ test('records an advance from the reservation screen with the API mocked', async
       </Stack.Navigator>
     </NavigationContainer>,
   );
+  await waitForUi(() => {
+    expect(
+      renderer.root.findByProps({
+        accessibilityLabel: 'Adaugă încasare sau cheltuială',
+      }),
+    ).toBeDefined();
+  });
   await ReactTestRenderer.act(async () => {
     renderer.root
       .findByProps({ accessibilityLabel: 'Adaugă încasare sau cheltuială' })
@@ -131,6 +139,11 @@ test('edits a pending receipt into an expense with a compatible category', async
       </Stack.Navigator>
     </NavigationContainer>,
   );
+  await waitForUi(() => {
+    expect(
+      renderer.root.findByProps({ accessibilityLabel: 'Editează plata' }),
+    ).toBeDefined();
+  });
   await ReactTestRenderer.act(async () => {
     renderer.root
       .findByProps({ accessibilityLabel: 'Editează plata' })

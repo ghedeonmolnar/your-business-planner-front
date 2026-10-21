@@ -10,11 +10,14 @@ export const useNotificationNavigation = (enabled: boolean) => {
     if (!enabled) {
       return undefined;
     }
+    let active = true;
 
     notifee
       .getInitialNotification()
       .then(initialNotification => {
-        handleNotificationPress(initialNotification?.notification);
+        if (active) {
+          handleNotificationPress(initialNotification?.notification);
+        }
       })
       .catch(error => {
         reportError(error, { source: 'notification-initial' });
@@ -22,7 +25,7 @@ export const useNotificationNavigation = (enabled: boolean) => {
 
     const unsubscribeForeground = notifee.onForegroundEvent(
       ({ type, detail }) => {
-        if (type === EventType.PRESS) {
+        if (active && type === EventType.PRESS) {
           handleNotificationPress(detail.notification);
         }
       },
@@ -36,6 +39,7 @@ export const useNotificationNavigation = (enabled: boolean) => {
     flushPendingEventNavigation();
 
     return () => {
+      active = false;
       unsubscribeForeground();
       appStateSubscription.remove();
     };

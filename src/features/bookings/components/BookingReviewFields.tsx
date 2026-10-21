@@ -1,3 +1,5 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
+import { useAuth } from '@/features/auth/AuthProvider';
 import React from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -22,6 +24,8 @@ export function BookingReviewFields({
   hallName?: string | null;
   clientName?: string | null;
 }) {
+  const { user } = useAuth();
+  const staffEnabled = hasCompanyFeature(user, 'staff');
   const values = form.watch();
   const services = useFieldArray({
     control: form.control,
@@ -57,9 +61,13 @@ export function BookingReviewFields({
           {formatExactMoney(preview.extra_services[index]?.amount)}
         </Text>
       ))}
-      <Text style={styles.text}>Personal alocat: {values.staff.length}</Text>
+      {staffEnabled ? (
+        <Text style={styles.text}>Personal alocat: {values.staff.length}</Text>
+      ) : null}
       <Text style={styles.muted}>
-        La salvare se verifică disponibilitatea sălii și a personalului.
+        {staffEnabled
+          ? 'La salvare se verifică disponibilitatea sălii și a personalului.'
+          : 'La salvare se verifică disponibilitatea sălii.'}
       </Text>
       <ControlledTextField
         control={form.control}

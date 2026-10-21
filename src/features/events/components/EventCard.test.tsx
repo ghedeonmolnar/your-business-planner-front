@@ -26,7 +26,7 @@ test('shows the event type and compact mascot names as pills', async () => {
   expect(renderedText).toContain('Mickey, Spider');
   expect(
     renderer?.root.findByProps({
-      backgroundColor: theme.colors.surfaceMuted,
+      testID: 'event-type-pill',
       label: 'Aniversare',
     }),
   ).toBeDefined();

@@ -5,7 +5,44 @@ import {
   formatEventDayLabel,
   formatEventSchedule,
   formatLongDate,
+  companyNow,
+  formatCompanyInput,
+  formatCompanyDateTime,
+  toCompanyTimestamp,
 } from '@/shared/utils/formatDate';
+
+test('formatează datele București fără parsarea textului localizat pe Hermes', () => {
+  const localizedDate = jest
+    .spyOn(Date.prototype, 'toLocaleString')
+    .mockReturnValue('21 octombrie 2026, ora 23:30');
+  jest.useFakeTimers().setSystemTime(new Date('2026-10-21T21:30:00Z'));
+  try {
+    expect(companyNow().format('YYYY-MM-DD')).toBe('2026-10-22');
+    expect(companyNow().startOf('month').format('YYYY-MM-DD')).toBe(
+      '2026-10-01',
+    );
+    expect(companyNow().endOf('month').format('YYYY-MM-DD')).toBe('2026-10-31');
+    expect(formatCompanyInput('2026-10-21T21:30:00Z')).toBe('2026-10-22 00:30');
+    expect(formatCompanyDateTime('2026-12-31T22:30:00Z')).toBe(
+      '01.01.2027 00:30',
+    );
+    expect(localizedDate).not.toHaveBeenCalled();
+  } finally {
+    localizedDate.mockRestore();
+    jest.useRealTimers();
+  }
+});
+
+test('convertește programul firmei și respinge ora inexistentă la trecerea la vară', () => {
+  expect(toCompanyTimestamp('2026-07-01 18:00')).toBe(
+    '2026-07-01T15:00:00.000Z',
+  );
+  expect(toCompanyTimestamp('2026-12-01 18:00')).toBe(
+    '2026-12-01T16:00:00.000Z',
+  );
+  expect(toCompanyTimestamp('2026-03-29 03:30')).toBeNull();
+  expect(toCompanyTimestamp('2026-02-30 18:00')).toBeNull();
+});
 
 const monthNames = [
   'Ianuarie',

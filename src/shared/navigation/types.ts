@@ -1,4 +1,5 @@
 export type RootStackParamList = {
+  CompanyProfile: undefined;
   CustomerHistory: { clientId: string };
   CompanyHalls: undefined;
   CompanyStaff: undefined;

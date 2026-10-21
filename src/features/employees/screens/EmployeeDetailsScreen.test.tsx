@@ -35,11 +35,15 @@ test('afișează profilul angajatului încărcat din API', async () => {
   );
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
 
-  expect(renderer.root.findAllByProps({ children: 'Ana Test' }).length).toBeGreaterThan(0);
-  expect(renderer.root.findAllByProps({ children: 'Câștig total' }).length).toBeGreaterThan(0);
+  expect(
+    renderer.root.findAllByProps({ children: 'Ana Test' }).length,
+  ).toBeGreaterThan(0);
+  expect(
+    renderer.root.findAllByProps({ children: 'Câștig total' }).length,
+  ).toBeGreaterThan(0);
 
   await unmount();
 });

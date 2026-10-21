@@ -4,7 +4,7 @@ import {
   clearAuthToken,
   getAuthToken,
   setAuthToken,
-} from './authTokenStorage';
+} from '@/shared/storage/authTokenStorage';
 
 describe('authTokenStorage', () => {
   beforeEach(async () => {
@@ -65,11 +65,31 @@ describe('authTokenStorage', () => {
       .spyOn(AsyncStorage, 'setItem')
       .mockRejectedValueOnce(new Error('AsyncStorage indisponibil'));
 
-    await expect(clearAuthToken()).rejects.toThrow(
-      'AsyncStorage indisponibil',
-    );
+    await expect(clearAuthToken()).rejects.toThrow('AsyncStorage indisponibil');
     expect(Keychain.resetGenericPassword).toHaveBeenCalledTimes(1);
 
     setItemSpy.mockRestore();
+  });
+
+  it('finishes an older cleanup before writing the next session token', async () => {
+    let finishCleanup: (value: boolean) => void = () => undefined;
+    const cleanup = new Promise<boolean>(resolve => {
+      finishCleanup = resolve;
+    });
+    jest.mocked(Keychain.resetGenericPassword).mockReturnValueOnce(cleanup);
+
+    const clearing = clearAuthToken();
+    const writing = setAuthToken('next-token');
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
+    expect(Keychain.setGenericPassword).not.toHaveBeenCalled();
+
+    finishCleanup(true);
+    await Promise.all([clearing, writing]);
+    expect(Keychain.setGenericPassword).toHaveBeenCalledWith(
+      'sanctum',
+      'next-token',
+      expect.any(Object),
+    );
+    await expect(AsyncStorage.getItem('authTokenRevoked')).resolves.toBeNull();
   });
 });

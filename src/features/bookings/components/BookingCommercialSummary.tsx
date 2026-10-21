@@ -1,3 +1,5 @@
+import { useAuth } from '@/features/auth/AuthProvider';
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React from 'react';
 
 import { Text } from 'react-native-paper';
@@ -8,6 +10,8 @@ import { formatLongDate } from '@/shared/utils/formatDate';
 import { formatExactMoney } from '@/shared/utils/money';
 
 export function BookingCommercialSummary({ booking }: { booking: Booking }) {
+  const { user } = useAuth();
+  const financeEnabled = hasCompanyFeature(user, 'finance');
   return (
     <Card style={styles.card}>
       <Text style={styles.text}>Minim garantat: {booking.minimum_guests}</Text>
@@ -43,15 +47,19 @@ export function BookingCommercialSummary({ booking }: { booking: Booking }) {
           Scadența avansului: {formatLongDate(booking.advance_due_at)}
         </Text>
       ) : null}
-      <Text style={styles.text}>
-        Încasat: {formatExactMoney(booking.paid_amount)}
-      </Text>
-      <Text style={styles.text}>
-        Rest: {formatExactMoney(booking.balance_due)}
-      </Text>
-      <Text style={styles.text}>
-        Cost estimat personal: {formatExactMoney(booking.employee_cost)}
-      </Text>
+      {financeEnabled ? (
+        <>
+          <Text style={styles.text}>
+            Încasat: {formatExactMoney(booking.paid_amount)}
+          </Text>
+          <Text style={styles.text}>
+            Rest: {formatExactMoney(booking.balance_due)}
+          </Text>
+          <Text style={styles.text}>
+            Cost estimat personal: {formatExactMoney(booking.employee_cost)}
+          </Text>
+        </>
+      ) : null}
       <Text style={styles.muted}>{booking.notes}</Text>
     </Card>
   );

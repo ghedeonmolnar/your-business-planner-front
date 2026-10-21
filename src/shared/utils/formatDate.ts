@@ -18,25 +18,49 @@ dayjs.locale('ro');
 const COMPANY_TIMEZONE = 'Europe/Bucharest';
 const COMPANY_INPUT_FORMAT = 'YYYY-MM-DD HH:mm';
 
-export const companyNow = () => dayjs().tz(COMPANY_TIMEZONE);
+const companyDateFormatter = new Intl.DateTimeFormat('en-GB', {
+  timeZone: COMPANY_TIMEZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit',
+  hourCycle: 'h23',
+});
+
+const companyDate = (value: dayjs.ConfigType) => {
+  const instant = dayjs(value);
+  if (!instant.isValid()) {
+    return instant;
+  }
+  const parts = Object.fromEntries(
+    companyDateFormatter
+      .formatToParts(instant.toDate())
+      .map(part => [part.type, part.value]),
+  );
+  return dayjs.utc(
+    `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`,
+  );
+};
+
+export const companyNow = () => companyDate(new Date());
 
 export const toCompanyTimestamp = (value: string): string | null => {
   if (!dayjs(value, COMPANY_INPUT_FORMAT, true).isValid()) {
     return null;
   }
   const parsed = dayjs.tz(value, COMPANY_INPUT_FORMAT, COMPANY_TIMEZONE);
-  return parsed.format(COMPANY_INPUT_FORMAT) === value
+  return companyDate(parsed).format(COMPANY_INPUT_FORMAT) === value
     ? parsed.toISOString()
     : null;
 };
 
 export const formatCompanyInput = (value?: string | null) =>
-  value ? dayjs(value).tz(COMPANY_TIMEZONE).format(COMPANY_INPUT_FORMAT) : '';
+  value ? companyDate(value).format(COMPANY_INPUT_FORMAT) : '';
 
 export const formatCompanyDateTime = (value?: string | null) =>
-  value
-    ? dayjs(value).tz(COMPANY_TIMEZONE).format('DD.MM.YYYY HH:mm')
-    : 'Program necompletat';
+  value ? companyDate(value).format('DD.MM.YYYY HH:mm') : 'Program necompletat';
 
 const TIME_REFERENCE_DATE = '2000-01-01';
 
@@ -63,6 +87,9 @@ export const formatDayMonthDate = (value: string) => {
 
   return date.isValid() ? date.format('D MMMM').toLowerCase() : value;
 };
+
+export const formatShortDate = (value: string) =>
+  dayjs(value).format('DD.MM.YYYY');
 
 export const formatCompactTimeRange = (
   start?: string | null,

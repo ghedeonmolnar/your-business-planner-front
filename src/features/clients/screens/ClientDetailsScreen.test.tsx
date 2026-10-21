@@ -1,4 +1,5 @@
 import React from 'react';
+import { waitForUi } from '@/shared/test/waitForUi';
 import ReactTestRenderer from 'react-test-renderer';
 import { FlatList, Linking } from 'react-native';
 import { ClientDetailsScreen } from '@/features/clients/screens/ClientDetailsScreen';
@@ -123,8 +124,12 @@ const renderDetails = async () => {
       route={{ params: { clientId: initialClient.id } } as never}
     />,
   );
-  await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 30));
+  await waitForUi(() => {
+    expect(
+      rendered.renderer.root.findAllByType(EventCard).length > 0 ||
+        (historyFails &&
+          rendered.renderer.root.findAllByType(ErrorBanner).length > 0),
+    ).toBe(true);
   });
   return rendered;
 };
@@ -175,7 +180,9 @@ test('incarca paginile la cerere si filtreaza istoricul pe server', async () => 
   expect(requestsTo('/events')).toHaveLength(1);
   await ReactTestRenderer.act(async () => {
     renderer.root.findByType(FlatList).props.onEndReached();
-    await new Promise(resolve => setTimeout(resolve, 20));
+  });
+  await waitForUi(() => {
+    expect(renderer.root.findAllByType(EventCard)).toHaveLength(2);
   });
   expect(
     requestsTo('/events').some(([url]) => String(url).includes('page=2&')),
@@ -183,13 +190,14 @@ test('incarca paginile la cerere si filtreaza istoricul pe server', async () => 
   expect(renderer.root.findAllByType(EventCard)).toHaveLength(2);
   await ReactTestRenderer.act(async () => {
     renderer.root.findByType(EventTimeframeFilter).props.onChange('past');
-    await new Promise(resolve => setTimeout(resolve, 20));
   });
-  expect(
-    requestsTo('/events').some(([url]) =>
-      String(url).includes('timeframe=past&page=1&per_page=20'),
-    ),
-  ).toBe(true);
+  await waitForUi(() => {
+    expect(
+      requestsTo('/events').some(([url]) =>
+        String(url).includes('timeframe=past&page=1&per_page=20'),
+      ),
+    ).toBe(true);
+  });
   await unmount();
 });
 
@@ -203,7 +211,7 @@ test('salveaza editarea clientului prin formular si actualizeaza pagina', async 
   });
   await ReactTestRenderer.act(async () => {
     await renderer.root.findByProps({ label: 'Salvează' }).props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
   expect(requestsTo('/clients/client-1', 'PUT')).toHaveLength(1);
   expect(
@@ -218,7 +226,7 @@ test('sterge numai dupa confirmare si revine la lista', async () => {
   expect(requestsTo('/clients/client-1', 'DELETE')).toHaveLength(0);
   await pressDialogButton(renderer, 'Șterge');
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
   expect(requestsTo('/clients/client-1', 'DELETE')).toHaveLength(1);
   expect(navigation.goBack).toHaveBeenCalledTimes(1);
@@ -236,7 +244,7 @@ test('eroarea istoricului permite reincercarea si pastreaza detaliile clientului
     renderer.root.findByType(ErrorBanner).props.onRetry();
   });
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
   expect(renderer.root.findAllByType(EventCard)).toHaveLength(1);
   await unmount();

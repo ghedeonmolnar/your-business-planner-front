@@ -21,8 +21,12 @@ export const bookingMessage = (booking: Booking, companyName: string) =>
       ? ''
       : 'Invitați finali: ' + booking.final_guests,
     'Valoare estimată: ' + formatExactMoney(booking.total_amount),
-    'Încasat: ' + formatExactMoney(booking.paid_amount),
-    'Rest: ' + formatExactMoney(booking.balance_due),
+    booking.paid_amount === undefined
+      ? ''
+      : 'Încasat: ' + formatExactMoney(booking.paid_amount),
+    booking.balance_due === undefined
+      ? ''
+      : 'Rest: ' + formatExactMoney(booking.balance_due),
     ...(booking.extra_services ?? []).map(
       service => service.name + ': ' + formatExactMoney(service.amount),
     ),

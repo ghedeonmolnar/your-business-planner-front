@@ -172,17 +172,17 @@ export function ClientDetailsScreen({ navigation, route }: Props) {
           client ? (
             eventsQuery.isLoading ? (
               <LoadingState />
-            ) : eventsQuery.error ? null : (
+            ) : eventsQuery.error ? undefined : (
               <EmptyState
                 icon="calendar-outline"
                 message="Evenimentele clientului vor apărea aici, în funcție de filtrul ales."
                 title="Nu există evenimente"
               />
             )
-          ) : null
+          ) : undefined
         }
         ListFooterComponent={
-          eventsQuery.isFetchingNextPage ? <LoadingState /> : null
+          eventsQuery.isFetchingNextPage ? <LoadingState /> : undefined
         }
         contentContainerStyle={styles.list}
         data={client ? events : []}

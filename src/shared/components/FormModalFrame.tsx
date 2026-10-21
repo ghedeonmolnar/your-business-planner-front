@@ -30,6 +30,8 @@ type FormModalFrameProps = {
   children: React.ReactNode;
   footer?: React.ReactNode;
   hasUnsavedChanges?: boolean;
+  fitContent?: boolean;
+  closeLabel?: string;
 };
 
 type ScrollViewport = {
@@ -45,11 +47,13 @@ export function FormModalFrame({
   children,
   footer,
   hasUnsavedChanges = false,
+  fitContent = false,
+  closeLabel = 'Închide formularul',
 }: FormModalFrameProps) {
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const keyboardOverlap = useKeyboardOverlap(visible);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const scrollOffsetRef = useRef(0);
   const scrollViewportRef = useRef<ScrollViewport>({
     offsetTop: 0,
@@ -137,12 +141,16 @@ export function FormModalFrame({
       <View style={[styles.overlay, { paddingTop: modalTop }]}>
         <Surface
           elevation={2}
-          style={[styles.content, { maxHeight: modalMaxHeight }]}
+          style={[
+            styles.content,
+            fitContent ? styles.fitContent : undefined,
+            { maxHeight: modalMaxHeight },
+          ]}
         >
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
             <IconButton
-              accessibilityLabel="Închide formularul"
+              accessibilityLabel={closeLabel}
               icon="close"
               onPress={requestClose}
             />
@@ -159,7 +167,7 @@ export function FormModalFrame({
             ref={scrollRef}
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
-            style={styles.scroll}
+            style={[styles.scroll, fitContent ? styles.fitContent : undefined]}
           >
             {children}
           </ScrollView>
@@ -205,6 +213,7 @@ const styles = StyleSheet.create({
   scroll: {
     flex: 1,
   },
+  fitContent: { flex: 0, flexBasis: 'auto', flexGrow: 0, flexShrink: 1 },
   scrollContent: {
     paddingBottom: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,

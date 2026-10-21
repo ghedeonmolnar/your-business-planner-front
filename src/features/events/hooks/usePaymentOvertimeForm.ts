@@ -47,6 +47,7 @@ export function usePaymentOvertimeForm({
       },
     });
   const employeeIdsKey = employees.map(employee => employee.id).join(',');
+  const values = useWatch({ control });
 
   useEffect(() => {
     const ids = employeeIdsKey ? employeeIdsKey.split(',') : [];
@@ -71,7 +72,6 @@ export function usePaymentOvertimeForm({
     submissionPending.current = false;
   }, [employeeIdsKey, initialOvertime, reset, visible]);
 
-  const values = useWatch({ control });
   const employeeIds =
     values.scope === 'all'
       ? employees.map(employee => employee.id)

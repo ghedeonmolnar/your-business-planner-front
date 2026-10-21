@@ -13,6 +13,7 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 7. Pachetele cuplate se actualizeaza impreuna si respecta `peerDependencies`: `react-native` cu toate `@react-native/*`, `react` si `react-test-renderer` cu versiunea ceruta de `react-native`, `react-native-reanimated` cu `react-native-worklets`.
 8. Nu forta instalarea cu `--force` sau `--legacy-peer-deps`; un conflict de `peerDependencies` se rezolva prin versiuni compatibile.
 9. Orice schimbare de contract API, schema de baza de date, ecran sau flux se reflecta in `PROJECT_SCHEMA.md` in aceeasi schimbare.
+10. In mediul local folosim doar aplicatia Android: o deschidem si folosim aplicatia prin interfata ei.
 
 ## Reguli comune
 
@@ -132,6 +133,25 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 8. Efectele care apeleaza module native se limiteaza la fereastra de date relevanta; nu itera peste tot setul de date la fiecare montare.
 9. Programarea locala (notificari, alarme) trebuie sa fie idempotenta si sa se anuleze singura pentru inregistrarile anulate sau expirate; reminder-ele de eveniment se programeaza doar din `EventRemindersSync`.
 10. Permisiunile native cerute din cod trebuie declarate si in manifest/Info.plist in aceeasi schimbare.
+
+## Reguli de securitate si control al livrarii
+
+1. Clientul mobil este un client public: poate fi inspectat sau reimplementat. CORS, ascunderea URL-ului, numele aplicatiei si un secret inclus in APK/IPA nu autorizeaza cereri. Identitatea, compania, rolul si functiile abonamentului se verifica pe server.
+2. Baza de date este accesibila numai backendului prin retea privata sau firewall. Aplicatia mobila nu primeste credentiale SQL. Contul SQL al aplicatiei nu este root, nu are privilegii globale sau drept de acordare a privilegiilor; migrarile de productie folosesc un cont separat. Conexiunile SQL intre servere se cripteaza si verifica certificatul.
+3. Credentialele de autentificare si SQL nu intra in Git, bundle, loguri, URL-uri sau argumente de proces. Un secret expus se revoca si se roteste; stergerea lui din ultimul commit nu rezolva expunerea din istoric.
+4. API-ul mobil accepta tokenuri Bearer, separat de sesiunea web a operatorului. Tokenurile au termen finit; logout revoca sesiunea curenta, resetarea parolei revoca toate tokenurile, iar schimbarea parolei invalideaza si sesiunile web existente.
+5. Logout elimina imediat identitatea, istoricul de navigare, cache-ul privat, navigarea amanata si reminder-ele. Raspunsurile si callback-urile incepute intr-o sesiune veche nu pot modifica o sesiune noua. Scrierile si stergerile tokenului sunt serializate.
+6. Linkurile semnate pentru fisiere private sunt legate de sesiunea emitenta si expira. La descarcare se reverifica sesiunea, contul, rolul, compania, abonamentul si modulul. Parametrii semnati contin identificatori publici, niciodata tokenul Bearer. URL-ul semnat complet este confidential si se redacteaza din loguri.
+7. Raspunsurile private, inclusiv erorile API, folosesc no-store; paginile private restaurate din istoricul browserului reverifica sesiunea. Antetele impiedica interpretarea MIME neasteptata, incadrarea panoului in iframe si transmiterea URL-urilor private prin Referer.
+8. Testele de autorizare includ acces anonim, cont blocat, token revocat sau expirat, alta companie, rol insuficient si modul dezactivat. Matricea se verifica pentru citire si scriere, inclusiv pentru linkuri emise anterior.
+9. Deciziile concurente se iau sub lockuri intr-o tranzactie, inclusiv citirile din subquery-uri. Scenariile de concurenta se testeaza pe motorul SQL folosit in productie si numai intr-o baza dedicata cu sufixul _test; SQLite nu valideaza lockurile MySQL.
+10. Structura datelor externe se valideaza inainte de conversii; un array primit in loc de string trebuie sa produca o eroare de validare, fara avertismente sau exceptii de conversie.
+11. Ritmul verificarilor locale din sectiunea Mod de lucru nu inlocuieste CI. Pull request-urile si livrarile au gate-uri pentru tipuri, lint, teste, build relevant, vulnerabilitati ale dependentelor si scanarea secretelor. Verificarile se impun si prin protectia ramurii principale. CI instaleaza lockfile-urile; update-urile se pregatesc local. Actiunile CI se fixeaza la commit, imaginile de securitate la digest, iar permisiunile sunt minime.
+12. Un gate esuat nu se ocoleste prin force, ignorare globala, teste slabite sau continue-on-error. Vulnerabilitatile fara remediere compatibila se documenteaza cu advisory, impact si actiunea urmatoare si raman blocaje explicite pentru lansare.
+13. Producatia foloseste HTTPS, APP_DEBUG=false, cookie-uri Secure/HttpOnly si document root exclusiv business-api/public. Fisierele de mediu, vendor, storage privat, dumpurile si uneltele locale nu sunt servite de webserver. Accesul operatorilor necesita MFA sau un gateway de acces cu autentificare suplimentara.
+14. Backupurile sunt private, criptate in afara serverului si au restaurarea verificata intr-o baza separata. Jurnalul de audit inregistreaza actorul si actiunea cu o lista explicita de campuri permise, fara payloaduri brute sau credentiale.
+15. Actualizarile native se livreaza numai dupa verificarea proiectelor native si un build Android; iOS necesita verificare pe macOS. Instalarea npm si peerDependencies rezolvate nu demonstreaza compatibilitatea la executie.
+16. Auditul precizeaza ce a fost verificat, rezultatele, limitarile si blocajele. Nu declara conformitate OWASP/WCAG sau securitate absoluta doar pentru ca testele automate trec. Cele trei copii AGENTS.md si PROJECT_SCHEMA.md se pastreaza sincronizate.
 
 ## Reguli de calitate si livrare
 

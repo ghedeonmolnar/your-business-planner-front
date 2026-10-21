@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import {
   useInfiniteQuery,
   useMutation,
@@ -33,7 +34,11 @@ export const useBookingPayments = (id: string) => {
     initialPageParam: 1,
     getNextPageParam: page =>
       page.page < page.lastPage ? page.page + 1 : undefined,
-    enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    enabled: Boolean(
+      user?.subscription?.active &&
+      user.role !== 'employee' &&
+      hasCompanyFeature(user, 'finance'),
+    ),
   });
 };
 export const useBookingDocuments = (id: string) => {
@@ -49,7 +54,11 @@ export const useBookingDocuments = (id: string) => {
     initialPageParam: 1,
     getNextPageParam: page =>
       page.page < page.lastPage ? page.page + 1 : undefined,
-    enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    enabled: Boolean(
+      user?.subscription?.active &&
+      user.role !== 'employee' &&
+      hasCompanyFeature(user, 'documents'),
+    ),
   });
 };
 const useCompanyQueryClient = () => {

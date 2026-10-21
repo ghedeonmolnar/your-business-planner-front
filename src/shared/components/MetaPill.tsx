@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleProp, StyleSheet, ViewStyle } from 'react-native';
+import { StyleProp, StyleSheet, TextStyle, ViewStyle } from 'react-native';
 import { Chip } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { theme } from '@/shared/theme/theme';
@@ -11,6 +11,7 @@ type MetaPillProps = {
   color?: string;
   style?: StyleProp<ViewStyle>;
   testID?: string;
+  textStyle?: StyleProp<TextStyle>;
 };
 
 export function MetaPill({
@@ -19,6 +20,7 @@ export function MetaPill({
   color = theme.colors.primary,
   style,
   testID,
+  textStyle,
 }: MetaPillProps) {
   return (
     <Chip
@@ -31,7 +33,7 @@ export function MetaPill({
       }
       mode="outlined"
       style={[styles.pill, style]}
-      textStyle={styles.text}
+      textStyle={[styles.text, textStyle]}
       testID={testID}
     >
       {label}

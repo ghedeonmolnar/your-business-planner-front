@@ -141,7 +141,7 @@ test('selectarea lunii actualizează întregul raport fără alt request', async
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   await ReactTestRenderer.act(async () => {
@@ -173,7 +173,7 @@ test('schimbarea anului cere raportul corespunzător și selectează ultima lun�
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   await openMonthlyTab(renderer);
 
@@ -183,7 +183,7 @@ test('schimbarea anului cere raportul corespunzător și selectează ultima lun�
       .props.onPress();
   });
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   expect(reportRequests()).toEqual([
@@ -214,7 +214,7 @@ test('graficul păstrează valori mari și profit negativ accesibile', async () 
   ) as unknown as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   const point = renderer.root.findByProps({
@@ -242,7 +242,7 @@ test('afișează anul fără activitate și eroarea de încărcare', async () =>
   ) as unknown as typeof globalThis.fetch;
   const emptyScreen = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   expect(renderedText(emptyScreen.renderer.toJSON())).toContain(
     'Nu există date pentru acest an',
@@ -254,7 +254,7 @@ test('afișează anul fără activitate și eroarea de încărcare', async () =>
   ) as unknown as typeof globalThis.fetch;
   const errorScreen = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   expect(renderedText(errorScreen.renderer.toJSON())).toContain(
     'A apărut o eroare pe server. Încearcă din nou.',
@@ -285,7 +285,7 @@ test('luna viitoare arată doar ce e de încasat, fără profit', async () => {
   ) as unknown as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   const point = renderer.root.findByProps({
@@ -330,7 +330,7 @@ test('proprietarii apar cu partea din profit, nu cu cost', async () => {
   ) as unknown as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   await ReactTestRenderer.act(async () => {
     renderer.root
@@ -361,7 +361,7 @@ test('păstrează lista de ani cât se încarcă anul ales', async () => {
   }) as unknown as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
   await openMonthlyTab(renderer);
 
@@ -372,8 +372,9 @@ test('păstrează lista de ani cât se încarcă anul ales', async () => {
   });
 
   expect(
-    renderer.root.findAllByProps({ accessibilityLabel: `Raport ${currentYear}` })
-      .length,
+    renderer.root.findAllByProps({
+      accessibilityLabel: `Raport ${currentYear}`,
+    }).length,
   ).toBeGreaterThan(0);
   expect(
     renderer.root.findAllByProps({
@@ -386,7 +387,7 @@ test('păstrează lista de ani cât se încarcă anul ales', async () => {
 
   await ReactTestRenderer.act(async () => {
     resolvePreviousYear(jsonResponse(200, reportFor(currentYear - 1)));
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   expect(renderedText(renderer.toJSON())).toContain(
@@ -402,7 +403,7 @@ test('raportul anual este primul tab și rezumă tot anul', async () => {
   ) as unknown as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<AnalyticsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   const text = renderedText(renderer.toJSON());

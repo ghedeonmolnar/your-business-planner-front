@@ -58,10 +58,11 @@ export type BookingPayload = {
   agreed_advance: string;
   advance_due_at: string | null;
   extra_services: { name: string; amount: string }[];
-  staff: StaffAssignment[];
+  staff?: StaffAssignment[];
   notes: string;
 };
 export type BookingFilters = {
+  date?: string;
   date_from?: string;
   date_to?: string;
   hall_id?: string;

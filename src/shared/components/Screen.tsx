@@ -1,5 +1,5 @@
 import React, { ReactNode, useContext } from 'react';
-import { StyleProp, ViewStyle, View } from 'react-native';
+import { StyleProp, StyleSheet, ViewStyle, View } from 'react-native';
 import { BottomTabBarHeightContext } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@/shared/theme/theme';
@@ -17,9 +17,8 @@ export function Screen({ children, style }: ScreenProps) {
   return (
     <View
       style={[
+        styles.screen,
         {
-          backgroundColor: theme.colors.background,
-          flex: 1,
           paddingBottom: bottomInset,
           paddingLeft: insets.left,
           paddingRight: insets.right,
@@ -32,3 +31,7 @@ export function Screen({ children, style }: ScreenProps) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: { backgroundColor: theme.colors.background, flex: 1 },
+});

@@ -196,7 +196,7 @@ export function EventsScreen() {
             )
           }
           ListFooterComponent={
-            eventsQuery.isFetchingNextPage ? <LoadingState /> : null
+            eventsQuery.isFetchingNextPage ? <LoadingState /> : undefined
           }
           ListHeaderComponent={header}
           contentContainerStyle={styles.listContent}

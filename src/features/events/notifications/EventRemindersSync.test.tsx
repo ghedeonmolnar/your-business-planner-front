@@ -1,3 +1,5 @@
+import { clearEventReminders } from '@/features/events/notifications/clearEventReminders';
+import { ensureNotificationPermissions } from '@/features/events/notifications/notificationPermissions';
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { EventRemindersSync } from '@/features/events/notifications/EventRemindersSync';
@@ -18,11 +20,15 @@ jest.mock('@/features/bookings/hooks/useBookingReminders', () => ({
   useBookingReminders: () => ({ data: [mockReminderBooking] }),
 }));
 jest.mock('@/features/events/notifications/notificationPermissions', () => ({
-  ensureNotificationPermissions: () => Promise.resolve(true),
+  ensureNotificationPermissions: jest.fn(() => Promise.resolve(true)),
 }));
 jest.mock('@/features/events/notifications/syncTriggerNotifications', () => ({
   ensureChannel: () => Promise.resolve('booking-reminders'),
   syncTriggerNotifications: jest.fn(() => Promise.resolve(1)),
+}));
+
+jest.mock('@/features/events/notifications/clearEventReminders', () => ({
+  clearEventReminders: jest.fn(() => Promise.resolve()),
 }));
 
 test('staff reminders use full timestamps and exclude payment reminders', async () => {
@@ -42,5 +48,18 @@ test('staff reminders use full timestamps and exclude payment reminders', async 
   expect(
     planned.every(notification => notification.eventId === plannerBooking.id),
   ).toBe(true);
+  await ReactTestRenderer.act(async () => renderer?.unmount());
+});
+
+test('disabling reminders cancels scheduled notifications without asking for permissions', async () => {
+  jest.clearAllMocks();
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      <EventRemindersSync enabled={false} role="owner" />,
+    );
+  });
+  expect(clearEventReminders).toHaveBeenCalledTimes(1);
+  expect(ensureNotificationPermissions).not.toHaveBeenCalled();
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });

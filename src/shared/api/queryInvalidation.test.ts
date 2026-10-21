@@ -1,9 +1,10 @@
 import { QueryClient } from '@tanstack/react-query';
-import { queryKeys } from '@/shared/api/queryKeys';
 import {
   invalidateEventDocuments,
   invalidateEventFinancials,
+  invalidatePlannerBooking,
 } from '@/shared/api/queryInvalidation';
+import { queryKeys } from '@/shared/api/queryKeys';
 
 test('payment changes refresh earnings and client history without invalidating catalog lists', () => {
   const client = new QueryClient();
@@ -60,5 +61,20 @@ test('document changes refresh only the document list for their event', () => {
   unaffected.forEach(key =>
     expect(client.getQueryState(key)?.isInvalidated).toBe(false),
   );
+  client.clear();
+});
+
+test('modificarea rezervării invalidează clienții filtrați fără să atingă altă companie', () => {
+  const client = new QueryClient();
+  const ownList = queryKeys.planner.directory('company-1', 'clients', {
+    date_from: '2026-11-01',
+    date_to: '2026-11-30',
+  });
+  const otherList = queryKeys.planner.directory('company-2', 'clients');
+  client.setQueryData(ownList, { total: 1 });
+  client.setQueryData(otherList, { total: 1 });
+  invalidatePlannerBooking(client, 'company-1', 'event-1');
+  expect(client.getQueryState(ownList)?.isInvalidated).toBe(true);
+  expect(client.getQueryState(otherList)?.isInvalidated).toBe(false);
   client.clear();
 });

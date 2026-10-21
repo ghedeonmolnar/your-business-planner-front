@@ -1,3 +1,5 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
+import { useAuth } from '@/features/auth/AuthProvider';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +19,8 @@ import { showError } from '@/shared/feedback/showError';
 import { showMessage } from '@/shared/feedback/showMessage';
 
 export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
+  const { user } = useAuth();
+  const staffEnabled = hasCompanyFeature(user, 'staff');
   const invite = useInviteAccount();
   const employees = useDirectory('employees');
   const form = useForm<AccountInvitationValues>({
@@ -77,7 +81,7 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
         single
         options={[
           { id: 'admin', name: 'Administrator companie' },
-          { id: 'employee', name: 'Angajat' },
+          ...(staffEnabled ? [{ id: 'employee', name: 'Angajat' }] : []),
         ]}
         placeholder="Alege drepturile"
         searchPlaceholder="Caută rol"

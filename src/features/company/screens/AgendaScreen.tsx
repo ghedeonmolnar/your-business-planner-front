@@ -1,5 +1,6 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { companyNow } from '@/shared/utils/formatDate';
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -13,9 +14,12 @@ import { Screen } from '@/shared/components/Screen';
 import { AppButton } from '@/shared/components/AppButton';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { AgendaSummary } from '@/features/company/components/AgendaSummary';
+import { BookingForm } from '@/features/bookings/components/BookingForm';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 export function AgendaScreen() {
   const { user } = useAuth();
+  const [creating, setCreating] = useState(false);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const query = useBookings({ date_from: companyNow().format('YYYY-MM-DD') });
@@ -26,20 +30,41 @@ export function AgendaScreen() {
         data={items}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.content}
-        refreshing={query.isRefetching}
+        refreshing={query.isRefetching && !query.isFetchingNextPage}
         onRefresh={() => query.refetch()}
         ListHeaderComponent={
-          <View style={styles.content}>
-            <Text style={styles.title}>{user?.company?.name}</Text>
-            <Text style={styles.subtitle}>Agenda următoarelor evenimente</Text>
-            {user?.role !== 'employee' ? <AgendaSummary /> : null}
+          <View style={styles.header}>
+            <Text style={styles.eyebrow}>{user?.company?.name}</Text>
+            <Text style={styles.title}>Bună, {user?.name.split(' ')[0]}!</Text>
+            <Text style={styles.muted}>
+              Rezervările și încasările tale, într-un singur loc.
+            </Text>
+            {user?.role !== 'employee' ? (
+              <AppButton
+                icon="add"
+                label="Rezervare nouă"
+                onPress={() => setCreating(true)}
+              />
+            ) : null}
+            {user?.role !== 'employee' && hasCompanyFeature(user, 'finance') ? (
+              <AgendaSummary />
+            ) : null}
             <QueryNotice
               loading={query.isLoading}
               error={query.error}
-              empty={!items.length}
               retry={() => query.refetch()}
             />
+            <Text style={styles.subtitle}>Urmează în agendă</Text>
           </View>
+        }
+        ListEmptyComponent={
+          !query.isLoading && !query.error ? (
+            <EmptyState
+              icon="calendar-clear-outline"
+              title="Agenda este liberă"
+              message="Rezervările viitoare vor apărea aici, în ordinea datei."
+            />
+          ) : null
         }
         renderItem={({ item }) => (
           <BookingCard
@@ -56,9 +81,15 @@ export function AgendaScreen() {
               disabled={query.isFetchingNextPage}
               onPress={() => query.fetchNextPage()}
             />
-          ) : null
+          ) : undefined
         }
       />
+      {creating ? (
+        <BookingForm
+          date={companyNow().format('YYYY-MM-DD')}
+          onClose={() => setCreating(false)}
+        />
+      ) : null}
     </Screen>
   );
 }

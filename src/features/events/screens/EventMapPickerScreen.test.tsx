@@ -60,7 +60,7 @@ const writes = () =>
     );
 const flush = () =>
   ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 5));
+    await new Promise<void>(resolve => setTimeout(resolve, 5));
   });
 const mount = async () => {
   const result = await renderWithProviders(<EventMapPickerScreen {...props} />);

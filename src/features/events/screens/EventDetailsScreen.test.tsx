@@ -119,7 +119,7 @@ const renderDetails = async () => {
     />,
   );
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
   return rendered;
 };
@@ -188,7 +188,7 @@ test('înregistrează o încasare din ecran prin API', async () => {
   );
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
 
   await ReactTestRenderer.act(async () => {
@@ -199,7 +199,7 @@ test('înregistrează o încasare din ecran prin API', async () => {
     renderer.root
       .findByProps({ accessibilityLabel: 'Trimite plată de test' })
       .props.onPress();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise<void>(resolve => setTimeout(resolve, 0));
   });
 
   const createCalls = requestsTo(`/events/${eventFixture.id}/payments`, 'POST');

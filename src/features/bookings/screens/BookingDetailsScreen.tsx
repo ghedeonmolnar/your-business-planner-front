@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -127,30 +128,37 @@ export function BookingDetailsScreen({
                 ) : null}
               </>
             ) : null}
-            <Text style={styles.subtitle}>Personal alocat</Text>
-            {booking.staff.map(person => (
-              <Card key={person.employee_id} style={styles.card}>
-                <Text style={styles.text}>
-                  {person.employee_name} ·{' '}
-                  {
-                    staffRoleOptions.find(role => role.id === person.job_role)
-                      ?.name
-                  }
-                </Text>
-                <Text style={styles.text}>
-                  {formatCompanyDateTime(person.starts_at)} –{' '}
-                  {formatCompanyDateTime(person.ends_at)}
-                </Text>
-                <Text style={styles.text}>
-                  Remunerație estimată:{' '}
-                  {formatExactMoney(person.estimated_cost)}
-                </Text>
-              </Card>
-            ))}
+            {hasCompanyFeature(user, 'staff') ? (
+              <Text style={styles.subtitle}>Personal alocat</Text>
+            ) : null}
+            {hasCompanyFeature(user, 'staff') &&
+              booking.staff.map(person => (
+                <Card key={person.employee_id} style={styles.card}>
+                  <Text style={styles.text}>
+                    {person.employee_name} ·{' '}
+                    {
+                      staffRoleOptions.find(role => role.id === person.job_role)
+                        ?.name
+                    }
+                  </Text>
+                  <Text style={styles.text}>
+                    {formatCompanyDateTime(person.starts_at)} –{' '}
+                    {formatCompanyDateTime(person.ends_at)}
+                  </Text>
+                  <Text style={styles.text}>
+                    Remunerație estimată:{' '}
+                    {formatExactMoney(person.estimated_cost)}
+                  </Text>
+                </Card>
+              ))}
             {manager ? (
               <>
-                <BookingPayments eventId={booking.id} />
-                <BookingDocuments eventId={booking.id} />
+                {hasCompanyFeature(user, 'finance') ? (
+                  <BookingPayments eventId={booking.id} />
+                ) : null}
+                {hasCompanyFeature(user, 'documents') ? (
+                  <BookingDocuments eventId={booking.id} />
+                ) : null}
               </>
             ) : null}
           </>

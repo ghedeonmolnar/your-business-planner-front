@@ -16,6 +16,7 @@ export const invalidatePlannerBooking = (
     queryKeys.planner.directories(companyId, 'availability'),
     queryKeys.planner.directories(companyId, 'hall-day'),
     queryKeys.planner.reminderWindows(companyId),
+    queryKeys.planner.directories(companyId, 'clients'),
   ]);
 };
 
@@ -53,6 +54,13 @@ export const invalidatePlannerTeam = (
     queryKeys.planner.directories(companyId, 'team'),
     queryKeys.planner.directories(companyId, 'invitations'),
   ]);
+};
+
+export const invalidatePlannerCompany = (
+  client: QueryClient,
+  companyId: string,
+) => {
+  invalidateAll(client, [queryKeys.planner.companyProfile(companyId)]);
 };
 
 export const invalidatePlannerDirectory = (

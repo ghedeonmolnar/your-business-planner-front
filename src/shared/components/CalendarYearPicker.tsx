@@ -18,7 +18,7 @@ export function CalendarYearPicker({
   onSelect,
   selectedYear,
 }: CalendarYearPickerProps) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const years = Array.from(
     { length: maximumYear - minimumYear + 1 },
     (_, index) => maximumYear - index,

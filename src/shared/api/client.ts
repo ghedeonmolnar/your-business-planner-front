@@ -1,9 +1,6 @@
 import { API_URL } from '@env';
 import { z } from 'zod';
-import {
-  clearAuthToken,
-  getAuthToken,
-} from '@/shared/storage/authTokenStorage';
+import { clearAuthToken } from '@/shared/storage/authTokenStorage';
 import {
   ApiError,
   responseErrorCode,
@@ -13,10 +10,15 @@ import {
   INVALID_RESPONSE_MESSAGE,
   MISSING_API_URL_MESSAGE,
   NO_HTTP_STATUS,
-  SESSION_EXPIRED_MESSAGE,
 } from '@/shared/api/apiError';
 import { isFormDataBody, sendRequest } from '@/shared/api/apiTransport';
-import { notifyCompanyAccessInactive } from '@/shared/api/sessionExpiry';
+import {
+  getSessionGeneration,
+  notifyCompanyAccessInactive,
+} from '@/shared/api/sessionExpiry';
+import { assertCurrentRequestSession } from '@/shared/api/requestSession';
+import { buildRequestHeaders } from '@/shared/api/requestHeaders';
+import { isAllowedApiUrl } from '@/shared/api/apiConfiguration';
 
 export { ApiError } from '@/shared/api/apiError';
 export type { ApiErrorReason } from '@/shared/api/apiError';
@@ -81,33 +83,11 @@ const parseWithSchema = <T>(
   return result.data;
 };
 
-const buildHeaders = async (auth: boolean, hasJsonBody: boolean) => {
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-  };
-
-  if (hasJsonBody) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  if (auth) {
-    const token = await getAuthToken();
-
-    if (!token) {
-      throw new ApiError(SESSION_EXPIRED_MESSAGE, HTTP_UNAUTHORIZED);
-    }
-
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  return headers;
-};
-
 export const apiRequest = async <T>(
   path: string,
   options: ApiRequestOptions<T> = {},
 ): Promise<T> => {
-  if (!apiBaseUrl) {
+  if (!isAllowedApiUrl(apiBaseUrl, __DEV__)) {
     throw new ApiError(
       MISSING_API_URL_MESSAGE,
       NO_HTTP_STATUS,
@@ -117,9 +97,12 @@ export const apiRequest = async <T>(
   }
 
   const { method = 'GET', body, auth = true, signal, schema } = options;
+  const generation = getSessionGeneration();
   const isMultipart = isFormDataBody(body);
   const hasJsonBody = body !== undefined && !isMultipart;
-  const headers = await buildHeaders(auth, hasJsonBody);
+  const headers = await buildRequestHeaders(auth, hasJsonBody).finally(() =>
+    assertCurrentRequestSession(generation),
+  );
   const { response, body: responseBody } = await sendRequest(
     `${apiBaseUrl}${path}`,
     {
@@ -128,20 +111,28 @@ export const apiRequest = async <T>(
       body: isMultipart ? body : hasJsonBody ? JSON.stringify(body) : undefined,
     },
     signal,
-  );
+  ).finally(() => assertCurrentRequestSession(generation));
 
   if (!response.ok) {
-    if (responseErrorCode(responseBody) === 'SUBSCRIPTION_INACTIVE') {
+    if (
+      auth &&
+      [
+        'SUBSCRIPTION_INACTIVE',
+        'CATEGORY_UNAVAILABLE',
+        'COMPANY_ACCESS_DENIED',
+      ].includes(responseErrorCode(responseBody) ?? '')
+    ) {
       notifyCompanyAccessInactive();
     }
     let tokenCleanupError: unknown;
 
-    if (response.status === HTTP_UNAUTHORIZED) {
+    if (auth && response.status === HTTP_UNAUTHORIZED) {
       try {
         await clearAuthToken();
       } catch (error) {
         tokenCleanupError = error;
       }
+      assertCurrentRequestSession(generation);
     }
 
     throw new ApiError(

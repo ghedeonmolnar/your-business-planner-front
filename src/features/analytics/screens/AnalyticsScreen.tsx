@@ -61,7 +61,9 @@ export function AnalyticsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={reportQuery.isRefetching && !isLoadingYear}
-            onRefresh={() => reportQuery.refetch()}
+            onRefresh={() => {
+              void reportQuery.refetch();
+            }}
             tintColor={theme.colors.primary}
           />
         }

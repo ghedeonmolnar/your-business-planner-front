@@ -3,6 +3,19 @@ import { theme } from '@/shared/theme/theme';
 
 export const plannerStyles = StyleSheet.create({
   content: { padding: theme.spacing.lg, gap: theme.spacing.md, flexGrow: 1 },
+  header: { gap: theme.spacing.md, marginBottom: theme.spacing.sm },
+  section: { gap: theme.spacing.md },
+  between: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: theme.spacing.md,
+  },
+  eyebrow: {
+    color: theme.colors.muted,
+    fontFamily: theme.fonts.bodySemibold,
+    fontSize: theme.typography.meta,
+  },
   title: {
     fontFamily: theme.fonts.heading,
     fontSize: theme.typography.title,

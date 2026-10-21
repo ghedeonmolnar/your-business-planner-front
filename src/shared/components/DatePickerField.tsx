@@ -1,12 +1,20 @@
 import React, { useState } from 'react';
-import { Keyboard, Modal, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Keyboard,
+  Modal,
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { DateCalendarPanel } from '@/shared/components/DateCalendarPanel';
 import { FormInput, formInputStyles } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
 import { dateToIsoDate, isValidIsoDate } from '@/shared/utils/dateInput';
-import { formatLongDate } from '@/shared/utils/formatDate';
+import { formatLongDate, formatShortDate } from '@/shared/utils/formatDate';
 
 export type DatePickerFieldProps = {
   error?: string;
@@ -17,6 +25,9 @@ export type DatePickerFieldProps = {
   onChange: (value: string) => void;
   placeholder: string;
   value?: string | null;
+  displayFormat?: 'long' | 'numeric';
+  style?: StyleProp<ViewStyle>;
+  fieldStyle?: StyleProp<ViewStyle>;
 };
 
 export function DatePickerField({
@@ -28,11 +39,18 @@ export function DatePickerField({
   onChange,
   placeholder,
   value,
+  displayFormat = 'long',
+  style,
+  fieldStyle,
 }: DatePickerFieldProps) {
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const valueAsString = typeof value === 'string' ? value : '';
   const selectedDate = isValidIsoDate(valueAsString) ? valueAsString : '';
-  const displayValue = selectedDate ? formatLongDate(selectedDate) : '';
+  const displayValue = selectedDate
+    ? displayFormat === 'numeric'
+      ? formatShortDate(selectedDate)
+      : formatLongDate(selectedDate)
+    : '';
 
   const openCalendar = () => {
     Keyboard.dismiss();
@@ -50,7 +68,7 @@ export function DatePickerField({
   };
 
   return (
-    <FormInput error={error} label={label}>
+    <FormInput error={error} label={label} style={style}>
       <Pressable
         accessibilityLabel={label}
         accessibilityRole="button"
@@ -61,6 +79,7 @@ export function DatePickerField({
           formInputStyles.fieldDimensions,
           styles.field,
           error ? formInputStyles.fieldError : undefined,
+          fieldStyle,
         ]}
       >
         <Text

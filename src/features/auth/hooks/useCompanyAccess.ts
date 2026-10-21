@@ -32,7 +32,8 @@ export const useCompanyAccess = (
             return;
           }
           setUser(current =>
-            current?.id === accountId &&
+            current &&
+            current.id === accountId &&
             current.subscription?.ends_at === endsAt
               ? {
                   ...current,

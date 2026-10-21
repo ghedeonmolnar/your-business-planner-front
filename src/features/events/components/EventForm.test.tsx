@@ -84,7 +84,7 @@ const settleLookup = async (
 ) => {
   for (let attempt = 0; attempt < 12; attempt += 1) {
     await ReactTestRenderer.act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise<void>(resolve => setTimeout(resolve, 100));
     });
 
     if (

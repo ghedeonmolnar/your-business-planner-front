@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StyleProp, ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Controller, Control, FieldPath, FieldValues } from 'react-hook-form';
 import { FormInput } from '@/shared/components/FormInput';
@@ -44,6 +45,7 @@ export type SearchableSelectProps<TValue extends SelectValue> = {
   searchPlaceholder: string;
   selectedValues: TValue[];
   single: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function SearchableSelect<TValue extends SelectValue>({
@@ -58,6 +60,7 @@ export function SearchableSelect<TValue extends SelectValue>({
   searchPlaceholder,
   selectedValues,
   single,
+  style,
 }: SearchableSelectProps<TValue>) {
   const [isOpen, setOpen] = useState(false);
   const selectedOptions = options.filter(option =>
@@ -77,6 +80,7 @@ export function SearchableSelect<TValue extends SelectValue>({
   return (
     <>
       <SelectFieldTrigger
+        style={style}
         accessibilityLabel={label}
         accessibilityValueText={displayValue || placeholder}
         disabled={disabled}

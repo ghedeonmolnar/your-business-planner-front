@@ -2,6 +2,10 @@ type QueryFilters = Readonly<Record<string, string | undefined>>;
 
 export const queryKeys = {
   planner: {
+    customer: (companyId: string, id: string) =>
+      ['planner', companyId, 'directory', 'clients', 'detail', id] as const,
+    companyProfile: (companyId: string) =>
+      ['planner', companyId, 'company-profile'] as const,
     bookingLists: (companyId: string) =>
       ['planner', companyId, 'bookings'] as const,
     bookingDetails: (companyId: string) =>

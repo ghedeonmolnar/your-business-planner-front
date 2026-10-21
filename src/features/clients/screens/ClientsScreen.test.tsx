@@ -68,7 +68,7 @@ test('lists the clients loaded from the API', async () => {
   const { renderer, unmount } = await renderWithProviders(<ClientsScreen />);
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   expect(
@@ -82,7 +82,7 @@ test('lists the clients loaded from the API', async () => {
 test('deschide pagina dedicata clientului din card si din actiunea de istoric', async () => {
   const { renderer, unmount } = await renderWithProviders(<ClientsScreen />);
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 50));
+    await new Promise<void>(resolve => setTimeout(resolve, 50));
   });
 
   for (const accessibilityLabel of [

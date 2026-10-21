@@ -10,12 +10,22 @@ type CardProps = {
   style?: StyleProp<ViewStyle>;
 };
 
+function flattenCardChildren(children: ReactNode): ReactNode {
+  return React.Children.map(children, child =>
+    React.isValidElement<{ children?: ReactNode }>(child) &&
+    child.type === React.Fragment
+      ? flattenCardChildren(child.props.children)
+      : child,
+  );
+}
+
 export function Card({
   accessibilityLabel,
   children,
   onPress,
   style,
 }: CardProps) {
+  const cardStyle: ViewStyle = StyleSheet.flatten([styles.card, style]) ?? {};
   const {
     alignItems,
     justifyContent,
@@ -35,7 +45,7 @@ export function Card({
     paddingEnd,
     borderWidth,
     ...containerStyle
-  } = StyleSheet.flatten([styles.card, style]);
+  } = cardStyle;
   return (
     <PaperCard
       accessibilityLabel={accessibilityLabel}
@@ -62,7 +72,7 @@ export function Card({
       onPress={onPress}
       style={containerStyle}
     >
-      {children}
+      {flattenCardChildren(children)}
     </PaperCard>
   );
 }

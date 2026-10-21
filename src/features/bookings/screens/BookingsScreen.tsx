@@ -33,9 +33,12 @@ export function BookingsScreen() {
         refreshing={query.isRefetching}
         onRefresh={() => query.refetch()}
         ListHeaderComponent={
-          <View style={styles.content}>
+          <View style={styles.header}>
             <Text style={styles.title}>
               {user?.role === 'employee' ? 'Evenimentele mele' : 'Rezervări'}
+            </Text>
+            <Text style={styles.muted}>
+              Toate evenimentele, cu starea și detaliile lor.
             </Text>
             {user?.role !== 'employee' ? (
               <AppButton
@@ -79,7 +82,7 @@ export function BookingsScreen() {
               disabled={query.isFetchingNextPage}
               onPress={() => query.fetchNextPage()}
             />
-          ) : null
+          ) : undefined
         }
       />
       {creating ? (

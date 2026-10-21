@@ -52,7 +52,7 @@ test('adminul poate deschide selectorul si sterge pinul dupa confirmare', async 
     <EventMapSection event={event} onEdit={onEdit} />,
   );
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 5));
+    await new Promise<void>(resolve => setTimeout(resolve, 5));
   });
   await ReactTestRenderer.act(async () =>
     renderer.root
@@ -83,7 +83,7 @@ test('angajatul vede Maps fara actiuni de modificare a pinului', async () => {
     <EventMapSection event={event} onEdit={jest.fn()} />,
   );
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 5));
+    await new Promise<void>(resolve => setTimeout(resolve, 5));
   });
   expect(
     renderer.root.findByProps({ label: 'Deschide Google Maps' }),

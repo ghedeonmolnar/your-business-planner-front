@@ -122,7 +122,7 @@ export function DashboardScreen() {
           )
         }
         ListFooterComponent={
-          upcomingEventsQuery.isFetchingNextPage ? <LoadingState /> : null
+          upcomingEventsQuery.isFetchingNextPage ? <LoadingState /> : undefined
         }
         contentContainerStyle={styles.listContent}
         sections={eventSections}

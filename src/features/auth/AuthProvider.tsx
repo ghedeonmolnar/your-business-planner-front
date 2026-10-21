@@ -17,7 +17,10 @@ import { AuthUser, SignOutOptions } from '@/features/auth/types';
 import { endAuthSession } from '@/features/auth/utils/endAuthSession';
 import { isUnauthorizedError } from '@/shared/api/client';
 import { clearEventReminders } from '@/features/events/notifications/clearEventReminders';
-import { setSessionExpiredHandler } from '@/shared/api/sessionExpiry';
+import {
+  advanceSessionGeneration,
+  setSessionExpiredHandler,
+} from '@/shared/api/sessionExpiry';
 import { reportError } from '@/shared/monitoring/reportError';
 import { getAuthToken, setAuthToken } from '@/shared/storage/authTokenStorage';
 
@@ -54,6 +57,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     async (token: string, profile?: AuthUser) => {
       await pendingSignOut.current;
       const version = ++sessionVersion.current;
+      advanceSessionGeneration();
       const tokenWrite = setAuthToken(token);
       pendingTokenWrite.current = tokenWrite;
       try {
@@ -84,6 +88,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return pendingSignOut.current;
       }
       sessionVersion.current += 1;
+      advanceSessionGeneration();
       setUser(null);
       setBootstrapError(false);
       setIsBootstrapping(false);

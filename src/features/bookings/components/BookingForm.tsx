@@ -1,3 +1,5 @@
+import { useAuth } from '@/features/auth/AuthProvider';
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React, { useState } from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -31,7 +33,7 @@ import { AppButton } from '@/shared/components/AppButton';
 import { toCompanyTimestamp } from '@/shared/utils/formatDate';
 import { showError } from '@/shared/feedback/showError';
 
-const steps = [
+const allSteps = [
   'Sală și program',
   'Client',
   'Condiții comerciale',
@@ -63,11 +65,17 @@ export function BookingForm({
   booking?: Booking;
   onClose: () => void;
 }) {
+  const { user } = useAuth();
+  const staffEnabled = hasCompanyFeature(user, 'staff');
+  const steps = staffEnabled
+    ? allSteps
+    : allSteps.filter(title => title !== 'Personal');
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: bookingFormDefaults(date, hallId, booking),
   });
-  const [step, setStep] = useState(0);
+  const [stepIndex, setStep] = useState(0);
+  const step = Math.min(stepIndex, steps.length - 1);
   const [selectedClient, setSelectedClient] = useState<DirectoryItem | null>(
     null,
   );
@@ -108,7 +116,7 @@ export function BookingForm({
   );
   const next = async () => {
     if (await form.trigger(stepFields[step])) {
-      setStep(current => current + 1);
+      setStep(current => Math.min(current + 1, steps.length - 1));
     }
   };
   return (
@@ -169,7 +177,7 @@ export function BookingForm({
         />
       ) : null}
       {step === 2 ? <BookingCommercialFields form={form} /> : null}
-      {step === 3 ? (
+      {step === 3 && staffEnabled ? (
         <>
           <QueryNotice
             loading={staffQuery.isLoading}
@@ -196,7 +204,7 @@ export function BookingForm({
           ) : null}
         </>
       ) : null}
-      {step === 4 ? (
+      {step === steps.length - 1 ? (
         <BookingReviewFields
           form={form}
           hallName={hallItems.find(item => item.id === values.hall_id)?.name}

@@ -70,7 +70,19 @@ export function DirectoryForm({
   return (
     <FormModalFrame
       visible
-      title={item ? 'Editează înregistrarea' : 'Înregistrare nouă'}
+      title={
+        kind === 'clients'
+          ? item
+            ? 'Editează clientul'
+            : 'Client nou'
+          : kind === 'halls'
+            ? item
+              ? 'Editează sala'
+              : 'Sală nouă'
+            : item
+              ? 'Editează persoana'
+              : 'Persoană nouă'
+      }
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={

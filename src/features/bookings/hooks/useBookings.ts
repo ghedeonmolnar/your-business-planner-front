@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import {
   useInfiniteQuery,
   useMutation,
@@ -50,7 +51,13 @@ export const useSaveBooking = () => {
   const client = useQueryClient();
   const { user } = useAuth();
   return useMutation({
-    mutationFn: saveBookingApi,
+    mutationFn: (variables: Parameters<typeof saveBookingApi>[0]) =>
+      saveBookingApi({
+        ...variables,
+        payload: hasCompanyFeature(user, 'staff')
+          ? variables.payload
+          : { ...variables.payload, staff: undefined },
+      }),
     onSuccess: booking =>
       invalidatePlannerBooking(client, user?.company?.id ?? '', booking.id),
   });
@@ -65,13 +72,15 @@ export const useCancelBooking = () => {
   });
 };
 
-export const useHallDay = (date: string) => {
+export const useHallDay = (date: string, hallId?: string) => {
   const { user } = useAuth();
   return useInfiniteQuery({
     queryKey: queryKeys.planner.directory(user?.company?.id ?? '', 'hall-day', {
       date,
+      hall_id: hallId,
     }),
-    queryFn: ({ pageParam, signal }) => getHallDayApi(date, pageParam, signal),
+    queryFn: ({ pageParam, signal }) =>
+      getHallDayApi(date, pageParam, signal, hallId),
     initialPageParam: 1,
     getNextPageParam: page =>
       page.page < page.lastPage ? page.page + 1 : undefined,

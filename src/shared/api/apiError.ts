@@ -32,6 +32,19 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  CLIENT_FILTERS_INVALID:
+    'Verifică intervalul evenimentelor și opțiunile listei de clienți.',
+  FISCAL_COMPANY_NOT_FOUND:
+    'Nu am găsit firma pentru acest CUI. Verifică numărul sau completează datele manual.',
+  FISCAL_LOOKUP_UNAVAILABLE:
+    'Serviciul ANAF nu este disponibil acum. Poți completa datele manual sau încerca mai târziu.',
+  FISCAL_LOOKUP_BUSY:
+    'Așteaptă câteva secunde înainte de o nouă căutare a firmei.',
+  MODULE_DISABLED: 'Această funcție nu este activată pentru compania ta.',
+  USER_LIMIT_REACHED:
+    'Limita conturilor de acces a fost atinsă. Contactează echipa de suport sau eliberează un loc.',
+  CATEGORY_UNAVAILABLE: 'Categoria companiei este În pregătire.',
+  PLAN_UNAVAILABLE: 'Planul selectat nu este disponibil.',
   COMPANY_ACCESS_DENIED: 'Contul nu are acces la o companie.',
   SUBSCRIPTION_INACTIVE:
     'Abonamentul companiei este inactiv. Contactează administratorul platformei.',

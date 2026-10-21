@@ -1,4 +1,12 @@
 export type DirectoryKind = 'clients' | 'employees' | 'halls';
+export type CustomerSort = 'name_asc' | 'name_desc' | 'bookings_desc';
+export type CustomerFilters = {
+  search?: string;
+  date_from?: string;
+  date_to?: string;
+  sort?: CustomerSort;
+};
+export type CustomerListItem = DirectoryItem & { bookings_count: number };
 export type DirectoryItem = {
   id: string;
   name: string;

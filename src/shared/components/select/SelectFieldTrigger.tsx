@@ -1,5 +1,12 @@
 import React, { type ReactNode } from 'react';
-import { Pressable, StyleSheet, View, type TextStyle } from 'react-native';
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  View,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { formInputStyles } from '@/shared/components/FormInput';
@@ -15,6 +22,7 @@ type SelectFieldTriggerProps = {
   onClear?: () => void;
   onPress: () => void;
   placeholder: string;
+  style?: StyleProp<ViewStyle>;
 };
 
 export function SelectFieldTrigger({
@@ -27,6 +35,7 @@ export function SelectFieldTrigger({
   onClear,
   onPress,
   placeholder,
+  style,
 }: SelectFieldTriggerProps) {
   return (
     <Pressable
@@ -42,6 +51,7 @@ export function SelectFieldTrigger({
         styles.field,
         disabled ? formInputStyles.fieldDisabled : undefined,
         hasError ? formInputStyles.fieldError : undefined,
+        style,
       ]}
     >
       {children ?? (

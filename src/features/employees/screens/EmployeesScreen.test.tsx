@@ -1,7 +1,10 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { EmployeesScreen } from '@/features/employees/screens/EmployeesScreen';
-import { employeeProfileFixture, mascotProfileFixture } from '@/shared/test/apiFixtures';
+import {
+  employeeProfileFixture,
+  mascotProfileFixture,
+} from '@/shared/test/apiFixtures';
 import {
   paginatedResponse,
   renderWithProviders,
@@ -38,10 +41,12 @@ test('afișează echipa încărcată din API', async () => {
   const { renderer, unmount } = await renderWithProviders(<EmployeesScreen />);
 
   await ReactTestRenderer.act(async () => {
-    await new Promise(resolve => setTimeout(resolve, 20));
+    await new Promise<void>(resolve => setTimeout(resolve, 20));
   });
 
-  expect(renderer.root.findAllByProps({ children: 'Ana Test' }).length).toBeGreaterThan(0);
+  expect(
+    renderer.root.findAllByProps({ children: 'Ana Test' }).length,
+  ).toBeGreaterThan(0);
 
   await unmount();
 });

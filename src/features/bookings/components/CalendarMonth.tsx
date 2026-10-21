@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Calendar } from 'react-native-calendars';
 import { CalendarDay } from '@/features/bookings/types';
@@ -25,6 +25,7 @@ export function CalendarMonth({
       current={month + '-01'}
       hideArrows
       disableMonthChange
+      hideExtraDays
       firstDay={1}
       theme={{
         calendarBackground: theme.colors.surface,
@@ -32,6 +33,7 @@ export function CalendarMonth({
         textSectionTitleColor: theme.colors.muted,
         textMonthFontSize: theme.typography.sectionTitle,
       }}
+      style={calendarStyles.calendar}
       dayComponent={({ date, state }) => {
         if (!date) {
           return <View />;
@@ -40,6 +42,7 @@ export function CalendarMonth({
         return (
           <Pressable
             accessibilityRole="button"
+            accessibilityState={{ selected: date.dateString === selected }}
             accessibilityLabel={
               formatLongDate(date.dateString) +
               (summary
@@ -53,16 +56,10 @@ export function CalendarMonth({
                 : '')
             }
             onPress={() => onSelect(date.dateString)}
-            style={{
-              padding: theme.spacing.xs,
-              minHeight: theme.controls.fieldHeight,
-              alignItems: 'center',
-              borderRadius: theme.radius.sm,
-              backgroundColor:
-                date.dateString === selected
-                  ? theme.colors.blueSoft
-                  : theme.colors.surface,
-            }}
+            style={[
+              calendarStyles.day,
+              date.dateString === selected && calendarStyles.selectedDay,
+            ]}
           >
             <Text
               style={[
@@ -81,3 +78,15 @@ export function CalendarMonth({
     />
   );
 }
+
+const calendarStyles = StyleSheet.create({
+  calendar: { borderRadius: theme.radius.lg, padding: theme.spacing.sm },
+  day: {
+    padding: theme.spacing.xs,
+    minHeight: theme.controls.fieldHeight,
+    alignItems: 'center',
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surface,
+  },
+  selectedDay: { backgroundColor: theme.colors.blueSoft },
+});

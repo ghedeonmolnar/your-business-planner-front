@@ -1,3 +1,4 @@
+import { useAuth } from '@/features/auth/AuthProvider';
 import React, { useState } from 'react';
 import { FlatList, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -19,6 +20,7 @@ import { TeamInvitations } from '@/features/company/components/TeamInvitations';
 
 export function TeamScreen() {
   const navigation = useNavigation();
+  const { user } = useAuth();
   const query = useTeam();
   const block = useBlockAccount();
   const unblock = useUnblockAccount();
@@ -38,6 +40,12 @@ export function TeamScreen() {
               onPress={() => navigation.goBack()}
             />
             <Text style={styles.title}>Conturile companiei</Text>
+            {user?.plan ? (
+              <Text style={styles.muted}>
+                {user.plan.users_used} / {user.plan.user_limit ?? 'nelimitat'}{' '}
+                locuri ocupate
+              </Text>
+            ) : null}
             <AppButton
               label="Invită o persoană"
               onPress={() => setInviting(true)}

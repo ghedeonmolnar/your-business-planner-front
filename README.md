@@ -8,9 +8,15 @@ Navigarea principală: Agendă, Calendar, Rezervări, Clienți și Mai multe. Co
 
 API_URL se configurează în .env, respectiv .env.production. Aplicația nouă folosește numai backendul și baza de date separate Your Business Planner.
 
+## Audit de securitate și CI
+
+[AUDIT_SECURITATE_2026-10-21.md](AUDIT_SECURITATE_2026-10-21.md) documentează verificările, actualizările și blocajele de lansare. Workflow-ul quality verifică tipurile, lint-ul fără warnings, testele, build-ul Android, dependențele și secretele. Gate-ul npm audit rămâne blocat de cele două advisories tranzitive descrise în raport; protecția ramurii main trebuie activată după integrarea workflow-ului.
+
+Logout elimină istoricul protejat și cache-ul, iar răspunsurile unei sesiuni vechi nu afectează o autentificare nouă. Tokenul este în Keychain și nu există credențiale SQL în aplicație. În producție, API_URL din .env.production trebuie să fie un URL HTTPS real.
+
 ## Instalare și pornire
 
-Sunt necesare Node.js 22.11 sau mai nou și mediul nativ React Native pentru platforma aleasă. Android folosește Android Studio și JDK; iOS necesită macOS, Xcode și CocoaPods.
+Sunt necesare Node.js 22.13+, 24.3+ sau 26+, conform intervalului din package.json, și mediul React Native 0.88. Android folosește JDK 17+, compile SDK/Build Tools 37, target SDK 36 și Gradle 9.4.1. iOS necesită macOS, Xcode și CocoaPods.
 
 Din rădăcina acestui repository:
 

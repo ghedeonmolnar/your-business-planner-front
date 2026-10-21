@@ -2,6 +2,10 @@ import { z } from 'zod';
 import { apiPageRequest, apiRequest } from '@/shared/api/client';
 import { authUserSchema } from '@/features/auth/schemas/authApiSchemas';
 import {
+  companyProfileSchema,
+  FiscalProfile,
+} from '@/features/company/schemas/companyProfileSchemas';
+import {
   DirectoryItem,
   DirectoryKind,
   DirectoryPayload,
@@ -128,17 +132,12 @@ export const saveCompanySettingsApi = (payload: {
   email: string | null;
   phone: string | null;
   address: string | null;
+  billing_profile?: FiscalProfile | null;
 }) =>
   apiRequest('/company', {
     method: 'PUT',
     body: payload,
-    schema: z.object({
-      id: z.string(),
-      name: z.string(),
-      email: z.string().nullable(),
-      phone: z.string().nullable(),
-      address: z.string().nullable(),
-    }),
+    schema: companyProfileSchema,
   });
 
 export const getAccountInvitationsApi = (page: number, signal?: AbortSignal) =>

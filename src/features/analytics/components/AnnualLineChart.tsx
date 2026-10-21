@@ -24,7 +24,7 @@ const LEFT = 43;
 const RIGHT = 18;
 
 export function AnnualLineChart({ months, selectedMonth, onSelect }: Props) {
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const [viewportWidth, setViewportWidth] = useState(0);
   const reportedMonths = months.flatMap((item, index) =>
     item.profit_amount === null

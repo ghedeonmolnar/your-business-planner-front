@@ -36,11 +36,12 @@ test('allows the exact configured HTTP origin only in development', () => {
   const urlConstructor = jest
     .spyOn(globalThis, 'URL')
     .mockImplementation((...args) => {
-      const parsed = new originalUrl(...args);
-      if (args[0] === API_URL) {
-        parsed.protocol = 'http:';
-      }
-      return parsed;
+      return new originalUrl(
+        args[0] === API_URL
+          ? String(args[0]).replace(/^https:/, 'http:')
+          : args[0],
+        args[1],
+      );
     });
 
   try {

@@ -1,3 +1,4 @@
+import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { useEffect } from 'react';
 import dayjs from 'dayjs';
 import { useBookingReminders } from '@/features/bookings/hooks/useBookingReminders';
@@ -23,12 +24,24 @@ export function EventRemindersSync({
   role: 'owner' | 'admin' | 'employee';
 }) {
   const { user } = useAuth();
+  const financeEnabled = hasCompanyFeature(user, 'finance');
   const subscriptionEnd = user?.subscription?.ends_at
     ? Date.parse(user.subscription.ends_at)
     : Number.POSITIVE_INFINITY;
   const events = useBookingReminders(enabled).data;
   useEffect(() => {
     let cancelled = false;
+    if (!enabled) {
+      syncQueue = syncQueue
+        .catch(error =>
+          reportError(error, { source: 'previous-reminder-sync' }),
+        )
+        .then(() => clearEventReminders())
+        .catch(error => reportError(error, { source: 'disabled-reminders' }));
+      return () => {
+        cancelled = true;
+      };
+    }
     if (!events) {
       return undefined;
     }
@@ -59,6 +72,7 @@ export function EventRemindersSync({
             }
           }
           if (
+            financeEnabled &&
             role !== 'employee' &&
             event.ends_at &&
             Number(event.balance_due ?? 0) > 0
@@ -97,6 +111,6 @@ export function EventRemindersSync({
     return () => {
       cancelled = true;
     };
-  }, [events, role, subscriptionEnd]);
+  }, [enabled, events, role, subscriptionEnd, financeEnabled]);
   return null;
 }
