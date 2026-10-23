@@ -14,11 +14,15 @@ import { QueryNotice } from '@/features/bookings/components/QueryNotice';
 import { getMonthStatistics } from '@/features/bookings/utils/calendarStatistics';
 import { Screen } from '@/shared/components/Screen';
 import { theme } from '@/shared/theme/theme';
+import { DirectoryItem } from '@/features/company/types';
+import { useCalendarRefresh } from '@/features/bookings/hooks/useCalendarRefresh';
 
 export function CalendarScreen() {
   const calendarView = useCalendarNavigation();
   const [hallId, setHallId] = useState('');
-  const [reservationHall, setReservationHall] = useState<string | null>(null);
+  const [reservationHall, setReservationHall] =
+    useState<DirectoryItem | null>();
+  const refresh = useCalendarRefresh();
   const filters = {
     date_from: calendarView.from,
     date_to: calendarView.to,
@@ -46,10 +50,8 @@ export function CalendarScreen() {
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
-            refreshing={calendar.isRefetching}
-            onRefresh={async () => {
-              await calendar.refetch();
-            }}
+            refreshing={refresh.refreshing}
+            onRefresh={refresh.refresh}
           />
         }
       >
@@ -76,6 +78,9 @@ export function CalendarScreen() {
                 month={selectedMonth}
                 days={days}
                 selected={calendarView.selected}
+                hasHalls={calendar.data.halls.some(
+                  hall => hall.is_active && (!hallId || hall.id === hallId),
+                )}
                 onSelect={calendarView.selectDate}
               />
               <CalendarDayHalls
@@ -116,16 +121,20 @@ export function CalendarScreen() {
           )
         ) : null}
       </ScrollView>
-      {reservationHall !== null ? (
+      {reservationHall !== undefined ? (
         <BookingForm
           date={calendarView.selected}
           hallId={
-            reservationHall ||
+            reservationHall?.id ||
             (calendar.data?.halls.find(hall => hall.id === hallId)?.is_active
               ? hallId
               : undefined)
           }
-          onClose={() => setReservationHall(null)}
+          selectedHall={
+            reservationHall ??
+            calendar.data?.halls.find(hall => hall.id === hallId)
+          }
+          onClose={() => setReservationHall(undefined)}
         />
       ) : null}
     </Screen>

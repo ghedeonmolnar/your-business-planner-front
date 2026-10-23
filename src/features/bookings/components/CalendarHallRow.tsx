@@ -126,6 +126,6 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.caption,
   },
-  freeText: { color: theme.colors.menu.success },
+  freeText: { color: theme.colors.menu.text },
   occupiedText: { color: theme.colors.menu.primary },
 });

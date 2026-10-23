@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const bookingPaymentApiSchema = z.object({
   id: z.string(),
+  version: z.number().int().positive(),
   event_id: z.string(),
   type: z.enum(['incoming', 'outgoing']),
   category: z.string(),

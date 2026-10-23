@@ -13,6 +13,7 @@ export type StaffAssignment = {
 };
 export type Booking = {
   id: string;
+  version: number;
   hall_id: string;
   hall_name: string | null;
   client_id: string;
@@ -43,6 +44,7 @@ export type Booking = {
   documents_count?: number;
 };
 export type BookingPayload = {
+  version?: number;
   hall_id: string;
   client_id: string;
   date: string;
@@ -62,6 +64,7 @@ export type BookingPayload = {
   notes: string;
 };
 export type BookingFilters = {
+  agenda?: 'upcoming';
   date?: string;
   date_from?: string;
   date_to?: string;
@@ -70,6 +73,8 @@ export type BookingFilters = {
   status?: string;
 };
 export type BookingPaymentPayload = {
+  version?: number;
+  operation_id?: string;
   type: 'incoming' | 'outgoing';
   category: string;
   amount: string;

@@ -13,6 +13,7 @@ import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { DateCalendarPanel } from '@/shared/components/DateCalendarPanel';
 import { FormInput, formInputStyles } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
+import { useFormBusy } from '@/shared/components/FormInteractionContext';
 import { dateToIsoDate, isValidIsoDate } from '@/shared/utils/dateInput';
 import { formatLongDate, formatShortDate } from '@/shared/utils/formatDate';
 
@@ -43,6 +44,7 @@ export function DatePickerField({
   style,
   fieldStyle,
 }: DatePickerFieldProps) {
+  const busy = useFormBusy();
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const valueAsString = typeof value === 'string' ? value : '';
   const selectedDate = isValidIsoDate(valueAsString) ? valueAsString : '';
@@ -53,6 +55,7 @@ export function DatePickerField({
     : '';
 
   const openCalendar = () => {
+    if (busy) return;
     Keyboard.dismiss();
     setCalendarOpen(true);
   };
@@ -70,6 +73,8 @@ export function DatePickerField({
   return (
     <FormInput error={error} label={label} style={style}>
       <Pressable
+        disabled={busy}
+        accessibilityState={{ disabled: busy }}
         accessibilityLabel={label}
         accessibilityRole="button"
         accessibilityValue={{ text: displayValue || placeholder }}

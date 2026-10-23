@@ -160,8 +160,9 @@ test('carries the typed email from login to the reset code form', async () => {
     }),
   );
   expect(getVisibleDialog(renderer)).toMatchObject({
-    title: 'Cod trimis',
-    message: 'Dacă adresa există, ți-am trimis un cod de resetare pe email.',
+    title: 'Solicitare înregistrată',
+    message:
+      'Dacă adresa există, vei primi prin email codul de resetare. Expedierea se reîncearcă automat la nevoie.',
   });
   expect(
     renderer.root.findAllByProps({ accessibilityLabel: 'Cod' }).length,

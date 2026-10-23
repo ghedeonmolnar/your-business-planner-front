@@ -41,13 +41,22 @@ export const bookingFormDefaults = (
     })) ?? [],
 });
 
-export const bookingPayload = (values: BookingFormValues): BookingPayload => ({
+const retainedTimestamp = (value: string, original?: string | null) =>
+  original && value === formatCompanyInput(original)
+    ? original
+    : toCompanyTimestamp(value);
+
+export const bookingPayload = (
+  values: BookingFormValues,
+  original?: Booking,
+): BookingPayload => ({
   ...values,
-  starts_at: toCompanyTimestamp(values.starts_at),
-  ends_at: toCompanyTimestamp(values.ends_at),
+  version: original?.version,
+  starts_at: retainedTimestamp(values.starts_at, original?.starts_at),
+  ends_at: retainedTimestamp(values.ends_at, original?.ends_at),
   expires_at:
     values.status === 'tentative'
-      ? toCompanyTimestamp(values.expires_at)
+      ? retainedTimestamp(values.expires_at, original?.expires_at)
       : null,
   minimum_guests: Number(values.minimum_guests),
   final_guests: values.final_guests ? Number(values.final_guests) : null,
@@ -62,7 +71,17 @@ export const bookingPayload = (values: BookingFormValues): BookingPayload => ({
   staff: values.staff.map(person => ({
     ...person,
     rate: person.rate.replace(',', '.'),
-    starts_at: toCompanyTimestamp(person.starts_at) ?? '',
-    ends_at: toCompanyTimestamp(person.ends_at) ?? '',
+    starts_at:
+      retainedTimestamp(
+        person.starts_at,
+        original?.staff.find(item => item.employee_id === person.employee_id)
+          ?.starts_at,
+      ) ?? '',
+    ends_at:
+      retainedTimestamp(
+        person.ends_at,
+        original?.staff.find(item => item.employee_id === person.employee_id)
+          ?.ends_at,
+      ) ?? '',
   })),
 });

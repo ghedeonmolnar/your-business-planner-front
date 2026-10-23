@@ -8,6 +8,7 @@ import {
   companyNow,
   formatCompanyInput,
   formatCompanyDateTime,
+  formatCompanyTime,
   toCompanyTimestamp,
 } from '@/shared/utils/formatDate';
 
@@ -26,6 +27,9 @@ test('formatează datele București fără parsarea textului localizat pe Hermes
     expect(formatCompanyDateTime('2026-12-31T22:30:00Z')).toBe(
       '01.01.2027 00:30',
     );
+    expect(formatCompanyTime('2026-10-24T15:00:00Z')).toBe('18:00');
+    expect(formatCompanyTime('2026-12-31T22:30:00Z')).toBe('00:30');
+    expect(formatCompanyTime(null)).toBe('Ora necompletată');
     expect(localizedDate).not.toHaveBeenCalled();
   } finally {
     localizedDate.mockRestore();

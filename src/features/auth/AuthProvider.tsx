@@ -13,6 +13,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getMeApi } from '@/features/auth/api/authApi';
 import { useCompanyAccess } from '@/features/auth/hooks/useCompanyAccess';
 import { useAccountRefresh } from '@/features/auth/hooks/useAccountRefresh';
+import { useSubscriptionBoundary } from '@/features/auth/hooks/useSubscriptionBoundary';
+import { SubscriptionVerificationModal } from '@/features/auth/components/SubscriptionVerificationModal';
 import { AuthUser, SignOutOptions } from '@/features/auth/types';
 import { endAuthSession } from '@/features/auth/utils/endAuthSession';
 import { isUnauthorizedError } from '@/shared/api/client';
@@ -52,6 +54,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const isAuthenticated = user !== null;
 
   useCompanyAccess(user, setUser, queryClient);
+  const checkingSubscription = useSubscriptionBoundary(
+    user,
+    setUser,
+    sessionVersion,
+  );
 
   const signIn = useCallback(
     async (token: string, profile?: AuthUser) => {
@@ -194,7 +201,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     ],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+      <SubscriptionVerificationModal visible={checkingSubscription} />
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {

@@ -47,6 +47,7 @@ export const useCalendar = (filters: BookingFilters, enabled = true) => {
       enabled &&
       Boolean(user?.subscription?.active && user.role !== 'employee'),
     staleTime: 30_000,
+    refetchInterval: 30_000,
   });
 };
 export const useSaveBooking = () => {
@@ -69,8 +70,8 @@ export const useCancelBooking = () => {
   const { user } = useAuth();
   return useMutation({
     mutationFn: cancelBookingApi,
-    onSuccess: (_result, id) =>
-      invalidatePlannerBooking(client, user?.company?.id ?? '', id),
+    onSuccess: (_result, variables) =>
+      invalidatePlannerBooking(client, user?.company?.id ?? '', variables.id),
   });
 };
 
@@ -87,5 +88,7 @@ export const useHallDay = (date: string, hallId?: string) => {
     getNextPageParam: page =>
       page.page < page.lastPage ? page.page + 1 : undefined,
     enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    staleTime: 30_000,
+    refetchInterval: 30_000,
   });
 };

@@ -1,0 +1,86 @@
+import React from 'react';
+import ReactTestRenderer from 'react-test-renderer';
+import { StyleSheet } from 'react-native';
+import { Text } from 'react-native-paper';
+import { CalendarHallRow } from '@/features/bookings/components/CalendarHallRow';
+import { CalendarMonth } from '@/features/bookings/components/CalendarMonth';
+import { theme } from '@/shared/theme/theme';
+
+const luminance = (color: string) => {
+  const channels = color
+    .replace('#', '')
+    .match(/.{2}/g)
+    ?.map(channel => {
+      const value = parseInt(channel, 16) / 255;
+      return value <= 0.04045
+        ? value / 12.92
+        : ((value + 0.055) / 1.055) ** 2.4;
+    });
+  if (!channels || channels.length !== 3)
+    throw new Error('Culoare RGB indisponibilă');
+  return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+};
+
+test('textul mic pentru sala liberă are contrast de cel puțin 4,5:1 pe fundalul real', async () => {
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      <CalendarHallRow
+        hall={{
+          id: 'hall-1',
+          name: 'Sala',
+          capacity: 100,
+          booking_id: null,
+          status: 'free',
+        }}
+        typeLabel=""
+        onPress={() => undefined}
+      />,
+    );
+  });
+  const status = renderer?.root
+    .findAllByType(Text)
+    .find(
+      node =>
+        node.props.children === 'Liberă' &&
+        StyleSheet.flatten(node.props.style)?.fontSize ===
+          theme.typography.caption,
+    );
+  if (!status) throw new Error('Stare indisponibilă');
+  const foreground = luminance(StyleSheet.flatten(status.props.style).color);
+  const background = luminance(
+    StyleSheet.flatten(status.parent?.props.style).backgroundColor,
+  );
+  expect(
+    (Math.max(foreground, background) + 0.05) /
+      (Math.min(foreground, background) + 0.05),
+  ).toBeGreaterThanOrEqual(4.5);
+  await ReactTestRenderer.act(async () => renderer?.unmount());
+});
+
+test('marchează ocuparea și lipsa datelor cu simboluri și etichete, inclusiv în zilele vecine', async () => {
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      <CalendarMonth
+        month="2026-11"
+        selected="2026-11-01"
+        days={[{ date: '2026-10-31', confirmed: 1, tentative: 0, free: 0 }]}
+        onSelect={() => undefined}
+      />,
+    );
+  });
+  const texts = renderer?.root
+    .findAllByType(Text)
+    .map(node => node.props.children);
+  expect(texts).toContain('•');
+  expect(texts).toContain('?');
+  expect(
+    renderer?.root.findAll(
+      node =>
+        typeof node.props.accessibilityLabel === 'string' &&
+        node.props.accessibilityLabel.includes('disponibilitate necunoscută'),
+    ).length,
+  ).toBeGreaterThan(0);
+  await ReactTestRenderer.act(async () => renderer?.unmount());
+});

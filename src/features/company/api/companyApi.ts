@@ -150,6 +150,10 @@ export const getAccountInvitationsApi = (page: number, signal?: AbortSignal) =>
       role: z.string(),
       expires_at: z.string(),
       expired: z.boolean(),
+      delivery_status: z
+        .enum(['pending', 'sent', 'failed', 'expired', 'cancelled'])
+        .nullable()
+        .optional(),
     }),
   });
 export const revokeInvitationApi = (id: string) =>

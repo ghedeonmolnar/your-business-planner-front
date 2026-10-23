@@ -32,6 +32,12 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  RESOURCE_VERSION_CONFLICT:
+    'Înregistrarea a fost modificată de altcineva. Ciorna ta este păstrată; verifică versiunea salvată înainte de a continua.',
+  PAYMENT_OPERATION_CONFLICT:
+    'Această operațiune de plată a fost deja înregistrată cu alte date. Verifică istoricul plăților.',
+  BOOKING_STAFF_SCHEDULE_LOCKED:
+    'Programul personalului trebuie reconciliat. Reactivează modulul de personal înainte de a muta această rezervare.',
   CLIENT_FILTERS_INVALID:
     'Verifică intervalul evenimentelor și opțiunile listei de clienți.',
   FISCAL_COMPANY_NOT_FOUND:

@@ -96,7 +96,10 @@ test('calendarul se montează pe date valide și schimbă împreună luna, ziua 
       calls.some(path =>
         path.includes(
           '/calendar?date_from=' +
-            dayjs(nextDate).startOf('month').format('YYYY-MM-DD'),
+            dayjs(nextDate)
+              .startOf('month')
+              .subtract((dayjs(nextDate).startOf('month').day() + 6) % 7, 'day')
+              .format('YYYY-MM-DD'),
         ),
       ),
     ).toBe(true);

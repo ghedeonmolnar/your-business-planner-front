@@ -3,6 +3,7 @@ import { StyleProp, ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Controller, Control, FieldPath, FieldValues } from 'react-hook-form';
 import { FormInput } from '@/shared/components/FormInput';
+import { useFormBusy } from '@/shared/components/FormInteractionContext';
 import {
   SelectFieldTrigger,
   selectFieldStyles,
@@ -62,6 +63,7 @@ export function SearchableSelect<TValue extends SelectValue>({
   single,
   style,
 }: SearchableSelectProps<TValue>) {
+  const busy = useFormBusy();
   const [isOpen, setOpen] = useState(false);
   const selectedOptions = options.filter(option =>
     selectedValues.includes(option.id),
@@ -70,7 +72,7 @@ export function SearchableSelect<TValue extends SelectValue>({
   const hasSelection = selectedValues.length > 0;
 
   const open = () => {
-    if (disabled) {
+    if (disabled || busy) {
       return;
     }
 
@@ -83,7 +85,7 @@ export function SearchableSelect<TValue extends SelectValue>({
         style={style}
         accessibilityLabel={label}
         accessibilityValueText={displayValue || placeholder}
-        disabled={disabled}
+        disabled={disabled || busy}
         expanded={isOpen}
         hasError={Boolean(error)}
         onClear={allowClear && hasSelection ? () => onChange([]) : undefined}

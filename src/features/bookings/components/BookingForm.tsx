@@ -1,9 +1,9 @@
 import { useAuth } from '@/features/auth/AuthProvider';
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { FieldPath, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Booking } from '@/features/bookings/types';
 import {
@@ -17,12 +17,9 @@ import {
 import { BookingReviewFields } from '@/features/bookings/components/BookingReviewFields';
 import { BookingScheduleFields } from '@/features/bookings/components/BookingScheduleFields';
 import { BookingCommercialFields } from '@/features/bookings/components/BookingCommercialFields';
-import { BookingStaffFields } from '@/features/bookings/components/BookingStaffFields';
+import { BookingStaffStep } from '@/features/bookings/components/BookingStaffStep';
 import { useSaveBooking } from '@/features/bookings/hooks/useBookings';
-import {
-  useDirectory,
-  useStaffAvailability,
-} from '@/features/company/hooks/useCompany';
+import { useDirectory } from '@/features/company/hooks/useCompany';
 import { QueryNotice } from '@/features/bookings/components/QueryNotice';
 import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
@@ -30,8 +27,14 @@ import { DirectoryItem } from '@/features/company/types';
 import { includeDirectorySelections } from '@/features/company/utils/includeDirectorySelections';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { AppButton } from '@/shared/components/AppButton';
-import { toCompanyTimestamp } from '@/shared/utils/formatDate';
 import { showError } from '@/shared/feedback/showError';
+import {
+  bookingStepFields,
+  firstBookingErrorStep,
+  applyBookingApiErrors,
+} from '@/features/bookings/utils/bookingFormErrors';
+import { BookingConflictReview } from '@/features/bookings/components/BookingConflictReview';
+import { ApiError } from '@/shared/api/apiError';
 
 const allSteps = [
   'Sală și program',
@@ -40,31 +43,21 @@ const allSteps = [
   'Personal',
   'Recapitulare',
 ];
-const stepFields: FieldPath<BookingFormValues>[][] = [
-  ['hall_id', 'date', 'type', 'status', 'starts_at', 'ends_at', 'expires_at'],
-  ['client_id'],
-  [
-    'minimum_guests',
-    'final_guests',
-    'menu_price',
-    'menu_name',
-    'agreed_advance',
-    'extra_services',
-  ],
-  ['staff'],
-];
-
 export function BookingForm({
   date,
   hallId,
-  booking,
+  selectedHall,
+  booking: initialBooking,
   onClose,
 }: {
   date: string;
   hallId?: string;
+  selectedHall?: DirectoryItem;
   booking?: Booking;
   onClose: () => void;
 }) {
+  const [booking, setBooking] = useState(initialBooking);
+  const [conflict, setConflict] = useState(false);
   const { user } = useAuth();
   const staffEnabled = hasCompanyFeature(user, 'staff');
   const steps = staffEnabled
@@ -80,7 +73,6 @@ export function BookingForm({
     null,
   );
   const halls = useDirectory('halls');
-  const employees = useDirectory('employees');
   const hallItems = includeDirectorySelections(
     halls.data?.pages.flatMap(page => page.items) ?? [],
     booking
@@ -91,37 +83,47 @@ export function BookingForm({
             is_active: false,
           },
         ]
-      : [],
+      : selectedHall
+        ? [selectedHall]
+        : [],
   );
   const save = useSaveBooking();
+  const submitting = useRef(false);
   const values = form.watch();
-  const availability = useStaffAvailability(
-    toCompanyTimestamp(values.starts_at),
-    toCompanyTimestamp(values.ends_at),
-    booking?.id,
-  );
-  const staffQuery =
-    values.starts_at && values.ends_at ? availability : employees;
   const submit = form.handleSubmit(
     data => {
+      if (submitting.current) {
+        return;
+      }
+      submitting.current = true;
       save.mutate(
-        { id: booking?.id, payload: bookingPayload(data) },
+        { id: booking?.id, payload: bookingPayload(data, booking) },
         {
           onSuccess: onClose,
-          onError: error => showError(error, 'Nu am putut salva rezervarea.'),
+          onSettled: () => {
+            submitting.current = false;
+          },
+          onError: error => {
+            const errorStep = applyBookingApiErrors(error, form, staffEnabled);
+            if (errorStep !== null) setStep(errorStep);
+            if (error instanceof ApiError && error.status === 409)
+              setConflict(true);
+            showError(error, 'Nu am putut salva rezervarea.');
+          },
         },
       );
     },
-    () => setStep(0),
+    errors => setStep(firstBookingErrorStep(errors, staffEnabled)),
   );
   const next = async () => {
-    if (await form.trigger(stepFields[step])) {
+    if (await form.trigger(bookingStepFields(staffEnabled)[step])) {
       setStep(current => Math.min(current + 1, steps.length - 1));
     }
   };
   return (
     <FormModalFrame
       visible
+      busy={save.isPending}
       title={steps[step]}
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
@@ -130,6 +132,7 @@ export function BookingForm({
           {step > 0 ? (
             <AppButton
               label="Înapoi"
+              disabled={save.isPending}
               variant="outline"
               onPress={() => setStep(current => current - 1)}
             />
@@ -144,6 +147,19 @@ export function BookingForm({
         </View>
       }
     >
+      {conflict && booking ? (
+        <BookingConflictReview
+          bookingId={booking.id}
+          onReload={current => {
+            form.reset(
+              bookingFormDefaults(current.date, current.hall_id, current),
+            );
+            setBooking(current);
+            setConflict(false);
+            setStep(0);
+          }}
+        />
+      ) : null}
       <Text style={styles.muted}>
         Pasul {step + 1} din {steps.length} · Orele sunt în fusul României.
       </Text>
@@ -158,6 +174,7 @@ export function BookingForm({
             control={form.control}
             halls={hallItems}
             selectedHallId={booking?.hall_id}
+            retainedType={booking?.type}
           />
           {halls.hasNextPage ? (
             <AppButton
@@ -178,31 +195,7 @@ export function BookingForm({
       ) : null}
       {step === 2 ? <BookingCommercialFields form={form} /> : null}
       {step === 3 && staffEnabled ? (
-        <>
-          <QueryNotice
-            loading={staffQuery.isLoading}
-            error={staffQuery.error}
-            retry={() => staffQuery.refetch()}
-          />
-          <BookingStaffFields
-            form={form}
-            employees={includeDirectorySelections(
-              staffQuery.data?.pages.flatMap(page => page.items) ?? [],
-              booking?.staff.map(person => ({
-                id: person.employee_id,
-                name: person.employee_name ?? '',
-                is_active: false,
-              })) ?? [],
-            )}
-          />
-          {staffQuery.hasNextPage ? (
-            <AppButton
-              label="Mai multe persoane"
-              disabled={staffQuery.isFetchingNextPage}
-              onPress={() => staffQuery.fetchNextPage()}
-            />
-          ) : null}
-        </>
+        <BookingStaffStep form={form} booking={booking} />
       ) : null}
       {step === steps.length - 1 ? (
         <BookingReviewFields

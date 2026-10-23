@@ -87,12 +87,12 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.bodySmall,
   },
   count: {
-    color: theme.colors.menu.muted,
+    color: theme.colors.menu.text,
     fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.label,
   },
   caption: {
-    color: theme.colors.menu.muted,
+    color: theme.colors.menu.text,
     fontFamily: theme.fonts.body,
     fontSize: theme.typography.caption,
   },

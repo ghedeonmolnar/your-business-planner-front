@@ -36,6 +36,15 @@ export function TeamInvitations() {
               ? 'Expirată'
               : 'Valabilă până la ' + formatCompanyDateTime(item.expires_at)}
           </Text>
+          <Text style={styles.text}>
+            {item.delivery_status === 'sent'
+              ? 'Email expediat'
+              : item.delivery_status === 'failed'
+                ? 'Expedierea a eșuat; se reîncearcă automat.'
+                : item.delivery_status === 'pending'
+                  ? 'Invitație salvată · Email în curs de expediere'
+                  : ''}
+          </Text>
           {!item.expired ? (
             <AppButton
               label="Revocă invitația"

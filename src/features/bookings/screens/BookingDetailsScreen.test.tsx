@@ -38,6 +38,7 @@ test('records an advance from the reservation screen with the API mocked', async
       return Promise.resolve(
         jsonResponse(201, {
           id: 'payment-1',
+          version: 1,
           event_id: 'event-1',
           ...payload,
           amount: 10000,
@@ -97,6 +98,7 @@ test('records an advance from the reservation screen with the API mocked', async
 test('edits a pending receipt into an expense with a compatible category', async () => {
   const payment = {
     id: 'payment-1',
+    version: 1,
     event_id: 'event-1',
     type: 'incoming',
     category: 'advance',

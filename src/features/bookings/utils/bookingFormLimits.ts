@@ -1,0 +1,7 @@
+export const MAX_BOOKING_GUESTS = 100_000;
+export const MAX_BOOKING_AMOUNT = 99_999_999.99;
+export const MAX_BOOKING_LABEL_LENGTH = 255;
+export const MAX_BOOKING_NOTES_LENGTH = 20_000;
+export const MAX_PAYMENT_NOTES_LENGTH = 5_000;
+export const MAX_EXTRA_SERVICES = 100;
+export const MAX_STAFF_ASSIGNMENTS = 200;

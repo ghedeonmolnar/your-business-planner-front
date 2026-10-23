@@ -34,9 +34,16 @@ export const saveBookingPaymentApi = ({
       schema: bookingPaymentApiSchema,
     },
   );
-export const cancelBookingPaymentApi = (id: string) =>
+export const cancelBookingPaymentApi = ({
+  id,
+  version,
+}: {
+  id: string;
+  version: number;
+}) =>
   apiRequest('/event-payments/' + id, {
     method: 'DELETE',
+    body: { version },
     schema: z.object({ status: z.literal('cancelled') }),
   });
 export const getBookingDocumentsApi = (

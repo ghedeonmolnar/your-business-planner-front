@@ -67,10 +67,13 @@ export function BookingPayments({ eventId }: { eventId: string }) {
                       'Înregistrarea rămâne în istoric și nu mai intră în sold.',
                     confirmLabel: 'Anulează plata',
                     onConfirm: () =>
-                      cancel.mutate(payment.id, {
-                        onError: error =>
-                          showError(error, 'Nu am putut anula plata.'),
-                      }),
+                      cancel.mutate(
+                        { id: payment.id, version: payment.version },
+                        {
+                          onError: error =>
+                            showError(error, 'Nu am putut anula plata.'),
+                        },
+                      ),
                   })
                 }
               />

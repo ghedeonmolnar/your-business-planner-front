@@ -3,82 +3,21 @@ import 'dayjs/locale/ro';
 import isToday from 'dayjs/plugin/isToday';
 import isTomorrow from 'dayjs/plugin/isTomorrow';
 import isYesterday from 'dayjs/plugin/isYesterday';
-import utc from 'dayjs/plugin/utc';
-import timezone from 'dayjs/plugin/timezone';
-import customParseFormat from 'dayjs/plugin/customParseFormat';
 
 dayjs.extend(isToday);
 dayjs.extend(isTomorrow);
 dayjs.extend(isYesterday);
-dayjs.extend(utc);
-dayjs.extend(timezone);
-dayjs.extend(customParseFormat);
 dayjs.locale('ro');
 
-const COMPANY_TIMEZONE = 'Europe/Bucharest';
-const COMPANY_INPUT_FORMAT = 'YYYY-MM-DD HH:mm';
-
-const companyDateFormatter = new Intl.DateTimeFormat('en-GB', {
-  timeZone: COMPANY_TIMEZONE,
-  year: 'numeric',
-  month: '2-digit',
-  day: '2-digit',
-  hour: '2-digit',
-  minute: '2-digit',
-  second: '2-digit',
-  hourCycle: 'h23',
-});
-
-const companyDate = (value: dayjs.ConfigType) => {
-  const instant = dayjs(value);
-  if (!instant.isValid()) {
-    return instant;
-  }
-  const parts = Object.fromEntries(
-    companyDateFormatter
-      .formatToParts(instant.toDate())
-      .map(part => [part.type, part.value]),
-  );
-  return dayjs.utc(
-    `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}:${parts.second}`,
-  );
-};
-
-export const companyNow = () => companyDate(new Date());
-
-export const toCompanyTimestamp = (value: string): string | null => {
-  if (!dayjs(value, COMPANY_INPUT_FORMAT, true).isValid()) {
-    return null;
-  }
-  const parsed = dayjs.tz(value, COMPANY_INPUT_FORMAT, COMPANY_TIMEZONE);
-  return companyDate(parsed).format(COMPANY_INPUT_FORMAT) === value
-    ? parsed.toISOString()
-    : null;
-};
-
-export const formatCompanyInput = (value?: string | null) =>
-  value ? companyDate(value).format(COMPANY_INPUT_FORMAT) : '';
-
-export const formatCompanyDateTime = (value?: string | null) =>
-  value ? companyDate(value).format('DD.MM.YYYY HH:mm') : 'Program necompletat';
-
-export const formatCompanyTimeRange = (
-  start?: string | null,
-  end?: string | null,
-) => {
-  if (!start || !end) {
-    return null;
-  }
-  const from = companyDate(start);
-  const to = companyDate(end);
-  if (!from.isValid() || !to.isValid()) {
-    return null;
-  }
-  const extraDays = to.startOf('day').diff(from.startOf('day'), 'day');
-  const suffix =
-    extraDays > 0 ? ` (+${extraDays} ${extraDays === 1 ? 'zi' : 'zile'})` : '';
-  return `${from.format('HH:mm')} – ${to.format('HH:mm')}${suffix}`;
-};
+export {
+  companyNow,
+  companyTimestampOptions,
+  toCompanyTimestamp,
+  formatCompanyInput,
+  formatCompanyDateTime,
+  formatCompanyTime,
+  formatCompanyTimeRange,
+} from '@/shared/utils/companyTime';
 
 const TIME_REFERENCE_DATE = '2000-01-01';
 

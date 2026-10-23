@@ -42,8 +42,8 @@ export function ForgotPasswordPanel({
         onSuccess: () => {
           onCodeSent(email);
           showMessage(
-            'Cod trimis',
-            'Dacă adresa există, ți-am trimis un cod de resetare pe email.',
+            'Solicitare înregistrată',
+            'Dacă adresa există, vei primi prin email codul de resetare. Expedierea se reîncearcă automat la nevoie.',
           );
         },
         onError: error => {

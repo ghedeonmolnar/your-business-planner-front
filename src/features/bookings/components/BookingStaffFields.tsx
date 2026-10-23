@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native-paper';
 import { UseFormReturn, useFieldArray } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { DirectoryItem } from '@/features/company/types';
@@ -17,6 +18,10 @@ export function BookingStaffFields({
   const staff = useFieldArray({ control: form.control, name: 'staff' });
   return (
     <>
+      <Text>
+        La ora repetată de toamnă adaugă +03:00 pentru prima apariție sau +02:00
+        pentru a doua apariție.
+      </Text>
       {staff.fields.map((field, index) => (
         <React.Fragment key={field.id}>
           <ControlledSelectField

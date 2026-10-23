@@ -72,10 +72,12 @@ test('stops above the keyboard so the focused input stays visible', async () => 
   );
 });
 
-test('keeps a usable height when the keyboard covers almost everything', async () => {
+test('caps the dialog at the space left when the keyboard covers almost everything', async () => {
   (useKeyboardOverlap as jest.Mock).mockReturnValue(windowHeight - 60);
 
-  expect(await renderFrame()).toBe(240);
+  expect(await renderFrame()).toBe(
+    Math.max(0, 60 - modalTop - theme.spacing.sm),
+  );
 });
 
 test('cere confirmare înainte să închidă un formular modificat', async () => {

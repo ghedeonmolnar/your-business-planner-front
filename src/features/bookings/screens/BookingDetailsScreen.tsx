@@ -118,10 +118,16 @@ export function BookingDetailsScreen({
                           'Sala se eliberează. Plățile rămân în istoric.',
                         confirmLabel: 'Anulează rezervarea',
                         onConfirm: () =>
-                          cancel.mutate(booking.id, {
-                            onError: error =>
-                              showError(error, 'Nu am putut anula rezervarea.'),
-                          }),
+                          cancel.mutate(
+                            { id: booking.id, version: booking.version },
+                            {
+                              onError: error =>
+                                showError(
+                                  error,
+                                  'Nu am putut anula rezervarea.',
+                                ),
+                            },
+                          ),
                       })
                     }
                   />

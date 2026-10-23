@@ -15,11 +15,13 @@ export function CalendarMonth({
   days,
   selected,
   onSelect,
+  hasHalls = true,
 }: {
   month: string;
   days: CalendarDay[];
   selected: string;
   onSelect: (date: string) => void;
+  hasHalls?: boolean;
 }) {
   const first = dayjs(`${month}-01`);
   const offset = (first.day() + DAYS_PER_WEEK - 1) % DAYS_PER_WEEK;
@@ -54,7 +56,7 @@ export function CalendarMonth({
                 key={iso}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${summary ? `, ${summary.free} săli libere, ${summary.confirmed} confirmate, ${summary.tentative} provizorii` : ''}`}
+                accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${summary ? `${hasHalls ? `, ${summary.free} săli libere` : ', nicio sală activă în acest filtru'}, ${summary.confirmed} confirmate, ${summary.tentative} provizorii` : ', disponibilitate necunoscută'}`}
                 onPress={() => onSelect(iso)}
                 style={styles.cell}
               >
@@ -78,6 +80,17 @@ export function CalendarMonth({
                   >
                     {date.date()}
                   </Text>
+                  {occupied || !summary || !hasHalls ? (
+                    <Text
+                      accessible={false}
+                      style={[
+                        styles.marker,
+                        isSelected ? styles.selectedText : undefined,
+                      ]}
+                    >
+                      {occupied ? '•' : !summary ? '?' : '—'}
+                    </Text>
+                  ) : null}
                 </View>
               </Pressable>
             );
@@ -112,7 +125,8 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.menu.surface,
     borderWidth: 2,
     borderRadius: theme.radius.pill,
-    minWidth: theme.spacing.xxl + theme.spacing.sm,
+    width: '100%',
+    minWidth: 0,
     minHeight: theme.spacing.xxl + theme.spacing.sm,
     maxWidth: '100%',
     paddingHorizontal: theme.spacing.xs,
@@ -122,12 +136,13 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.body,
   },
+  marker: { color: theme.colors.menu.text, fontSize: theme.typography.caption },
   occupied: {
     backgroundColor: theme.colors.menu.primarySoft,
     borderColor: theme.colors.menu.primarySoft,
   },
   occupiedText: { color: theme.colors.menu.primary },
-  otherMonth: { color: theme.colors.menu.muted },
+  otherMonth: { color: theme.colors.menu.text, fontFamily: theme.fonts.body },
   today: { borderColor: theme.colors.menu.primary },
   selected: {
     backgroundColor: theme.colors.menu.primary,

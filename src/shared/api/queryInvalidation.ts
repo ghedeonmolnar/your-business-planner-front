@@ -20,6 +20,21 @@ export const invalidatePlannerBooking = (
   ]);
 };
 
+export const refreshPlannerCalendar = (
+  client: QueryClient,
+  companyId: string,
+) =>
+  Promise.all([
+    client.refetchQueries({
+      queryKey: queryKeys.planner.calendars(companyId),
+      type: 'active',
+    }),
+    client.refetchQueries({
+      queryKey: queryKeys.planner.directories(companyId, 'hall-day'),
+      type: 'active',
+    }),
+  ]);
+
 export const invalidatePlannerPayments = (
   client: QueryClient,
   companyId: string,

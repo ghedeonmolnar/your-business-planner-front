@@ -23,6 +23,7 @@ export const plannerAccount: AuthUser = {
 
 export const plannerBooking: Booking = {
   id: 'event-1',
+  version: 1,
   hall_id: 'hall-1',
   hall_name: 'Sala Imperial',
   client_id: 'client-1',

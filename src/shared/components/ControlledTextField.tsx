@@ -11,6 +11,7 @@ import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { FormInput } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
+import { useFormBusy } from '@/shared/components/FormInteractionContext';
 
 type ControlledTextFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
@@ -47,6 +48,7 @@ export function ControlledTextField<T extends FieldValues>({
   onRightIconPress,
   inputStyle,
 }: ControlledTextFieldProps<T>) {
+  const busy = useFormBusy();
   return (
     <Controller
       control={control}
@@ -57,6 +59,7 @@ export function ControlledTextField<T extends FieldValues>({
       }) => (
         <FormInput error={error?.message} label={label} hideLabel>
           <TextInput
+            disabled={busy}
             accessibilityLabel={label}
             autoCapitalize={autoCapitalize ?? (isPassword ? 'none' : undefined)}
             autoCorrect={isPassword ? false : undefined}
@@ -81,7 +84,9 @@ export function ControlledTextField<T extends FieldValues>({
             mode="outlined"
             multiline={multiline}
             onBlur={onBlur}
-            onChangeText={onChange}
+            onChangeText={text => {
+              if (!busy) onChange(text);
+            }}
             placeholder={placeholder}
             ref={ref}
             right={

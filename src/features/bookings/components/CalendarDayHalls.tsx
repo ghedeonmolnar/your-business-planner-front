@@ -12,6 +12,7 @@ import { AppButton } from '@/shared/components/AppButton';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { formatLongDate } from '@/shared/utils/formatDate';
 import { theme } from '@/shared/theme/theme';
+import { DirectoryItem } from '@/features/company/types';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
 import {
   createCatalogLabelMap,
@@ -27,7 +28,7 @@ export function CalendarDayHalls({
   date: string;
   hallId?: string;
   free?: number;
-  onReserve: (hallId: string) => void;
+  onReserve: (hall: DirectoryItem | null) => void;
 }) {
   const query = useHallDay(date, hallId);
   const catalogs = useCatalogs();
@@ -70,7 +71,12 @@ export function CalendarDayHalls({
               ? navigation.navigate('EventDetails', {
                   eventId: hall.booking_id,
                 })
-              : onReserve(hall.id)
+              : onReserve({
+                  id: hall.id,
+                  name: hall.name,
+                  capacity: hall.capacity,
+                  is_active: true,
+                })
           }
         />
       ))}
@@ -90,7 +96,7 @@ export function CalendarDayHalls({
         shape="rounded"
         backgroundColor={theme.colors.menu.primarySoft}
         color={theme.colors.menu.primary}
-        onPress={() => onReserve('')}
+        onPress={() => onReserve(null)}
       />
     </Card>
   );

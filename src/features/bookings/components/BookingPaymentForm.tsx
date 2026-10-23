@@ -1,5 +1,6 @@
 import { companyNow } from '@/shared/utils/formatDate';
-import React from 'react';
+import { Text } from 'react-native-paper';
+import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -15,6 +16,8 @@ import { ControlledDateField } from '@/shared/components/ControlledDateField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { showError } from '@/shared/feedback/showError';
+import { createPaymentOperationId } from '@/features/bookings/utils/paymentOperation';
+import { ApiError } from '@/shared/api/apiError';
 
 export function BookingPaymentForm({
   eventId,
@@ -25,37 +28,73 @@ export function BookingPaymentForm({
   payment?: BookingPayment;
   onClose: () => void;
 }) {
-  const mutation = useSaveBookingPayment();
+  const mutation = useSaveBookingPayment(eventId);
+  const paymentVersion = useRef(payment?.version);
+  const submitting = useRef(false);
+  const recovered = payment ? undefined : mutation.uncertainPayment?.payload;
+  const operationId = useRef<string | null>(recovered?.operation_id ?? null);
+  const submittedPayload = useRef<BookingPaymentValues | null>(
+    recovered ?? null,
+  );
   const form = useForm<BookingPaymentValues>({
     resolver: zodResolver(bookingPaymentSchema),
     defaultValues: {
-      type: payment?.type ?? 'incoming',
-      category: payment?.category ?? 'advance',
-      amount: payment ? String(payment.amount) : '',
-      paid_at: payment?.paid_at ?? companyNow().format('YYYY-MM-DD'),
-      method: payment?.method ?? 'transfer',
-      status: payment?.status ?? 'completed',
-      notes: payment?.notes ?? '',
+      type: payment?.type ?? recovered?.type ?? 'incoming',
+      category: payment?.category ?? recovered?.category ?? 'advance',
+      amount: payment ? String(payment.amount) : (recovered?.amount ?? ''),
+      paid_at:
+        payment?.paid_at ??
+        recovered?.paid_at ??
+        companyNow().format('YYYY-MM-DD'),
+      method: payment?.method ?? recovered?.method ?? 'transfer',
+      status: payment?.status ?? recovered?.status ?? 'completed',
+      notes: payment?.notes ?? recovered?.notes ?? '',
     },
   });
   const type = form.watch('type');
   const categories = bookingPaymentCategories[type];
   const submit = form.handleSubmit(values => {
+    if (submitting.current) {
+      return;
+    }
+    submitting.current = true;
+    operationId.current ??= createPaymentOperationId();
+    const data = submittedPayload.current ?? recovered ?? values;
+    if (!payment) submittedPayload.current = data;
     mutation.mutate(
       {
         eventId,
         id: payment?.id,
-        payload: { ...values, amount: values.amount.replace(',', '.') },
+        payload: {
+          ...data,
+          amount: data.amount.replace(',', '.'),
+          version: paymentVersion.current,
+          operation_id: payment ? undefined : operationId.current,
+        },
       },
       {
         onSuccess: onClose,
-        onError: error => showError(error, 'Nu am putut salva plata.'),
+        onSettled: () => {
+          submitting.current = false;
+        },
+        onError: error => {
+          const refused =
+            error instanceof ApiError &&
+            error.status >= 400 &&
+            error.status < 500;
+          if (refused) submittedPayload.current = null;
+          showError(error, 'Nu am putut salva plata.');
+        },
       },
     );
   });
   return (
     <FormModalFrame
       visible
+      busy={mutation.isPending}
+      readOnly={
+        !payment && (submittedPayload.current !== null || Boolean(recovered))
+      }
       title={payment ? 'Editează plata' : 'Încasare sau cheltuială'}
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
@@ -67,6 +106,12 @@ export function BookingPaymentForm({
         />
       }
     >
+      {!payment && submittedPayload.current !== null && !mutation.isPending ? (
+        <Text>
+          Rezultatul înregistrării nu este încă sigur. Reîncearcă salvarea: se
+          va verifica aceeași operațiune, fără a crea o plată duplicată.
+        </Text>
+      ) : null}
       <ControlledSelectField
         control={form.control}
         name="type"

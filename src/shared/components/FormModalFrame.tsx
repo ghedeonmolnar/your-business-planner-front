@@ -18,9 +18,9 @@ import { confirmAction } from '@/shared/feedback/confirmAction';
 import { DialogHost } from '@/shared/feedback/DialogHost';
 import { useKeyboardOverlap } from '@/shared/hooks/useKeyboardOverlap';
 import { theme } from '@/shared/theme/theme';
+import { FormInteractionContext } from '@/shared/components/FormInteractionContext';
 
 const MODAL_HEIGHT_RATIO = 0.9;
-const MIN_MODAL_HEIGHT = 240;
 
 type FormModalFrameProps = {
   visible: boolean;
@@ -32,6 +32,8 @@ type FormModalFrameProps = {
   hasUnsavedChanges?: boolean;
   fitContent?: boolean;
   closeLabel?: string;
+  busy?: boolean;
+  readOnly?: boolean;
 };
 
 type ScrollViewport = {
@@ -48,6 +50,8 @@ export function FormModalFrame({
   footer,
   hasUnsavedChanges = false,
   fitContent = false,
+  busy = false,
+  readOnly = false,
   closeLabel = 'Închide formularul',
 }: FormModalFrameProps) {
   const insets = useSafeAreaInsets();
@@ -66,7 +70,7 @@ export function FormModalFrame({
       ? keyboardOverlap + theme.spacing.sm
       : Math.max(insets.bottom, theme.spacing.sm);
   const modalMaxHeight = Math.max(
-    MIN_MODAL_HEIGHT,
+    0,
     Math.min(
       Math.round(windowHeight * MODAL_HEIGHT_RATIO),
       windowHeight - modalTop - modalBottomGap,
@@ -114,6 +118,9 @@ export function FormModalFrame({
   };
 
   const requestClose = () => {
+    if (busy) {
+      return;
+    }
     if (!hasUnsavedChanges) {
       onClose();
       return;
@@ -152,6 +159,7 @@ export function FormModalFrame({
             <IconButton
               accessibilityLabel={closeLabel}
               icon="close"
+              disabled={busy}
               onPress={requestClose}
             />
           </View>
@@ -169,7 +177,11 @@ export function FormModalFrame({
             showsVerticalScrollIndicator={false}
             style={[styles.scroll, fitContent ? styles.fitContent : undefined]}
           >
-            {children}
+            <FormInteractionContext.Provider value={busy || readOnly}>
+              <View pointerEvents={busy || readOnly ? 'none' : 'auto'}>
+                {children}
+              </View>
+            </FormInteractionContext.Provider>
           </ScrollView>
 
           {footer ? <View style={styles.footer}>{footer}</View> : null}

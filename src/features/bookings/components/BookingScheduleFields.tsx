@@ -1,4 +1,5 @@
 import React from 'react';
+import { Text } from 'react-native-paper';
 import { Control } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { DirectoryItem } from '@/features/company/types';
@@ -12,10 +13,12 @@ export function BookingScheduleFields({
   control,
   halls,
   selectedHallId,
+  retainedType,
 }: {
   control: Control<BookingFormValues>;
   halls: DirectoryItem[];
   selectedHallId?: string;
+  retainedType?: string;
 }) {
   const catalogs = useCatalogs();
   return (
@@ -45,7 +48,18 @@ export function BookingScheduleFields({
         name="type"
         label="Tip eveniment"
         single
-        options={catalogs.data?.event_types ?? []}
+        options={
+          retainedType &&
+          !catalogs.data?.event_types.some(option => option.id === retainedType)
+            ? [
+                ...(catalogs.data?.event_types ?? []),
+                {
+                  id: retainedType,
+                  name: retainedType + ' · Valoare păstrată',
+                },
+              ]
+            : (catalogs.data?.event_types ?? [])
+        }
         placeholder="Alege tipul"
         searchPlaceholder="Caută tip"
       />
@@ -66,6 +80,10 @@ export function BookingScheduleFields({
         label="Început — data și ora"
         placeholder="2026-10-24 18:00"
       />
+      <Text>
+        La schimbarea orei de toamnă, pentru ora repetată adaugă +03:00 (prima
+        apariție) sau +02:00 (a doua apariție).
+      </Text>
       <ControlledTextField
         control={control}
         name="ends_at"

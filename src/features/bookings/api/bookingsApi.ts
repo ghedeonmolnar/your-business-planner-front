@@ -43,9 +43,16 @@ export const saveBookingApi = ({
     body: payload,
     schema: bookingResponseSchema,
   });
-export const cancelBookingApi = (id: string) =>
+export const cancelBookingApi = ({
+  id,
+  version,
+}: {
+  id: string;
+  version: number;
+}) =>
   apiRequest<Booking>('/events/' + id, {
     method: 'DELETE',
+    body: { version },
     schema: bookingResponseSchema,
   });
 export const getCalendarApi = (filters: BookingFilters, signal?: AbortSignal) =>

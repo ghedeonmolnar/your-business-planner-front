@@ -38,8 +38,8 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
         onSuccess: () => {
           onClose();
           showMessage(
-            'Invitație trimisă',
-            'Persoana primește prin email codul pentru activarea contului.',
+            'Invitație salvată',
+            'Emailul de activare este programat pentru expediere. Starea lui apare în lista invitațiilor.',
           );
         },
         onError: error => showError(error, 'Nu am putut trimite invitația.'),
@@ -49,6 +49,7 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
   return (
     <FormModalFrame
       visible
+      busy={invite.isPending}
       title="Invită în companie"
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}

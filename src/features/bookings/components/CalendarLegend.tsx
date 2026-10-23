@@ -4,14 +4,30 @@ import { Text } from 'react-native-paper';
 import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { theme } from '@/shared/theme/theme';
 
+type LegendItem = {
+  label: string;
+  color: string;
+  outline?: boolean;
+  symbol?: string;
+};
+
 export function CalendarLegend({ period }: { period: CalendarPeriod }) {
-  const items =
+  const items: LegendItem[] =
     period === 'month'
       ? [
           { label: 'Azi', color: theme.colors.menu.surface, outline: true },
           { label: 'Selectat', color: theme.colors.menu.primary },
-          { label: 'Rezervat', color: theme.colors.menu.primarySoft },
+          {
+            label: 'Rezervat',
+            color: theme.colors.menu.primarySoft,
+            symbol: '•',
+          },
           { label: 'Liber', color: theme.colors.menu.border },
+          {
+            label: 'Necunoscut',
+            color: theme.colors.menu.surface,
+            symbol: '?',
+          },
         ]
       : [
           { label: 'Liber', color: theme.colors.menu.border },
@@ -33,7 +49,13 @@ export function CalendarLegend({ period }: { period: CalendarPeriod }) {
               { backgroundColor: item.color },
               item.outline ? styles.outline : undefined,
             ]}
-          />
+          >
+            {item.symbol ? (
+              <Text accessible={false} style={styles.symbol}>
+                {item.symbol}
+              </Text>
+            ) : null}
+          </View>
           <Text style={styles.label}>{item.label}</Text>
         </View>
       ))}
@@ -59,10 +81,13 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   dot: {
+    alignItems: 'center',
+    justifyContent: 'center',
     width: theme.spacing.lg,
     height: theme.spacing.lg,
     borderRadius: theme.radius.pill,
   },
+  symbol: { color: theme.colors.menu.text, fontSize: theme.typography.caption },
   outline: { borderColor: theme.colors.menu.primary, borderWidth: 2 },
   label: {
     color: theme.colors.menu.muted,

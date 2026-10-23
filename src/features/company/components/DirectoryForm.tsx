@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -28,6 +28,7 @@ export function DirectoryForm({
   onClose: () => void;
 }) {
   const save = useSaveDirectory();
+  const submitting = useRef(false);
   const form = useForm<DirectoryFormValues>({
     resolver: zodResolver(directorySchema),
     defaultValues: {
@@ -43,6 +44,10 @@ export function DirectoryForm({
     },
   });
   const submit = form.handleSubmit(values => {
+    if (submitting.current) {
+      return;
+    }
+    submitting.current = true;
     const payload: DirectoryPayload = { name: values.name };
     if (kind === 'clients') {
       payload.phone = values.phone || null;
@@ -63,6 +68,9 @@ export function DirectoryForm({
       { kind, id: item?.id, payload },
       {
         onSuccess: onClose,
+        onSettled: () => {
+          submitting.current = false;
+        },
         onError: error => showError(error, 'Nu am putut salva înregistrarea.'),
       },
     );
@@ -70,6 +78,7 @@ export function DirectoryForm({
   return (
     <FormModalFrame
       visible
+      busy={save.isPending}
       title={
         kind === 'clients'
           ? item
