@@ -220,7 +220,9 @@ test('retrimiterea după răspuns pierdut păstrează identitatea și datele ope
   await fillAmount(renderer, '1000');
   await save(renderer);
   expect(onClose).not.toHaveBeenCalled();
-  expect(renderer.root.findByType(FormModalFrame).props.readOnly).toBe(true);
+  await waitForUi(() =>
+    expect(renderer.root.findByType(FormModalFrame).props.readOnly).toBe(true),
+  );
   await save(renderer);
   const payloads = jest
     .mocked(globalThis.fetch)
@@ -273,23 +275,30 @@ test('redeschiderea formularului recuperează în aceeași sesiune operațiunea 
     );
   }
   const { renderer, unmount } = await renderWithProviders(<Probe />);
-  await fillAmount(renderer, '1000');
-  await save(renderer);
-  await ReactTestRenderer.act(async () =>
-    renderer.root.findByType(BookingPaymentForm).props.onClose(),
-  );
-  await ReactTestRenderer.act(async () =>
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Redeschide plata' })
-      .props.onPress(),
-  );
-  expect(renderer.root.findByType(FormModalFrame).props.readOnly).toBe(true);
-  await save(renderer);
-  const payloads = jest
-    .mocked(globalThis.fetch)
-    .mock.calls.filter(([, init]) => init?.method === 'POST')
-    .map(([, init]) => JSON.parse(String(init?.body)));
-  expect(payloads).toHaveLength(2);
-  expect(payloads[1]).toEqual(payloads[0]);
-  await unmount();
+  try {
+    await fillAmount(renderer, '1000');
+    await save(renderer);
+    await ReactTestRenderer.act(async () =>
+      renderer.root.findByType(BookingPaymentForm).props.onClose(),
+    );
+    await ReactTestRenderer.act(async () =>
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Redeschide plata' })
+        .props.onPress(),
+    );
+    await waitForUi(() =>
+      expect(renderer.root.findByType(FormModalFrame).props.readOnly).toBe(
+        true,
+      ),
+    );
+    await save(renderer);
+    const payloads = jest
+      .mocked(globalThis.fetch)
+      .mock.calls.filter(([, init]) => init?.method === 'POST')
+      .map(([, init]) => JSON.parse(String(init?.body)));
+    expect(payloads).toHaveLength(2);
+    expect(payloads[1]).toEqual(payloads[0]);
+  } finally {
+    await unmount();
+  }
 });

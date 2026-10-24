@@ -34,3 +34,13 @@ Jurnalul plăților este păstrat numai pentru sesiunea autentificată restaurat
 Un refuz 4xx poate debloca payloadul numai la prima trimitere. Dacă a existat deja un rezultat incert, un 403/404/422 primit ulterior nu demonstrează că prima cerere nu a fost salvată. În acest caz cheia și payloadul sălii/plății rămân păstrate pentru reconciliere; schimbarea permisiunilor sau validării nu autorizează automat o creare cu cheie nouă.
 
 Nu sunt necesare migrări sau pachete noi. Actualizarea folosește modulul Keychain deja instalat. Revenirea la aplicația anterioară pierde funcționalitatea de recuperare a jurnalului; operațiile incerte se reconciliază înaintea unui rollback. Nu au fost validate aici infrastructura de producție, protecția ramurilor GitHub, restaurarea backupurilor sau întreaga matrice de autorizare; observațiile auditului despre aceste domenii rămân limite de livrare, nu vulnerabilități demonstrate prin această schimbare.
+
+## Corectarea eșecurilor CI din PR-ul mobil
+
+Prima rulare CI a trecut verificările TypeScript, ESLint, dependențe și secrete, dar a raportat trei eșecuri Jest din 576 de teste. Rularea API a trecut inclusiv suitele SQLite/MySQL și verificările de dependențe/secrete. Aceste rezultate sunt cele ale commiturilor inițiale ale PR-urilor, fără a anticipa rezultatul următoarei revizii.
+
+Recuperarea sălii era inițializată înainte de terminarea restaurării identității în montarea izolată a ecranului: cheia inițială nu conținea compania, iar ciorna nu era recitită după bootstrap. Editorul așteaptă acum compania și se remontează când aceasta sau sursa se schimbă. Un test cu răspunsul `/me` întârziat verifică lipsa formularului înainte de identitate. Regresia originală păstrează comparația exactă a corpului multipart la redeschidere.
+
+Testul redeschiderii plății verifica imediat `readOnly` în timpul citirii asincrone a jurnalului. El așteaptă acum starea recuperată prin `waitForUi`, păstrând verificarea aceleiași chei și aceluiași payload. Testele de redeschidere fac unmount în `finally`, ca un eșec să nu lase callback-uri și revalidări active după terminarea testului.
+
+Testul ceasului număra toate timer-ele din mediul Jest, inclusiv două programări interne ale rendererului. El verifică acum intervalele exacte create de hook, oprirea progresului când tabul este ascuns, reluarea la revenire și eliminarea listenerelor la ascundere/unmount. Nu se dezactivează verificările, nu se suprimă erorile consolei și nu se folosește `forceExit`. Confirmarea corecțiilor rămâne în CI, conform ritmului local AGENTS.md.

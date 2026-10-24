@@ -14,6 +14,7 @@ import {
 import { advanceSessionGeneration } from '@/shared/api/sessionExpiry';
 import { hallFixture } from '@/features/halls/utils/hallTestFixtures';
 import { waitForUi } from '@/shared/test/waitForUi';
+import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
 
 jest.mock('@/shared/storage/authTokenStorage', () => ({
   clearAuthToken: jest.fn(() => Promise.resolve()),
@@ -23,6 +24,34 @@ jest.mock('@/shared/storage/authTokenStorage', () => ({
 jest.mock('react-native-image-picker', () => ({
   launchImageLibrary: jest.fn(() => Promise.resolve({ didCancel: true })),
 }));
+
+test('inițializează editorul numai după identificarea companiei din sesiunea restaurată', async () => {
+  hallFetch();
+  const originalFetch = globalThis.fetch;
+  let finishBootstrap: ((response: Response) => void) | undefined;
+  globalThis.fetch = jest.fn((url, init) =>
+    String(url).endsWith('/me')
+      ? new Promise<Response>(resolve => {
+          finishBootstrap = resolve;
+        })
+      : originalFetch(url, init),
+  ) as typeof globalThis.fetch;
+  const { renderer, unmount } = await renderHallScreen('HallForm');
+  try {
+    expect(renderer.root.findAllByType(HallEditor)).toHaveLength(0);
+    expect(
+      renderer.root.findAllByProps({ accessibilityLabel: 'Salvează sala' }),
+    ).toHaveLength(0);
+    await ReactTestRenderer.act(async () => {
+      finishBootstrap?.(jsonResponse(200, plannerAccount));
+    });
+    await waitForUi(() =>
+      expect(renderer.root.findAllByType(HallEditor)).toHaveLength(1),
+    );
+  } finally {
+    await unmount();
+  }
+});
 
 test('adăugarea respinge datele obligatorii lipsă înainte de cererea API', async () => {
   hallFetch();
@@ -123,50 +152,56 @@ test('răspunsul pierdut blochează editarea și păstrează exact multipartul d
       : Promise.resolve(jsonResponse(201, hallFixture));
   }) as typeof globalThis.fetch;
   const first = await renderHallScreen('HallForm');
-  await waitForUi(() =>
-    expect(first.renderer.root.findAllByType(HallEditor)).toHaveLength(1),
-  );
-  await ReactTestRenderer.act(async () => {
-    first.renderer.root
-      .findAllByType(TextInput)
-      .find(field => field.props.label === 'Nume sală *')
-      ?.props.onChangeText('Sală nouă');
-    first.renderer.root
-      .findAllByType(TextInput)
-      .find(field => field.props.label === 'Capacitate maximă (persoane) *')
-      ?.props.onChangeText('100');
-  });
-  await pressHallButton(first.renderer, 'Salvează sala');
-  await waitForUi(() =>
-    expect(
+  let unmountSecond: (() => Promise<void>) | undefined;
+  try {
+    await waitForUi(() =>
+      expect(first.renderer.root.findAllByType(HallEditor)).toHaveLength(1),
+    );
+    await ReactTestRenderer.act(async () => {
       first.renderer.root
         .findAllByType(TextInput)
-        .find(field => field.props.label === 'Nume sală *')?.props.disabled,
-    ).toBe(true),
-  );
-  await first.unmount();
-  const second = await renderHallScreen('HallForm');
-  await waitForUi(() =>
-    expect(
+        .find(field => field.props.label === 'Nume sală *')
+        ?.props.onChangeText('Sală nouă');
+      first.renderer.root
+        .findAllByType(TextInput)
+        .find(field => field.props.label === 'Capacitate maximă (persoane) *')
+        ?.props.onChangeText('100');
+    });
+    await pressHallButton(first.renderer, 'Salvează sala');
+    await waitForUi(() =>
+      expect(
+        first.renderer.root
+          .findAllByType(TextInput)
+          .find(field => field.props.label === 'Nume sală *')?.props.disabled,
+      ).toBe(true),
+    );
+    await first.unmount();
+    const second = await renderHallScreen('HallForm');
+    unmountSecond = second.unmount;
+    await waitForUi(() =>
+      expect(
+        second.renderer.root
+          .findAllByType(TextInput)
+          .find(field => field.props.label === 'Nume sală *')?.props.value,
+      ).toBe('Sală nouă'),
+    );
+    await ReactTestRenderer.act(async () => {
       second.renderer.root
         .findAllByType(TextInput)
-        .find(field => field.props.label === 'Nume sală *')?.props.value,
-    ).toBe('Sală nouă'),
-  );
-  await ReactTestRenderer.act(async () => {
-    second.renderer.root
-      .findAllByType(TextInput)
-      .find(field => field.props.label === 'Nume sală *')
-      ?.props.onChangeText('');
-  });
-  await pressHallButton(second.renderer, 'Salvează sala');
-  await waitForUi(() => expect(posts).toBe(2));
-  const bodies = jest
-    .mocked(globalThis.fetch)
-    .mock.calls.filter(([, init]) => init?.method === 'POST')
-    .map(([, init]) => init?.body);
-  expect(bodies[1]).toBe(bodies[0]);
-  await second.unmount();
+        .find(field => field.props.label === 'Nume sală *')
+        ?.props.onChangeText('');
+    });
+    await pressHallButton(second.renderer, 'Salvează sala');
+    await waitForUi(() => expect(posts).toBe(2));
+    const bodies = jest
+      .mocked(globalThis.fetch)
+      .mock.calls.filter(([, init]) => init?.method === 'POST')
+      .map(([, init]) => init?.body);
+    expect(bodies[1]).toBe(bodies[0]);
+  } finally {
+    await first.unmount();
+    await unmountSecond?.();
+  }
 });
 
 test('răspunsul început într-o sesiune veche nu navighează și nu afișează dialog în sesiunea următoare', async () => {
