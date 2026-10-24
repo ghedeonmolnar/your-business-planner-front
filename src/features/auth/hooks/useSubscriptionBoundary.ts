@@ -37,7 +37,9 @@ export const useSubscriptionBoundary = (
       }
       if (Date.now() < expiry) {
         timer = setTimeout(
-          () => void revalidate(),
+          () => {
+            void revalidate();
+          },
           Math.min(expiry - Date.now(), MAXIMUM_TIMER_DELAY_MS),
         );
         return;
@@ -62,12 +64,16 @@ export const useSubscriptionBoundary = (
       } finally {
         refreshing = false;
         if (active) {
-          timer = setTimeout(() => void revalidate(), ACCESS_RETRY_DELAY_MS);
+          timer = setTimeout(() => {
+            void revalidate();
+          }, ACCESS_RETRY_DELAY_MS);
         }
       }
     };
     timer = setTimeout(
-      () => void revalidate(),
+      () => {
+        void revalidate();
+      },
       Math.max(0, Math.min(expiry - Date.now(), MAXIMUM_TIMER_DELAY_MS)),
     );
     const subscription = AppState.addEventListener('change', state => {

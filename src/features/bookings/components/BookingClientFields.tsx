@@ -42,7 +42,7 @@ export function BookingClientFields({
     retained,
   );
   const selectedClientId = form.watch('client_id');
-  const client =
+  const currentClient =
     selectedClient?.id === selectedClientId
       ? selectedClient
       : options.find(item => item.id === selectedClientId);
@@ -81,10 +81,10 @@ export function BookingClientFields({
         placeholder="Alege clientul"
         searchPlaceholder="Caută client"
       />
-      {client ? (
+      {currentClient ? (
         <>
-          <Text>{client.phone || 'Telefon lipsă'}</Text>
-          {!buildContactUrl('call', client.phone) ? (
+          <Text>{currentClient.phone || 'Telefon lipsă'}</Text>
+          {!buildContactUrl('call', currentClient.phone) ? (
             <AppButton
               label="Completează telefonul"
               variant="ghost"
@@ -93,9 +93,9 @@ export function BookingClientFields({
           ) : null}
         </>
       ) : null}
-      {editingPhone && client ? (
+      {editingPhone && currentClient ? (
         <BookingPhoneForm
-          client={client}
+          client={currentClient}
           onSaved={updated => {
             onSelected(updated);
             form.clearErrors('client_id');

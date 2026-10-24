@@ -22,13 +22,13 @@ test('o încărcare cu termen explicit continuă după termenul implicit și se 
     undefined,
     60_000,
   );
-  const rejected = expect(request).rejects.toMatchObject({ reason: 'timeout' });
+  const result = request.catch(error => error);
   await jest.advanceTimersByTimeAsync(20_001);
   expect(jest.mocked(globalThis.fetch).mock.calls[0][1]?.signal?.aborted).toBe(
     false,
   );
   await jest.advanceTimersByTimeAsync(40_000);
-  await rejected;
+  await expect(result).resolves.toMatchObject({ reason: 'timeout' });
   expect(jest.getTimerCount()).toBe(0);
 });
 
@@ -40,8 +40,8 @@ test('anularea externă oprește încărcarea și elimină temporizatorul', asyn
     controller.signal,
     60_000,
   );
-  const rejected = expect(request).rejects.toMatchObject({ reason: 'aborted' });
+  const result = request.catch(error => error);
   controller.abort();
-  await rejected;
+  await expect(result).resolves.toMatchObject({ reason: 'aborted' });
   expect(jest.getTimerCount()).toBe(0);
 });
