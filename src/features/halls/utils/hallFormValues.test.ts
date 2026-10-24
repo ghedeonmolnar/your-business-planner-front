@@ -58,15 +58,12 @@ test('trimite coperta nouă și păstrează imaginile existente fără a trimite
     'operation-id',
     1,
   );
-  const parts = (body as unknown as { _parts: [string, unknown][] })._parts;
-  const metadata = JSON.parse(
-    String(parts.find(([name]) => name === 'metadata')?.[1]),
-  );
+  const metadata = JSON.parse(String(body.getAll('metadata')[0]));
   expect(metadata.cover_upload_index).toBe(0);
   expect(metadata.image_ids).toEqual(['image-id']);
   expect(metadata.version).toBe(1);
   expect(JSON.stringify(metadata)).not.toContain('private.test');
-  expect(parts.find(([name]) => name === '_method')?.[1]).toBe('PUT');
+  expect(body.getAll('_method')[0]).toBe('PUT');
 });
 
 test('minimul sălii precompletează numai un contract nou și păstrează snapshotul existent', () => {

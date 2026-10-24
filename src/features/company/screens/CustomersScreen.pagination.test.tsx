@@ -27,7 +27,7 @@ test('o pagină eșuată păstrează clienții încărcați și retry adaugă re
     const path = String(url);
     if (path.endsWith('/me'))
       return Promise.resolve(jsonResponse(200, plannerAccount));
-    const second = path.includes('page=2');
+    const second = /[?&]page=2(?:&|$)/.test(path);
     if (second && ++pageTwoCalls === 1)
       return Promise.resolve(
         jsonResponse(500, { error: { code: 'SERVER_ERROR' } }),

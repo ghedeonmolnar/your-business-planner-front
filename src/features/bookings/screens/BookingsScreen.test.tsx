@@ -5,6 +5,8 @@ import { BookingForm } from '@/features/bookings/components/BookingForm';
 import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
 import { DatePickerField } from '@/shared/components/DatePickerField';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
+import { waitForUi } from '@/shared/test/waitForUi';
+import { renderedText } from '@/shared/test/renderedText';
 import {
   jsonResponse,
   paginatedResponse,
@@ -50,6 +52,17 @@ const select = async (
   label: string,
   value: string,
 ) => {
+  await waitForUi(() => {
+    const field = renderer.root
+      .findByType(BookingForm)
+      .findAllByType(SearchableSelect)
+      .find(item => item.props.label === label);
+    expect(
+      field?.props.options.some(
+        (option: { id: string }) => option.id === value,
+      ),
+    ).toBe(true);
+  });
   await ReactTestRenderer.act(async () => {
     const field = renderer.root
       .findByType(BookingForm)
@@ -177,7 +190,7 @@ test('oprește o rezervare nouă la clientul fără telefon și oferă completar
     });
   });
   await press(renderer, 'Continuă');
-  expect(JSON.stringify(renderer.toJSON())).toContain(
+  expect(renderedText(renderer)).toContain(
     'Completează telefonul clientului înainte de rezervare.',
   );
   expect(

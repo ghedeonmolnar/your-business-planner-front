@@ -5,6 +5,7 @@ import { Text } from 'react-native-paper';
 import { CalendarHallRow } from '@/features/bookings/components/CalendarHallRow';
 import { CalendarMonth } from '@/features/bookings/components/CalendarMonth';
 import { CalendarLegend } from '@/features/bookings/components/CalendarLegend';
+import { MetaPill } from '@/shared/components/MetaPill';
 import { theme } from '@/shared/theme/theme';
 
 const luminance = (color: string) => {
@@ -39,14 +40,7 @@ test('textul mic pentru sala liberă are contrast de cel puțin 4,5:1 pe fundalu
       />,
     );
   });
-  const status = renderer?.root
-    .findAllByType(Text)
-    .find(
-      node =>
-        node.props.children === 'Liberă' &&
-        StyleSheet.flatten(node.props.style)?.fontSize ===
-          theme.typography.caption,
-    );
+  const status = renderer?.root.findByType(MetaPill).findByType(Text);
   if (!status) throw new Error('Stare indisponibilă');
   const foreground = luminance(StyleSheet.flatten(status.props.style).color);
   const background = luminance(
@@ -86,7 +80,7 @@ test('afișează legenda fără liber sau necunoscut și fără simboluri în zi
   expect(
     renderer?.root.findAll(
       node =>
-        typeof node.props.accessibilityLabel === 'string' &&
+        typeof node.props?.accessibilityLabel === 'string' &&
         node.props.accessibilityLabel.includes('date indisponibile'),
     ).length,
   ).toBeGreaterThan(0);

@@ -9,6 +9,7 @@ import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import { AppSegmentedControl } from '@/shared/components/AppSegmentedControl';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { SearchField } from '@/shared/components/SearchField';
+import { waitForUi } from '@/shared/test/waitForUi';
 import {
   jsonResponse,
   paginatedResponse,
@@ -74,6 +75,11 @@ const press = async (
   renderer: ReactTestRenderer.ReactTestRenderer,
   label: string,
 ) => {
+  await waitForUi(() => {
+    expect(
+      renderer.root.findByProps({ accessibilityLabel: label }),
+    ).toBeDefined();
+  });
   await ReactTestRenderer.act(async () =>
     renderer.root.findByProps({ accessibilityLabel: label }).props.onPress(),
   );
@@ -118,7 +124,9 @@ test('clears old results on status and hall changes and ignores a late response 
         : paginatedResponse([plannerBooking]),
   );
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
-  expect(renderer.root.findAllByType(BookingCard)).toHaveLength(1);
+  await waitForUi(() =>
+    expect(renderer.root.findAllByType(BookingCard)).toHaveLength(1),
+  );
   await select(renderer, 'Starea rezervării', 'confirmed');
   expect(renderer.root.findAllByType(BookingCard)).toHaveLength(0);
   await select(renderer, 'Sală de evenimente', 'hall-2');

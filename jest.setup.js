@@ -111,3 +111,5 @@ jest.mock('@notifee/react-native', () => ({
     TIMESTAMP: 0,
   },
 }));
+globalThis.FormData =
+  require('react-native/Libraries/Network/FormData').default;

@@ -103,12 +103,8 @@ test('submit-ul dublu nu creează două săli și trimite cheia operațiunii', a
   const request = jest
     .mocked(globalThis.fetch)
     .mock.calls.find(([, init]) => init?.method === 'POST');
-  const parts = (
-    request?.[1]?.body as unknown as { _parts: [string, unknown][] }
-  )._parts;
-  const metadata = JSON.parse(
-    String(parts.find(([name]) => name === 'metadata')?.[1]),
-  );
+  const body = request?.[1]?.body as FormData;
+  const metadata = JSON.parse(String(body.getAll('metadata')[0]));
   expect(metadata.capacity).toBe(100);
   expect(metadata.operation_id).toMatch(/^[a-f\d-]{36}$/);
   expect(metadata.minimum_guests).toBeNull();
