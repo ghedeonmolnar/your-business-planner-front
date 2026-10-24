@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Keyboard, ScrollView, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ScrollView, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useForm } from 'react-hook-form';
@@ -13,7 +13,9 @@ import {
   hallFormDefaults,
   hallSaveBody,
 } from '@/features/halls/utils/hallFormValues';
-import { useHallMutations } from '@/features/halls/hooks/useHalls';
+import { useHallSubmission } from '@/features/halls/hooks/useHallSubmission';
+import { getHallCreationAttempt } from '@/features/halls/utils/hallCreationRecovery';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { useHallFormNavigation } from '@/features/halls/hooks/useHallFormNavigation';
 import { HallBasicsFields } from '@/features/halls/components/HallBasicsFields';
 import { HallAmenitiesFields } from '@/features/halls/components/HallAmenitiesFields';
@@ -25,10 +27,8 @@ import { AppButton } from '@/shared/components/AppButton';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormPanel } from '@/shared/components/FormPanel';
 import { FormInteractionContext } from '@/shared/components/FormInteractionContext';
-import { ApiError } from '@/shared/api/apiError';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { showError } from '@/shared/feedback/showError';
-import { showMessage } from '@/shared/feedback/showMessage';
 import { createOperationId } from '@/shared/utils/createOperationId';
 import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 
@@ -54,25 +54,46 @@ export function HallEditor({
   onBusy: (value: boolean) => void;
   onReload: () => Promise<Hall | undefined>;
 }) {
+  const { user } = useAuth();
+  const editingId = duplicate ? undefined : hall?.id;
+  const recoveryKey = JSON.stringify([
+    user?.company?.id,
+    duplicate ? hall?.id : 'new',
+  ]);
+  const [initialAttempt] = useState(() =>
+    editingId ? undefined : getHallCreationAttempt(recoveryKey),
+  );
   const form = useForm<HallFormValues>({
     resolver: zodResolver(hallFormSchema),
-    defaultValues: hallFormDefaults(hall, duplicate),
+    defaultValues: initialAttempt?.values ?? hallFormDefaults(hall, duplicate),
   });
   const [version, setVersion] = useState(duplicate ? undefined : hall?.version);
-  const [photos, setPhotos] = useState<HallPhotoDraft[]>(() =>
-    duplicate ? [] : photoDrafts(hall),
+  const [photos, setPhotos] = useState<HallPhotoDraft[]>(
+    () => initialAttempt?.photos ?? (duplicate ? [] : photoDrafts(hall)),
   );
   const [photosDirty, setPhotosDirty] = useState(false);
   const [picking, setPicking] = useState(false);
-  const [savedHall, setSavedHall] = useState<Hall>();
-  const [conflict, setConflict] = useState(false);
-  const [operationId] = useState(createOperationId);
+  const [operationId] = useState(
+    () => initialAttempt?.operationId ?? createOperationId(),
+  );
   const [sessionGeneration] = useState(getSessionGeneration);
-  const submitting = useRef(false);
-  const mutations = useHallMutations();
-  const busy =
-    mutations.save.isPending || form.formState.isSubmitting || picking;
-  const editingId = duplicate ? undefined : hall?.id;
+  const submission = useHallSubmission({
+    form,
+    initialAttempt,
+    recoveryKey,
+    editingId,
+    sessionGeneration,
+    blocked,
+    busy: picking,
+    buildAttempt: values => ({
+      values,
+      photos,
+      operationId,
+      body: hallSaveBody(values, photos, operationId, version),
+    }),
+  });
+  const { submit, uncertain, conflict, setConflict, savedHall } = submission;
+  const busy = submission.saving || form.formState.isSubmitting || picking;
   useEffect(() => {
     onBusy(busy);
     return () => onBusy(false);
@@ -107,39 +128,6 @@ export function HallEditor({
           });
       },
     });
-  const submit = form.handleSubmit(
-    async values => {
-      if (
-        submitting.current ||
-        busy ||
-        blocked ||
-        conflict ||
-        sessionGeneration !== getSessionGeneration()
-      )
-        return;
-      submitting.current = true;
-      Keyboard.dismiss();
-      try {
-        const result = await mutations.save.mutateAsync({
-          id: editingId,
-          body: hallSaveBody(values, photos, operationId, version),
-        });
-        if (sessionGeneration === getSessionGeneration()) setSavedHall(result);
-      } catch (error) {
-        if (sessionGeneration !== getSessionGeneration()) return;
-        if (error instanceof ApiError && error.status === 409)
-          setConflict(true);
-        showError(error, 'Nu am putut salva sala.');
-      } finally {
-        submitting.current = false;
-      }
-    },
-    () =>
-      showMessage(
-        'Verifică formularul',
-        'Corectează câmpurile marcate înainte de salvare.',
-      ),
-  );
   const currentPhotos = photos.map(photo =>
     photo.imageId
       ? {
@@ -152,7 +140,7 @@ export function HallEditor({
   );
   return (
     <>
-      <FormInteractionContext.Provider value={busy || blocked}>
+      <FormInteractionContext.Provider value={busy || blocked || uncertain}>
         <ScrollView
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
@@ -163,6 +151,12 @@ export function HallEditor({
             <Text style={styles.subtitle}>
               Ciornă nouă cu datele și facilitățile sălii. Galeria, notele
               interne și rezervările nu sunt copiate.
+            </Text>
+          ) : null}
+          {uncertain && !conflict ? (
+            <Text style={styles.body}>
+              Rezultatul creării nu este încă sigur. Reîncearcă salvarea pentru
+              a recupera sala folosind aceleași date și fotografii.
             </Text>
           ) : null}
           {conflict ? (
@@ -214,7 +208,7 @@ export function HallEditor({
         <AppButton
           label={editingId ? 'Salvează modificările' : 'Salvează sala'}
           loadingLabel="Se salvează…"
-          loading={mutations.save.isPending}
+          loading={submission.saving}
           fullWidth
           disabled={busy || blocked || conflict || Boolean(savedHall)}
           onPress={submit}

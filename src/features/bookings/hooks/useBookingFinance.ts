@@ -2,7 +2,6 @@ import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import {
   useInfiniteQuery,
   useMutation,
-  useMutationState,
   useQueryClient,
 } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -12,16 +11,16 @@ import {
   getBookingDocumentsApi,
   getBookingDownloadApi,
   getBookingPaymentsApi,
-  saveBookingPaymentApi,
   updateBookingDocumentApi,
   uploadBookingDocumentApi,
 } from '@/features/bookings/api/bookingFinanceApi';
 import { queryKeys } from '@/shared/api/queryKeys';
-import { ApiError } from '@/shared/api/apiError';
 import {
   invalidatePlannerDocuments,
   invalidatePlannerPayments,
 } from '@/shared/api/queryInvalidation';
+
+export { useSaveBookingPayment } from '@/features/bookings/hooks/useSaveBookingPayment';
 
 export const useBookingPayments = (id: string) => {
   const { user } = useAuth();
@@ -67,51 +66,6 @@ const useCompanyQueryClient = () => {
   const client = useQueryClient();
   const { user } = useAuth();
   return { client, companyId: user?.company?.id ?? '' };
-};
-export const useSaveBookingPayment = (eventId: string) => {
-  const { client, companyId } = useCompanyQueryClient();
-  const mutationKey = queryKeys.planner.finance(
-    companyId,
-    eventId,
-    'payment-operations',
-  );
-  const uncertainPayments = useMutationState({
-    filters: { mutationKey, status: 'error' },
-    select: mutation => {
-      const variables = mutation.state.variables as
-        Parameters<typeof saveBookingPaymentApi>[0] | undefined;
-      const error = mutation.state.error;
-      const refused =
-        error instanceof ApiError && error.status >= 400 && error.status < 500;
-      return variables && !variables.id && !refused ? variables : null;
-    },
-  });
-  const mutation = useMutation({
-    mutationKey,
-    gcTime: Infinity,
-    mutationFn: saveBookingPaymentApi,
-    onSuccess: (payment, variables) => {
-      if (variables.payload.operation_id) {
-        client
-          .getMutationCache()
-          .findAll({ mutationKey, status: 'error' })
-          .forEach(attempt => {
-            const previous = attempt.state.variables as
-              Parameters<typeof saveBookingPaymentApi>[0] | undefined;
-            if (
-              previous?.payload.operation_id === variables.payload.operation_id
-            ) {
-              client.getMutationCache().remove(attempt);
-            }
-          });
-      }
-      invalidatePlannerPayments(client, companyId, payment.event_id);
-    },
-  });
-  return {
-    ...mutation,
-    uncertainPayment: uncertainPayments.filter(item => item !== null).at(-1),
-  };
 };
 export const useCancelBookingPayment = (eventId: string) => {
   const { client, companyId } = useCompanyQueryClient();

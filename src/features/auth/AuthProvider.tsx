@@ -25,6 +25,7 @@ import {
 } from '@/shared/api/sessionExpiry';
 import { reportError } from '@/shared/monitoring/reportError';
 import { getAuthToken, setAuthToken } from '@/shared/storage/authTokenStorage';
+import { clearPaymentOperations } from '@/features/bookings/utils/paymentOperationJournal';
 
 type AuthContextValue = {
   isAuthenticated: boolean;
@@ -65,6 +66,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       await pendingSignOut.current;
       const version = ++sessionVersion.current;
       advanceSessionGeneration();
+      await clearPaymentOperations();
+      if (version !== sessionVersion.current) return;
       const tokenWrite = setAuthToken(token);
       pendingTokenWrite.current = tokenWrite;
       try {
@@ -129,6 +132,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         const profile = token ? await getMeApi() : null;
 
         if (!token) {
+          await clearPaymentOperations();
           clearPendingEventNavigation();
           try {
             await clearEventReminders();

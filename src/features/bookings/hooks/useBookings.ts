@@ -1,4 +1,5 @@
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
+import { useEffect } from 'react';
 import {
   useInfiniteQuery,
   useMutation,
@@ -17,18 +18,32 @@ import {
 import { BookingFilters } from '@/features/bookings/types';
 import { queryKeys } from '@/shared/api/queryKeys';
 import { invalidatePlannerBooking } from '@/shared/api/queryInvalidation';
+import { apiErrorCode } from '@/shared/api/apiError';
+
+const AGENDA_REFRESH_INTERVAL_MS = 30_000;
 
 export const useBookings = (filters: BookingFilters = {}, enabled = true) => {
   const { user } = useAuth();
-  return useInfiniteQuery({
-    queryKey: queryKeys.planner.bookings(user?.company?.id ?? '', filters),
+  const client = useQueryClient();
+  const queryKey = queryKeys.planner.bookings(user?.company?.id ?? '', filters);
+  const query = useInfiniteQuery({
+    queryKey,
     queryFn: ({ pageParam, signal }) =>
-      getBookingsApi(filters, pageParam, signal),
-    initialPageParam: 1,
+      getBookingsApi(filters, pageParam.page, signal, pageParam.snapshot),
+    initialPageParam: { page: 1, snapshot: undefined as string | undefined },
     getNextPageParam: page =>
-      page.page < page.lastPage ? page.page + 1 : undefined,
+      page.page < page.lastPage
+        ? { page: page.page + 1, snapshot: page.snapshot }
+        : undefined,
     enabled: enabled && Boolean(user?.subscription?.active),
+    refetchInterval:
+      filters.agenda === 'upcoming' ? AGENDA_REFRESH_INTERVAL_MS : false,
   });
+  const changed = apiErrorCode(query.error) === 'BOOKING_LIST_CHANGED';
+  useEffect(() => {
+    if (changed) void client.resetQueries({ queryKey, exact: true });
+  }, [changed, client, queryKey]);
+  return query;
 };
 export const useBooking = (id: string) => {
   const { user } = useAuth();

@@ -111,6 +111,64 @@ test('submit-ul dublu nu creează două săli și trimite cheia operațiunii', a
   await unmount();
 });
 
+test('răspunsul pierdut blochează editarea și păstrează exact multipartul după redeschidere', async () => {
+  hallFetch();
+  const originalFetch = globalThis.fetch;
+  let posts = 0;
+  globalThis.fetch = jest.fn((url, init) => {
+    if (init?.method !== 'POST') return originalFetch(url, init);
+    posts += 1;
+    return posts === 1
+      ? Promise.reject(new Error('Răspuns pierdut'))
+      : Promise.resolve(jsonResponse(201, hallFixture));
+  }) as typeof globalThis.fetch;
+  const first = await renderHallScreen('HallForm');
+  await waitForUi(() =>
+    expect(first.renderer.root.findAllByType(HallEditor)).toHaveLength(1),
+  );
+  await ReactTestRenderer.act(async () => {
+    first.renderer.root
+      .findAllByType(TextInput)
+      .find(field => field.props.label === 'Nume sală *')
+      ?.props.onChangeText('Sală nouă');
+    first.renderer.root
+      .findAllByType(TextInput)
+      .find(field => field.props.label === 'Capacitate maximă (persoane) *')
+      ?.props.onChangeText('100');
+  });
+  await pressHallButton(first.renderer, 'Salvează sala');
+  await waitForUi(() =>
+    expect(
+      first.renderer.root
+        .findAllByType(TextInput)
+        .find(field => field.props.label === 'Nume sală *')?.props.disabled,
+    ).toBe(true),
+  );
+  await first.unmount();
+  const second = await renderHallScreen('HallForm');
+  await waitForUi(() =>
+    expect(
+      second.renderer.root
+        .findAllByType(TextInput)
+        .find(field => field.props.label === 'Nume sală *')?.props.value,
+    ).toBe('Sală nouă'),
+  );
+  await ReactTestRenderer.act(async () => {
+    second.renderer.root
+      .findAllByType(TextInput)
+      .find(field => field.props.label === 'Nume sală *')
+      ?.props.onChangeText('');
+  });
+  await pressHallButton(second.renderer, 'Salvează sala');
+  await waitForUi(() => expect(posts).toBe(2));
+  const bodies = jest
+    .mocked(globalThis.fetch)
+    .mock.calls.filter(([, init]) => init?.method === 'POST')
+    .map(([, init]) => init?.body);
+  expect(bodies[1]).toBe(bodies[0]);
+  await second.unmount();
+});
+
 test('răspunsul început într-o sesiune veche nu navighează și nu afișează dialog în sesiunea următoare', async () => {
   hallFetch();
   const initialFetch = globalThis.fetch;

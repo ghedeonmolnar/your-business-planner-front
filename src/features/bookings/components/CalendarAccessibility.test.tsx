@@ -53,7 +53,7 @@ test('textul mic pentru sala liberă are contrast de cel puțin 4,5:1 pe fundalu
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });
 
-test('afișează legenda fără liber sau necunoscut și fără simboluri în zile, păstrând datele lipsă accesibile', async () => {
+test('distinge vizual liber, parțial, complet și date lipsă fără a depinde numai de culoare', async () => {
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(
@@ -62,7 +62,11 @@ test('afișează legenda fără liber sau necunoscut și fără simboluri în zi
         <CalendarMonth
           month="2026-11"
           selected="2026-11-01"
-          days={[{ date: '2026-10-31', confirmed: 1, tentative: 0, free: 0 }]}
+          days={[
+            { date: '2026-11-01', confirmed: 1, tentative: 0, free: 0 },
+            { date: '2026-11-02', confirmed: 1, tentative: 0, free: 1 },
+            { date: '2026-11-03', confirmed: 0, tentative: 0, free: 2 },
+          ]}
           onSelect={() => undefined}
         />
       </>,
@@ -71,12 +75,9 @@ test('afișează legenda fără liber sau necunoscut și fără simboluri în zi
   const texts = renderer?.root
     .findAllByType(Text)
     .map(node => node.props.children);
-  expect(texts).not.toContain('•');
-  expect(texts).not.toContain('?');
-  expect(texts).not.toContain('Necunoscut');
-  expect(texts).not.toContain('Liber');
-  expect(texts).toContain('Parțial rezervat');
-  expect(texts).toContain('Complet rezervat');
+  expect(texts).toEqual(expect.arrayContaining(['○', '◐', '●', '?']));
+  expect(texts).toContain('◐ Parțial rezervat');
+  expect(texts).toContain('● Complet rezervat');
   expect(
     renderer?.root.findAll(
       node =>

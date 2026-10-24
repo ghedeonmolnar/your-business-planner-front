@@ -31,23 +31,27 @@ jest.mock('@react-native-community/netinfo', () => ({
 }));
 
 jest.mock('react-native-keychain', () => {
-  let storedPassword = null;
+  const storedPasswords = new Map();
 
   return {
     ACCESSIBLE: {
       WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'WHEN_UNLOCKED_THIS_DEVICE_ONLY',
     },
-    getGenericPassword: jest.fn(() =>
-      storedPassword
-        ? Promise.resolve({ username: 'sanctum', password: storedPassword })
+    STORAGE_TYPE: { AES_GCM_NO_AUTH: 'KeystoreAESGCM_NoAuth' },
+    getGenericPassword: jest.fn(options =>
+      storedPasswords.has(options?.service)
+        ? Promise.resolve({
+            username: 'sanctum',
+            password: storedPasswords.get(options?.service),
+          })
         : Promise.resolve(false),
     ),
-    resetGenericPassword: jest.fn(() => {
-      storedPassword = null;
+    resetGenericPassword: jest.fn(options => {
+      storedPasswords.delete(options?.service);
       return Promise.resolve(true);
     }),
-    setGenericPassword: jest.fn((_username, password) => {
-      storedPassword = password;
+    setGenericPassword: jest.fn((_username, password, options) => {
+      storedPasswords.set(options?.service, password);
       return Promise.resolve(true);
     }),
   };

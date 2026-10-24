@@ -37,7 +37,8 @@ const companyDate = (value: dayjs.ConfigType) => {
   );
 };
 
-export const companyNow = () => companyDate(new Date());
+export const companyNow = (value: dayjs.ConfigType = new Date()) =>
+  companyDate(value);
 
 const MINUTE_MS = 60_000;
 const OFFSET_SAMPLE_DAYS = [-1, 0, 1];

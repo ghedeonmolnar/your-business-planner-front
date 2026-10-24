@@ -17,6 +17,7 @@ import { theme } from '@/shared/theme/theme';
 import { DirectoryItem } from '@/features/company/types';
 import { useCalendarRefresh } from '@/features/bookings/hooks/useCalendarRefresh';
 import { HallScreenHeader } from '@/features/halls/components/HallScreenHeader';
+import { CalendarDataFreshness } from '@/features/bookings/components/CalendarDataFreshness';
 
 export function CalendarScreen({
   initialHallId = '',
@@ -82,6 +83,12 @@ export function CalendarScreen({
           error={calendar.error}
           retry={() => calendar.refetch()}
         />
+        <CalendarDataFreshness
+          label="Sumar calendar"
+          updatedAt={calendar.dataUpdatedAt}
+          fetching={calendar.isFetching}
+          stale={calendar.isError || calendar.isStale}
+        />
         {calendar.data ? (
           calendarView.period === 'month' ? (
             <>
@@ -97,9 +104,6 @@ export function CalendarScreen({
               <CalendarDayHalls
                 date={calendarView.selected}
                 hallId={hallId || undefined}
-                free={
-                  days.find(day => day.date === calendarView.selected)?.free
-                }
                 onReserve={setReservationHall}
               />
             </>
@@ -112,11 +116,19 @@ export function CalendarScreen({
                 onSelect={calendarView.selectMonth}
               />
               {needsPreviousYear ? (
-                <QueryState
-                  loading={previousCalendar.isLoading}
-                  error={previousCalendar.error}
-                  retry={() => previousCalendar.refetch()}
-                />
+                <>
+                  <QueryState
+                    loading={previousCalendar.isLoading}
+                    error={previousCalendar.error}
+                    retry={() => previousCalendar.refetch()}
+                  />
+                  <CalendarDataFreshness
+                    label="Sumar luna precedentă"
+                    updatedAt={previousCalendar.dataUpdatedAt}
+                    fetching={previousCalendar.isFetching}
+                    stale={previousCalendar.isError || previousCalendar.isStale}
+                  />
+                </>
               ) : null}
               <CalendarMonthSummary
                 statistics={getMonthStatistics(selectedMonth, days)}

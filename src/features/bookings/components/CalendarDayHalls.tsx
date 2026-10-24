@@ -13,6 +13,7 @@ import { Card } from '@/shared/components/Card';
 import { AppButton } from '@/shared/components/AppButton';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { formatLongDate } from '@/shared/utils/formatDate';
+import { CalendarDataFreshness } from '@/features/bookings/components/CalendarDataFreshness';
 import { theme } from '@/shared/theme/theme';
 import { DirectoryItem } from '@/features/company/types';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
@@ -24,12 +25,10 @@ import {
 export function CalendarDayHalls({
   date,
   hallId,
-  free,
   onReserve,
 }: {
   date: string;
   hallId?: string;
-  free?: number;
   onReserve: (hall: DirectoryItem | null) => void;
 }) {
   const query = useHallDay(date, hallId);
@@ -38,6 +37,7 @@ export function CalendarDayHalls({
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const halls = query.data?.pages.flatMap(page => page.items) ?? [];
+  const free = halls.filter(hall => hall.status === 'free').length;
   return (
     <Card style={calendarStyles.card}>
       <View style={styles.header}>
@@ -45,8 +45,17 @@ export function CalendarDayHalls({
           {formatLongDate(date)}
         </Text>
         <Text style={calendarStyles.muted}>
-          Săli libere: <Text style={calendarStyles.primary}>{free ?? '—'}</Text>
+          {query.hasNextPage
+            ? 'Săli libere în lista încărcată: '
+            : 'Săli libere: '}
+          <Text style={calendarStyles.primary}>{query.data ? free : '—'}</Text>
         </Text>
+        <CalendarDataFreshness
+          label="Lista sălilor"
+          updatedAt={query.dataUpdatedAt}
+          fetching={query.isFetching}
+          stale={query.isError || query.isStale}
+        />
       </View>
       <QueryState
         loading={query.isLoading}

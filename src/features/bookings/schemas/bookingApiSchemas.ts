@@ -75,6 +75,10 @@ export const bookingPageSchema = z.object({
     current_page: z.number().int().positive(),
     last_page: z.number().int().positive(),
     total: z.number().int().nonnegative(),
+    snapshot: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/)
+      .optional(),
     months: z
       .array(
         z.object({
