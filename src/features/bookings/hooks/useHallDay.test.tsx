@@ -35,7 +35,7 @@ test('reia prima pagină a sălilor când revizia se schimbă între pagini', as
     const path = String(url);
     if (path.endsWith('/me'))
       return Promise.resolve(jsonResponse(200, plannerAccount));
-    if (path.includes('page=2')) {
+    if (new URL(path).searchParams.get('page') === '2') {
       expect(path).toContain('snapshot=' + 'a'.repeat(64));
       changed = true;
       return Promise.resolve(
