@@ -17,13 +17,15 @@ export function CalendarLegend({ period }: { period: CalendarPeriod }) {
           { label: 'Azi', color: theme.colors.menu.surface, outline: true },
           { label: 'Selectat', color: theme.colors.menu.primary },
           {
-            label: 'Parțial rezervat',
+            label: '◐ Parțial rezervat',
             color: theme.colors.menu.primarySoft,
           },
           {
-            label: 'Complet rezervat',
+            label: '● Complet rezervat',
             color: theme.colors.menu.success,
           },
+          { label: '○ Liber', color: theme.colors.menu.surface },
+          { label: '? Date indisponibile', color: theme.colors.menu.surface },
         ]
       : [
           { label: 'Liber', color: theme.colors.menu.border },

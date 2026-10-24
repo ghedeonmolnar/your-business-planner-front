@@ -10,6 +10,8 @@ import { catalogsFixture } from '@/shared/test/apiFixtures';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
 import { companyNow } from '@/shared/utils/formatDate';
+import { renderedText } from '@/shared/test/renderedText';
+import { queryKeys } from '@/shared/api/queryKeys';
 import {
   jsonResponse,
   paginatedResponse,
@@ -25,6 +27,63 @@ jest.mock('@/shared/storage/authTokenStorage', () => ({
   getAuthToken: jest.fn(() => Promise.resolve('owner-token')),
   setAuthToken: jest.fn(() => Promise.resolve()),
 }));
+
+test('numără sălile libere din lista afișată chiar dacă sumarul lunar este diferit', async () => {
+  let refreshFailed = false;
+  globalThis.fetch = jest.fn(url => {
+    const path = String(url);
+    if (path.endsWith('/me'))
+      return Promise.resolve(jsonResponse(200, plannerAccount));
+    if (path.endsWith('/catalogs'))
+      return Promise.resolve(jsonResponse(200, catalogsFixture));
+    if (path.includes('/calendar/day'))
+      return Promise.resolve(
+        paginatedResponse([
+          {
+            id: 'hall-1',
+            name: 'Sala ocupată',
+            capacity: 100,
+            booking_id: refreshFailed ? null : 'event-1',
+            status: refreshFailed ? 'free' : 'confirmed',
+          },
+        ]),
+      );
+    if (refreshFailed)
+      return Promise.resolve(
+        jsonResponse(503, { error: { code: 'SERVER_ERROR' } }),
+      );
+    return Promise.resolve(
+      jsonResponse(200, {
+        halls: [{ id: 'hall-1', name: 'Sala ocupată', is_active: true }],
+        days: [
+          {
+            date: companyNow().format('YYYY-MM-DD'),
+            confirmed: 0,
+            tentative: 0,
+            free: 99,
+          },
+        ],
+      }),
+    );
+  }) as typeof globalThis.fetch;
+  const { renderer, queryClient, unmount } = await renderWithProviders(
+    <CalendarScreen />,
+  );
+  await waitForUi(() =>
+    expect(renderedText(renderer)).toContain('Sala ocupată'),
+  );
+  expect(renderedText(renderer)).toMatch(/Săli libere:\s*0/);
+  expect(renderedText(renderer)).toContain('Ultima actualizare:');
+  refreshFailed = true;
+  await ReactTestRenderer.act(async () => {
+    await queryClient.invalidateQueries({
+      queryKey: queryKeys.planner.all('company-1'),
+    });
+  });
+  await waitForUi(() => expect(renderedText(renderer)).toContain('Date vechi'));
+  expect(renderedText(renderer)).toMatch(/Săli libere:\s*1/);
+  await unmount();
+});
 
 test('calendarul se montează pe date valide și schimbă împreună luna, ziua și filtrul sălii', async () => {
   const localized = jest

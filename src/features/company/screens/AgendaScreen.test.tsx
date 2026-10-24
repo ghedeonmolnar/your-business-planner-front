@@ -21,6 +21,7 @@ const mockNavigate = jest.fn();
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: mockNavigate }),
+  useIsFocused: () => true,
 }));
 jest.mock('@/shared/storage/authTokenStorage', () => ({
   clearAuthToken: jest.fn(() => Promise.resolve()),

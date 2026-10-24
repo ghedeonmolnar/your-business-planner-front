@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SectionList, StyleSheet, View } from 'react-native';
 import {
   useNavigation,
@@ -25,6 +25,7 @@ import {
 } from '@/shared/navigation/types';
 import { theme } from '@/shared/theme/theme';
 import { companyNow } from '@/shared/utils/formatDate';
+import { useAgendaClock } from '@/features/company/hooks/useAgendaClock';
 
 type AgendaNavigation = CompositeNavigationProp<
   BottomTabNavigationProp<HomeTabParamList, 'Dashboard'>,
@@ -38,9 +39,18 @@ export function AgendaScreen() {
   const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(
     new Set(),
   );
-  const query = useBookings({ agenda: 'upcoming' });
+  const { now, focused } = useAgendaClock();
+  const query = useBookings({ agenda: 'upcoming' }, focused);
+  const { refetch } = query;
+  useEffect(() => {
+    if (focused) void refetch();
+  }, [focused, refetch]);
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
-  const { nextBooking, sections } = buildAgendaSections(items, collapsedMonths);
+  const { nextBooking, sections } = buildAgendaSections(
+    items,
+    collapsedMonths,
+    now,
+  );
   const showFinance =
     user?.role !== 'employee' && hasCompanyFeature(user, 'finance');
 

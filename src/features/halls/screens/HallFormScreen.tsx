@@ -9,11 +9,14 @@ import { hallStyles as styles } from '@/features/halls/components/hallStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { Screen } from '@/shared/components/Screen';
 import { QueryState } from '@/shared/components/QueryState';
+import { useAuth } from '@/features/auth/AuthProvider';
 
 export function HallFormScreen({
   route,
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'HallForm'>) {
+  const { user, isBootstrapping } = useAuth();
+  const companyId = user?.company?.id;
   const sourceId = route.params.hallId ?? route.params.duplicateHallId;
   const duplicate = Boolean(route.params.duplicateHallId);
   const query = useHall(sourceId);
@@ -23,7 +26,7 @@ export function HallFormScreen({
     (duplicate
       ? query.data?.permissions.can_duplicate
       : query.data?.permissions.can_edit);
-  const ready = !sourceId || Boolean(query.data);
+  const ready = Boolean(companyId) && (!sourceId || Boolean(query.data));
   return (
     <Screen>
       <HallScreenHeader
@@ -38,6 +41,7 @@ export function HallFormScreen({
           if (!busy) navigation.goBack();
         }}
       />
+      {isBootstrapping ? <QueryState loading /> : null}
       {sourceId && (query.isLoading || query.error || !allowed) ? (
         <View style={styles.content}>
           <QueryState
@@ -59,7 +63,7 @@ export function HallFormScreen({
       ) : null}
       {ready && allowed ? (
         <HallEditor
-          key={sourceId ?? 'new'}
+          key={`${companyId}:${sourceId ?? 'new'}`}
           hall={query.data}
           duplicate={duplicate}
           blocked={Boolean(query.error)}

@@ -25,9 +25,10 @@ export const getBookingsApi = async (
   filters: BookingFilters,
   page: number,
   signal?: AbortSignal,
+  snapshot?: string,
 ) => {
   const result = await apiRequest(
-    `/events?${bookingQuery(filters)}&page=${page}&per_page=${DEFAULT_PAGE_SIZE}`,
+    `/events?${bookingQuery(filters)}&page=${page}&per_page=${DEFAULT_PAGE_SIZE}${snapshot ? `&snapshot=${encodeURIComponent(snapshot)}` : ''}`,
     {
       signal,
       schema: bookingPageSchema,
@@ -39,6 +40,7 @@ export const getBookingsApi = async (
     lastPage: result.meta.last_page,
     total: result.meta.total,
     months: result.meta.months ?? [],
+    snapshot: result.meta.snapshot,
   };
 };
 export const getBookingApi = (id: string, signal?: AbortSignal) =>

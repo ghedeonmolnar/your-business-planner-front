@@ -1,5 +1,5 @@
 import { Booking } from '@/features/bookings/types';
-import { formatMonthLabel } from '@/shared/utils/formatDate';
+import { companyNow, formatMonthLabel } from '@/shared/utils/formatDate';
 
 export type AgendaMonthSection = {
   key: string;
@@ -11,9 +11,18 @@ export type AgendaMonthSection = {
 export function buildAgendaSections(
   bookings: Booking[],
   collapsedMonths: ReadonlySet<string>,
+  now = Date.now(),
 ) {
+  const today = companyNow(now).format('YYYY-MM-DD');
   const upcoming = bookings.filter(
-    booking => booking.status === 'confirmed' || booking.status === 'tentative',
+    booking =>
+      (booking.status === 'confirmed' ||
+        (booking.status === 'tentative' &&
+          booking.expires_at !== null &&
+          Date.parse(booking.expires_at) > now)) &&
+      (booking.ends_at
+        ? Date.parse(booking.ends_at) > now
+        : booking.date >= today),
   );
   const [nextBooking, ...remaining] = upcoming;
   const months = new Map<string, AgendaMonthSection>();

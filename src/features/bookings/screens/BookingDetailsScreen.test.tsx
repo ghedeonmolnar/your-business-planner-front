@@ -58,51 +58,65 @@ test('records an advance from the reservation screen with the API mocked', async
       </Stack.Navigator>
     </NavigationContainer>,
   );
-  await waitForUi(() => {
-    expect(
-      renderer.root.findByProps({ accessibilityLabel: 'Plăți și cheltuieli' }),
-    ).toBeDefined();
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Plăți și cheltuieli' })
-      .props.onPress();
-  });
-  await waitForUi(() => {
-    expect(
-      renderer.root.findByProps({
-        accessibilityLabel: 'Adaugă încasare sau cheltuială',
-      }),
-    ).toBeDefined();
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Adaugă încasare sau cheltuială' })
-      .props.onPress();
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Sumă (lei)' })
-      .props.onChangeText('10000');
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Salvează plata' })
-      .props.onPress();
-  });
-  const requests = jest
-    .mocked(globalThis.fetch)
-    .mock.calls.filter(([, init]) => init?.method === 'POST');
-  expect(requests).toHaveLength(1);
-  expect(String(requests[0][0])).toContain('/events/event-1/payments');
-  expect(JSON.parse(String(requests[0][1]?.body))).toMatchObject({
-    type: 'incoming',
-    category: 'advance',
-    amount: '10000',
-    status: 'completed',
-  });
-  expect(renderer.root.findAllByType(BookingPaymentForm)).toHaveLength(0);
-  await unmount();
+  try {
+    await waitForUi(() => {
+      expect(
+        renderer.root.findByProps({
+          accessibilityLabel: 'Plăți și cheltuieli',
+        }),
+      ).toBeDefined();
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Plăți și cheltuieli' })
+        .props.onPress();
+    });
+    await waitForUi(() => {
+      expect(
+        renderer.root.findByProps({
+          accessibilityLabel: 'Adaugă încasare sau cheltuială',
+        }),
+      ).toBeDefined();
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Adaugă încasare sau cheltuială' })
+        .props.onPress();
+    });
+    await waitForUi(() => {
+      expect(
+        renderer.root.findByProps({ accessibilityLabel: 'Sumă (lei)' }).props
+          .disabled,
+      ).toBe(false);
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Sumă (lei)' })
+        .props.onChangeText('10000');
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Salvează plata' })
+        .props.onPress();
+    });
+    await waitForUi(() => {
+      expect(renderer.root.findAllByType(BookingPaymentForm)).toHaveLength(0);
+    });
+    const requests = jest
+      .mocked(globalThis.fetch)
+      .mock.calls.filter(([, init]) => init?.method === 'POST');
+    expect(requests).toHaveLength(1);
+    expect(String(requests[0][0])).toContain('/events/event-1/payments');
+    expect(JSON.parse(String(requests[0][1]?.body))).toMatchObject({
+      type: 'incoming',
+      category: 'advance',
+      amount: '10000',
+      status: 'completed',
+    });
+    expect(renderer.root.findAllByType(BookingPaymentForm)).toHaveLength(0);
+  } finally {
+    await unmount();
+  }
 });
 
 test('edits a pending receipt into an expense with a compatible category', async () => {
@@ -151,56 +165,72 @@ test('edits a pending receipt into an expense with a compatible category', async
       </Stack.Navigator>
     </NavigationContainer>,
   );
-  await waitForUi(() => {
-    expect(
-      renderer.root.findByProps({ accessibilityLabel: 'Plăți și cheltuieli' }),
-    ).toBeDefined();
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Plăți și cheltuieli' })
-      .props.onPress();
-  });
-  await waitForUi(() => {
-    expect(
-      renderer.root.findByProps({ accessibilityLabel: 'Editează plata' }),
-    ).toBeDefined();
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Editează plata' })
-      .props.onPress();
-  });
-  await ReactTestRenderer.act(async () => {
-    const operation = renderer.root
-      .findByType(BookingPaymentForm)
-      .findAllByType(SearchableSelect)
-      .find(field => field.props.label === 'Operațiune');
-    if (!operation) {
-      throw new Error('Lipsește selectorul operațiunii.');
-    }
-    operation.props.onChange(['outgoing']);
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Salvează plata' })
-      .props.onPress();
-  });
-  const requests = jest
-    .mocked(globalThis.fetch)
-    .mock.calls.filter(([, init]) => init?.method === 'PUT');
-  expect(requests).toHaveLength(1);
-  expect(String(requests[0][0])).toContain('/event-payments/payment-1');
-  expect(JSON.parse(String(requests[0][1]?.body))).toMatchObject({
-    type: 'outgoing',
-    category: 'staff',
-    amount: '100',
-    status: 'pending',
-  });
-  expect(
-    jest
+  try {
+    await waitForUi(() => {
+      expect(
+        renderer.root.findByProps({
+          accessibilityLabel: 'Plăți și cheltuieli',
+        }),
+      ).toBeDefined();
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Plăți și cheltuieli' })
+        .props.onPress();
+    });
+    await waitForUi(() => {
+      expect(
+        renderer.root.findByProps({ accessibilityLabel: 'Editează plata' }),
+      ).toBeDefined();
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Editează plata' })
+        .props.onPress();
+    });
+    await waitForUi(() => {
+      expect(
+        renderer.root
+          .findByType(BookingPaymentForm)
+          .findAllByType(SearchableSelect)
+          .some(field => field.props.label === 'Operațiune'),
+      ).toBe(true);
+    });
+    await ReactTestRenderer.act(async () => {
+      const operation = renderer.root
+        .findByType(BookingPaymentForm)
+        .findAllByType(SearchableSelect)
+        .find(field => field.props.label === 'Operațiune');
+      if (!operation) {
+        throw new Error('Lipsește selectorul operațiunii.');
+      }
+      operation.props.onChange(['outgoing']);
+    });
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findByProps({ accessibilityLabel: 'Salvează plata' })
+        .props.onPress();
+    });
+    await waitForUi(() => {
+      expect(renderer.root.findAllByType(BookingPaymentForm)).toHaveLength(0);
+    });
+    const requests = jest
       .mocked(globalThis.fetch)
-      .mock.calls.some(([, init]) => init?.method === 'POST'),
-  ).toBe(false);
-  await unmount();
+      .mock.calls.filter(([, init]) => init?.method === 'PUT');
+    expect(requests).toHaveLength(1);
+    expect(String(requests[0][0])).toContain('/event-payments/payment-1');
+    expect(JSON.parse(String(requests[0][1]?.body))).toMatchObject({
+      type: 'outgoing',
+      category: 'staff',
+      amount: '100',
+      status: 'pending',
+    });
+    expect(
+      jest
+        .mocked(globalThis.fetch)
+        .mock.calls.some(([, init]) => init?.method === 'POST'),
+    ).toBe(false);
+  } finally {
+    await unmount();
+  }
 });

@@ -32,6 +32,8 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  BOOKING_LIST_CHANGED:
+    'Lista rezervărilor s-a schimbat. Se reîncarcă de la început pentru a afișa datele curente.',
   CLIENT_OPERATION_CONFLICT:
     'Această creare a fost deja înregistrată cu alte date sau clientul a fost arhivat. Verifică lista clienților înainte de o nouă încercare.',
   HALL_STORAGE_LIMIT:
@@ -175,6 +177,11 @@ type ErrorRecord = Record<string, unknown>;
 
 const isRecord = (value: unknown): value is ErrorRecord =>
   typeof value === 'object' && value !== null;
+
+export const apiErrorCode = (error: unknown): string | null =>
+  error instanceof ApiError && isRecord(error.details)
+    ? responseErrorCode({ kind: 'json', value: error.details.response })
+    : null;
 
 export const responseErrorCode = (body: ApiResponseBody): string | null =>
   body.kind === 'json' &&

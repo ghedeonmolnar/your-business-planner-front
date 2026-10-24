@@ -78,6 +78,8 @@ export function CalendarMonth({
                   ]}
                 >
                   <Text
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
                     style={[
                       styles.dayText,
                       occupied ? styles.occupiedText : undefined,
@@ -89,6 +91,19 @@ export function CalendarMonth({
                     ]}
                   >
                     {date.date()}
+                  </Text>
+                  <Text
+                    accessible={false}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    style={[
+                      styles.marker,
+                      isSelected || fullyBooked
+                        ? styles.selectedText
+                        : undefined,
+                    ]}
+                  >
+                    {!summary ? '?' : fullyBooked ? '●' : occupied ? '◐' : '○'}
                   </Text>
                 </View>
               </Pressable>
@@ -132,12 +147,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
     minHeight: theme.spacing.xxl + theme.spacing.sm,
     maxWidth: '100%',
-    paddingHorizontal: theme.spacing.xs,
   },
   dayText: {
     color: theme.colors.menu.text,
     fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.body,
+  },
+  marker: {
+    color: theme.colors.menu.text,
+    fontSize: theme.typography.caption,
+    fontFamily: theme.fonts.bodyMedium,
   },
   occupied: {
     backgroundColor: theme.colors.menu.primarySoft,
