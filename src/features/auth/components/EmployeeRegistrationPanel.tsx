@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Card } from '@/shared/components/Card';
+import { FormPanel } from '@/shared/components/FormPanel';
+import { FormActions } from '@/shared/components/FormActions';
 import { Text } from 'react-native-paper';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,8 +35,7 @@ export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
   });
 
   return (
-    <Card style={authPanelStyles.formPanel}>
-      <Text style={authPanelStyles.panelTitle}>Acceptă invitația</Text>
+    <FormPanel title="Acceptă invitația" busy={registration.isPending}>
       <Text>
         Introdu adresa și codul din emailul de invitație, înainte să expire.
       </Text>
@@ -75,14 +75,13 @@ export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
         placeholder="Repetă parola"
         secureTextEntry={!passwordVisible}
       />
-      <AppButton
-        disabled={registration.isPending}
-        fullWidth
-        label={
-          registration.isPending ? 'Se creează contul...' : 'Creează contul'
-        }
-        onPress={onSubmit}
-        size="large"
+      <FormActions
+        busy={registration.isPending}
+        primary={{
+          label: 'Creează contul',
+          loadingLabel: 'Se creează contul…',
+          onPress: onSubmit,
+        }}
       />
       <AppButton
         fullWidth
@@ -92,6 +91,6 @@ export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
         style={authPanelStyles.linkButton}
         variant="ghost"
       />
-    </Card>
+    </FormPanel>
   );
 }

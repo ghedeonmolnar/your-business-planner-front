@@ -60,6 +60,16 @@ test('records an advance from the reservation screen with the API mocked', async
   );
   await waitForUi(() => {
     expect(
+      renderer.root.findByProps({ accessibilityLabel: 'Plăți și cheltuieli' }),
+    ).toBeDefined();
+  });
+  await ReactTestRenderer.act(async () => {
+    renderer.root
+      .findByProps({ accessibilityLabel: 'Plăți și cheltuieli' })
+      .props.onPress();
+  });
+  await waitForUi(() => {
+    expect(
       renderer.root.findByProps({
         accessibilityLabel: 'Adaugă încasare sau cheltuială',
       }),
@@ -141,6 +151,16 @@ test('edits a pending receipt into an expense with a compatible category', async
       </Stack.Navigator>
     </NavigationContainer>,
   );
+  await waitForUi(() => {
+    expect(
+      renderer.root.findByProps({ accessibilityLabel: 'Plăți și cheltuieli' }),
+    ).toBeDefined();
+  });
+  await ReactTestRenderer.act(async () => {
+    renderer.root
+      .findByProps({ accessibilityLabel: 'Plăți și cheltuieli' })
+      .props.onPress();
+  });
   await waitForUi(() => {
     expect(
       renderer.root.findByProps({ accessibilityLabel: 'Editează plata' }),

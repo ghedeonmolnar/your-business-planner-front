@@ -1,10 +1,52 @@
+import { Linking } from 'react-native';
+import { advanceSessionGeneration } from '@/shared/api/sessionExpiry';
+import { showMessage } from '@/shared/feedback/showMessage';
 import {
   buildContactUrl,
   buildWhatsAppShareUrl,
   eventContactPhone,
+  openContact,
+  openWhatsAppShare,
 } from '@/shared/utils/contactLinks';
 
+jest.mock('@/shared/feedback/showMessage', () => ({ showMessage: jest.fn() }));
+
+test.each([
+  ['call', true],
+  ['call', false],
+  ['whatsapp', true],
+  ['whatsapp', false],
+] as const)(
+  'eroarea nativa %s respecta schimbarea sesiunii: %s',
+  async (channel, changed) => {
+    jest.mocked(showMessage).mockClear();
+    let fail: ((error: Error) => void) | undefined;
+    const spy = jest.spyOn(Linking, 'openURL').mockImplementationOnce(
+      () =>
+        new Promise((_resolve, reject) => {
+          fail = reject;
+        }),
+    );
+    try {
+      const result =
+        channel === 'call'
+          ? openContact('call', '0712345678')
+          : openWhatsAppShare('0712345678', 'Mesaj privat');
+      if (changed) advanceSessionGeneration();
+      fail?.(new Error('Native application unavailable'));
+      await result;
+      expect(showMessage).toHaveBeenCalledTimes(changed ? 0 : 1);
+    } finally {
+      spy.mockRestore();
+    }
+  },
+);
+
 describe('buildContactUrl', () => {
+  it('respinge literele și URL-urile în loc să le convertească într-un telefon', () => {
+    expect(buildContactUrl('call', 'abc0712345678')).toBeNull();
+    expect(buildContactUrl('whatsapp', 'https://0712345678')).toBeNull();
+  });
   it.each([
     ['whatsapp', '0732 652 339', 'https://wa.me/40732652339'],
     ['call', '0732 652 339', 'tel:+40732652339'],

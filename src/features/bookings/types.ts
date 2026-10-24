@@ -19,6 +19,7 @@ export type Booking = {
   client_id: string;
   client_name: string | null;
   client_phone: string | null;
+  client_version?: number | null;
   date: string;
   type: string;
   status: BookingStatus;
@@ -42,6 +43,8 @@ export type Booking = {
   employee_cost?: string;
   balance_due?: string;
   documents_count?: number;
+  incoming_payments_count?: number;
+  outgoing_payments_count?: number;
 };
 export type BookingPayload = {
   version?: number;
@@ -63,7 +66,16 @@ export type BookingPayload = {
   staff?: StaffAssignment[];
   notes: string;
 };
+export type BookingTimeframe = 'all' | 'upcoming' | 'past';
+export type BookingSort = 'date_asc' | 'date_desc';
+export type BookingPaymentStatus = 'unpaid' | 'partial' | 'paid';
+export type BookingMonthCount = { month: string; total: number };
 export type BookingFilters = {
+  search?: string;
+  timeframe?: BookingTimeframe;
+  sort?: BookingSort;
+  type?: string;
+  payment_status?: BookingPaymentStatus;
   agenda?: 'upcoming';
   date?: string;
   date_from?: string;
@@ -88,6 +100,7 @@ export type CalendarDay = {
   confirmed: number;
   tentative: number;
   free: number;
+  occupied_halls?: number;
 };
 export type CalendarSummary = {
   halls: { id: string; name: string; is_active: boolean }[];

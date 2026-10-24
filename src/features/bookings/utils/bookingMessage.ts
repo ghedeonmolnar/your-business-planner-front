@@ -19,7 +19,7 @@ export const bookingMessage = (booking: Booking, companyName: string) =>
     'Minim garantat: ' + booking.minimum_guests + ' invitați',
     booking.final_guests == null
       ? ''
-      : 'Invitați finali: ' + booking.final_guests,
+      : 'Meniuri comandate: ' + booking.final_guests,
     'Valoare estimată: ' + formatExactMoney(booking.total_amount),
     booking.paid_amount === undefined
       ? ''
@@ -30,7 +30,6 @@ export const bookingMessage = (booking: Booking, companyName: string) =>
     ...(booking.extra_services ?? []).map(
       service => service.name + ': ' + formatExactMoney(service.amount),
     ),
-    booking.notes ?? '',
   ]
     .filter(Boolean)
     .join('\n');

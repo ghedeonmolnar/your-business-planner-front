@@ -1,20 +1,29 @@
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React, { useState } from 'react';
 import { View } from 'react-native';
-import { Text } from 'react-native-paper';
-import { Card } from '@/shared/components/Card';
+import { RecordCard } from '@/shared/components/RecordCard';
+import { MetaPill } from '@/shared/components/MetaPill';
+import { InfoRow } from '@/shared/components/InfoRow';
+import { bookingPaymentCategories } from '@/features/bookings/utils/bookingLabels';
 import { BookingPaymentForm } from '@/features/bookings/components/BookingPaymentForm';
 import { BookingPayment } from '@/features/bookings/schemas/bookingFinanceSchemas';
 import {
   useBookingPayments,
   useCancelBookingPayment,
 } from '@/features/bookings/hooks/useBookingFinance';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { QueryState } from '@/shared/components/QueryState';
 import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { AppButton } from '@/shared/components/AppButton';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { showError } from '@/shared/feedback/showError';
 import { formatExactMoney } from '@/shared/utils/money';
 import { formatLongDate } from '@/shared/utils/formatDate';
+
+const paymentMethodLabels = {
+  cash: 'Numerar',
+  card: 'Card',
+  transfer: 'Transfer bancar',
+};
 
 export function BookingPayments({ eventId }: { eventId: string }) {
   const query = useBookingPayments(eventId);
@@ -24,31 +33,58 @@ export function BookingPayments({ eventId }: { eventId: string }) {
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
     <View style={styles.content}>
-      <Text style={styles.subtitle}>Încasări și cheltuieli</Text>
       <AppButton
         label="Adaugă încasare sau cheltuială"
+        multiline
         onPress={() => setCreating(true)}
       />
-      <QueryNotice
+      <QueryState
         loading={query.isLoading}
-        error={query.error}
+        hasData={items.length > 0}
+        error={query.isFetchNextPageError ? undefined : query.error}
         empty={!items.length}
         retry={() => query.refetch()}
       />
       {items.map(payment => (
-        <Card key={payment.id} style={styles.card}>
-          <Text style={styles.text}>
-            {payment.type === 'incoming' ? 'Încasare' : 'Cheltuială'} ·{' '}
-            {formatExactMoney(payment.amount)}
-          </Text>
-          <Text style={styles.muted}>
-            {formatLongDate(payment.paid_at)} ·{' '}
-            {payment.status === 'completed'
-              ? 'Efectuată'
-              : payment.status === 'cancelled'
-                ? 'Anulată'
-                : 'În așteptare'}
-          </Text>
+        <RecordCard
+          key={payment.id}
+          title={`${payment.type === 'incoming' ? 'Încasare' : 'Cheltuială'} · ${formatExactMoney(payment.amount)}`}
+          subtitle={formatLongDate(payment.paid_at)}
+          badge={
+            <MetaPill
+              label={
+                payment.status === 'completed'
+                  ? 'Efectuată'
+                  : payment.status === 'cancelled'
+                    ? 'Anulată'
+                    : 'În așteptare'
+              }
+              tone={
+                payment.status === 'completed'
+                  ? 'success'
+                  : payment.status === 'cancelled'
+                    ? 'danger'
+                    : 'warning'
+              }
+            />
+          }
+        >
+          <InfoRow
+            label="Categorie"
+            value={
+              bookingPaymentCategories[payment.type].find(
+                category => category.id === payment.category,
+              )?.name ?? payment.category
+            }
+          />
+          <InfoRow
+            label="Metodă"
+            value={
+              payment.method
+                ? paymentMethodLabels[payment.method]
+                : 'Necompletată'
+            }
+          />
           {payment.status !== 'cancelled' ? (
             <View style={styles.row}>
               <AppButton
@@ -59,7 +95,7 @@ export function BookingPayments({ eventId }: { eventId: string }) {
               <AppButton
                 label="Anulează plata"
                 variant="ghost"
-                disabled={cancel.isPending}
+                loading={cancel.isPending}
                 onPress={() =>
                   confirmAction({
                     title: 'Anulezi plata?',
@@ -79,15 +115,15 @@ export function BookingPayments({ eventId }: { eventId: string }) {
               />
             </View>
           ) : null}
-        </Card>
+        </RecordCard>
       ))}
-      {query.hasNextPage ? (
-        <AppButton
-          label="Mai multe plăți"
-          disabled={query.isFetchingNextPage}
-          onPress={() => query.fetchNextPage()}
-        />
-      ) : null}
+      <PaginationFooter
+        hasMore={Boolean(query.hasNextPage)}
+        loading={query.isFetchingNextPage}
+        error={query.isFetchNextPageError ? query.error : undefined}
+        onLoadMore={() => query.fetchNextPage()}
+        label="Mai multe plăți"
+      />
       {creating || editing ? (
         <BookingPaymentForm
           eventId={eventId}

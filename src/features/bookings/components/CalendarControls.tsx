@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { CalendarSummary } from '@/features/bookings/types';
 import { AppSegmentedControl } from '@/shared/components/AppSegmentedControl';
@@ -44,9 +43,6 @@ export function CalendarControls({
             accessibilityLabel="Revino la ziua de azi"
             icon="calendar-outline"
             onPress={onToday}
-            backgroundColor={theme.colors.menu.selected}
-            color={theme.colors.menu.primary}
-            style={styles.navigationButton}
           />
         }
       />
@@ -57,20 +53,12 @@ export function CalendarControls({
         ]}
         selectedIndex={period === 'month' ? 0 : 1}
         onChangeIndex={index => onPeriod(index === 0 ? 'month' : 'year')}
-        activeBackgroundColor={theme.colors.menu.primary}
-        inactiveBackgroundColor={theme.colors.menu.background}
-        activeColor={theme.colors.menu.surface}
-        inactiveColor={theme.colors.menu.primary}
-        segmentStyle={styles.segment}
       />
       <View style={styles.period}>
         <IconButton
           accessibilityLabel="Perioada anterioară"
           icon="chevron-back"
           onPress={() => onMove(-1)}
-          color={theme.colors.menu.primary}
-          backgroundColor={theme.colors.menu.primarySoft}
-          style={styles.navigationButton}
         />
         <Text
           accessibilityRole="header"
@@ -85,9 +73,6 @@ export function CalendarControls({
           accessibilityLabel="Perioada următoare"
           icon="chevron-forward"
           onPress={() => onMove(1)}
-          color={theme.colors.menu.primary}
-          backgroundColor={theme.colors.menu.primarySoft}
-          style={styles.navigationButton}
         />
       </View>
       <View>
@@ -107,48 +92,14 @@ export function CalendarControls({
           placeholder="Toate sălile"
           searchPlaceholder="Caută sala"
           noItemsText="Adaugă prima sală din Mai multe → Săli."
-          style={styles.hallField}
+          icon="business-outline"
         />
-        <View pointerEvents="none" style={styles.hallIcon}>
-          <Ionicons
-            accessible={false}
-            name="business-outline"
-            size={theme.typography.title}
-            color={theme.colors.menu.muted}
-          />
-        </View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  segment: {
-    borderColor: theme.colors.menu.border,
-    borderRadius: theme.radius.md,
-    borderTopLeftRadius: theme.radius.md,
-    borderTopRightRadius: theme.radius.md,
-    borderBottomLeftRadius: theme.radius.md,
-    borderBottomRightRadius: theme.radius.md,
-    minHeight: theme.controls.fieldHeight,
-  },
   period: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.sm },
   periodTitle: { flex: 1, textAlign: 'center' },
-  navigationButton: {
-    width: theme.spacing.xl * 2,
-    height: theme.spacing.xl * 2,
-  },
-  hallField: {
-    backgroundColor: theme.colors.menu.surface,
-    borderColor: theme.colors.menu.border,
-    borderRadius: theme.radius.md,
-    paddingLeft: theme.spacing.xxl + theme.spacing.lg,
-  },
-  hallIcon: {
-    position: 'absolute',
-    left: theme.spacing.lg,
-    top: 0,
-    bottom: 0,
-    justifyContent: 'center',
-  },
 });

@@ -27,6 +27,7 @@ test.each([undefined, -1, '7', 1.5])(
     expect(
       customerListItemSchema.safeParse({
         id: 'client-1',
+        version: 1,
         name: 'Ana',
         bookings_count: count,
       }).success,

@@ -5,9 +5,11 @@ import { theme } from '@/shared/theme/theme';
 
 type CardProps = {
   accessibilityLabel?: string;
+  accessibilityHint?: string;
   children: ReactNode;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  highlighted?: boolean;
 };
 
 function flattenCardChildren(children: ReactNode): ReactNode {
@@ -21,11 +23,18 @@ function flattenCardChildren(children: ReactNode): ReactNode {
 
 export function Card({
   accessibilityLabel,
+  accessibilityHint,
   children,
   onPress,
   style,
+  highlighted = false,
 }: CardProps) {
-  const cardStyle: ViewStyle = StyleSheet.flatten([styles.card, style]) ?? {};
+  const cardStyle: ViewStyle =
+    StyleSheet.flatten([
+      styles.card,
+      highlighted ? styles.highlighted : undefined,
+      style,
+    ]) ?? {};
   const {
     alignItems,
     justifyContent,
@@ -49,6 +58,7 @@ export function Card({
   return (
     <PaperCard
       accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
       accessibilityRole={onPress ? 'button' : undefined}
       contentStyle={{
         alignItems,
@@ -79,9 +89,16 @@ export function Card({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.menu.surface,
+    borderColor: theme.colors.menu.border,
     borderRadius: theme.radius.lg,
-    padding: theme.spacing.lg,
+    borderWidth: 0,
+    padding: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
+  highlighted: {
+    backgroundColor: theme.colors.menu.selected,
+    borderColor: theme.colors.menu.primarySoft,
+    borderWidth: 1,
   },
 });

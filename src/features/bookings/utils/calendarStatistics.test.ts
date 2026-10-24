@@ -14,6 +14,16 @@ const monthDays = (month: string): CalendarDay[] =>
     free: 2,
   }));
 
+test('continuarea în ziua următoare crește ocuparea fără să dubleze numărul rezervărilor', () => {
+  const days = monthDays('2027-01');
+  days[0] = { ...days[0], confirmed: 1, free: 1, occupied_halls: 1 };
+  days[1] = { ...days[1], confirmed: 0, free: 1, occupied_halls: 1 };
+  const statistics = getMonthStatistics('2027-01', days);
+  expect(statistics.bookings).toBe(1);
+  expect(statistics.freeDays).toBe(29);
+  expect(statistics.occupancy).toBeCloseTo(2 / 62);
+});
+
 test('numără fiecare weekend o singură dată și păstrează toate rezervările', () => {
   const days = monthDays('2027-01');
   days[1] = { ...days[1], confirmed: 1, tentative: 1, free: 0 };

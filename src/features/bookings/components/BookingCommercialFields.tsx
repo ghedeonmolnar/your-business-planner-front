@@ -19,14 +19,14 @@ export function BookingCommercialFields({
       <ControlledTextField
         control={form.control}
         name="minimum_guests"
-        label="Număr minim garantat"
+        label="Invitați minimi"
         placeholder="200"
         keyboardType="number-pad"
       />
       <ControlledTextField
         control={form.control}
         name="final_guests"
-        label="Număr final de invitați"
+        label="Meniuri comandate"
         placeholder="Se completează ulterior"
         keyboardType="number-pad"
       />

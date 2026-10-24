@@ -1,3 +1,4 @@
+import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
 import React, { useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -8,8 +9,8 @@ import { CustomerListHeader } from '@/features/company/components/CustomerListHe
 import { DirectoryForm } from '@/features/company/components/DirectoryForm';
 import { useCustomerFilters } from '@/features/company/hooks/useCustomerFilters';
 import { useCustomers } from '@/features/company/hooks/useCustomers';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
-import { AppButton } from '@/shared/components/AppButton';
+import { QueryState } from '@/shared/components/QueryState';
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { Screen } from '@/shared/components/Screen';
 import { RootStackParamList } from '@/shared/navigation/types';
@@ -52,9 +53,10 @@ export function CustomersScreen() {
                 onReset={filters.resetDates}
               />
             </CustomerListHeader>
-            <QueryNotice
+            <QueryState
               loading={query.isLoading}
-              error={query.error}
+              hasData={items.length > 0}
+              error={query.isFetchNextPageError ? undefined : query.error}
               retry={() => query.refetch()}
             />
           </View>
@@ -67,42 +69,37 @@ export function CustomersScreen() {
             }
           />
         )}
-        ItemSeparatorComponent={CustomerSeparator}
+        ItemSeparatorComponent={ListItemSeparator}
         ListEmptyComponent={
           !query.isLoading && !query.error ? (
-            <View style={styles.empty}>
-              <EmptyState
-                icon="people-outline"
-                title={
-                  filtered
-                    ? 'Niciun client pentru filtrele alese'
-                    : 'Adaugă primul client'
-                }
-                message={
-                  filtered
-                    ? 'Schimbă intervalul evenimentelor sau căutarea pentru a vedea alte rezultate.'
-                    : 'Păstrează aici clienții și istoricul rezervărilor lor.'
-                }
-              />
-              {filtered ? (
-                <AppButton
-                  label="Resetează filtrele"
-                  variant="soft"
-                  onPress={filters.resetAll}
-                />
-              ) : null}
-            </View>
+            <EmptyState
+              icon="people-outline"
+              title={
+                filtered
+                  ? 'Niciun client pentru filtrele alese'
+                  : 'Adaugă primul client'
+              }
+              message={
+                filtered
+                  ? 'Schimbă intervalul evenimentelor sau căutarea pentru a vedea alte rezultate.'
+                  : 'Păstrează aici clienții și istoricul rezervărilor lor.'
+              }
+              action={
+                filtered
+                  ? { label: 'Resetează filtrele', onPress: filters.resetAll }
+                  : { label: 'Adaugă client', onPress: () => setCreating(true) }
+              }
+            />
           ) : undefined
         }
         ListFooterComponent={
-          query.hasNextPage ? (
-            <AppButton
-              label="Încarcă mai mulți clienți"
-              disabled={query.isFetchingNextPage}
-              onPress={() => query.fetchNextPage()}
-              style={styles.loadMore}
-            />
-          ) : undefined
+          <PaginationFooter
+            hasMore={Boolean(query.hasNextPage)}
+            loading={query.isFetchingNextPage}
+            error={query.isFetchNextPageError ? query.error : undefined}
+            onLoadMore={() => query.fetchNextPage()}
+            label="Încarcă mai mulți clienți"
+          />
         }
       />
       {creating ? (
@@ -112,14 +109,7 @@ export function CustomersScreen() {
   );
 }
 
-function CustomerSeparator() {
-  return <View style={styles.separator} />;
-}
-
 const styles = StyleSheet.create({
   screen: { backgroundColor: theme.colors.menu.background },
   content: { padding: theme.spacing.md, paddingBottom: theme.spacing.xl },
-  separator: { height: theme.spacing.sm },
-  empty: { gap: theme.spacing.md },
-  loadMore: { marginTop: theme.spacing.lg },
 });

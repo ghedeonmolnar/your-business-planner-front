@@ -5,15 +5,20 @@ import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema
 import { DirectoryItem } from '@/features/company/types';
 import { staffRoleOptions } from '@/features/bookings/utils/bookingLabels';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
-import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
+import {
+  ControlledSelectField,
+  SelectOptionsState,
+} from '@/shared/components/ControlledSelectField';
 import { AppButton } from '@/shared/components/AppButton';
 
 export function BookingStaffFields({
   form,
   employees,
+  optionsState,
 }: {
   form: UseFormReturn<BookingFormValues>;
   employees: DirectoryItem[];
+  optionsState?: SelectOptionsState;
 }) {
   const staff = useFieldArray({ control: form.control, name: 'staff' });
   return (
@@ -28,6 +33,8 @@ export function BookingStaffFields({
             control={form.control}
             name={`staff.${index}.employee_id` as const}
             label="Persoană"
+            icon="person-outline"
+            optionsState={optionsState}
             single
             options={employees
               .filter(

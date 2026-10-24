@@ -3,6 +3,7 @@ import ReactTestRenderer from 'react-test-renderer';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BookingDetailsScreen } from '@/features/bookings/screens/BookingDetailsScreen';
+import { BookingDetailsHeader } from '@/features/bookings/components/BookingDetailsHeader';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { waitForUi } from '@/shared/test/waitForUi';
 import {
@@ -49,9 +50,9 @@ test('disabled capabilities hide financial controls and prevent optional request
   );
 
   await waitForUi(() => {
-    expect(
-      renderer.root.findByProps({ accessibilityLabel: 'Editează rezervarea' }),
-    ).toBeDefined();
+    expect(renderer.root.findByType(BookingDetailsHeader).props.canManage).toBe(
+      true,
+    );
   });
   expect(
     renderer.root.findAllByProps({
@@ -60,9 +61,7 @@ test('disabled capabilities hide financial controls and prevent optional request
   ).toHaveLength(0);
   expect(JSON.stringify(renderer.toJSON())).not.toContain('Încasat:');
   await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findByProps({ accessibilityLabel: 'Editează rezervarea' })
-      .props.onPress();
+    renderer.root.findByType(BookingDetailsHeader).props.onEdit();
   });
   const paths = jest
     .mocked(globalThis.fetch)

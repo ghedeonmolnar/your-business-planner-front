@@ -1,7 +1,7 @@
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React, { useState } from 'react';
 import { Linking, View } from 'react-native';
-import { Text } from 'react-native-paper';
-import { Card } from '@/shared/components/Card';
+import { RecordCard } from '@/shared/components/RecordCard';
 import { EventDocument } from '@/features/events/types';
 import { DocumentForm } from '@/features/events/components/DocumentForm';
 import {
@@ -11,7 +11,7 @@ import {
   useUpdateBookingDocument,
   useUploadBookingDocument,
 } from '@/features/bookings/hooks/useBookingFinance';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { QueryState } from '@/shared/components/QueryState';
 import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { AppButton } from '@/shared/components/AppButton';
 import { confirmAction } from '@/shared/feedback/confirmAction';
@@ -37,21 +37,20 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
     <View style={styles.content}>
-      <Text style={styles.subtitle}>Documente</Text>
       <AppButton label="Atașează document" onPress={() => setEditing('new')} />
-      <QueryNotice
+      <QueryState
         loading={query.isLoading}
-        error={query.error}
+        hasData={items.length > 0}
+        error={query.isFetchNextPageError ? undefined : query.error}
         empty={!items.length}
         retry={() => query.refetch()}
       />
       {items.map(document => (
-        <Card key={document.id} style={styles.card}>
-          <Text style={styles.text}>{document.title}</Text>
+        <RecordCard key={document.id} title={document.title}>
           <View style={styles.row}>
             <AppButton
               label="Deschide"
-              disabled={download.isPending}
+              loading={download.isPending}
               onPress={() => open(document.id)}
             />
             <AppButton
@@ -62,7 +61,7 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
             <AppButton
               label="Șterge"
               variant="ghost"
-              disabled={remove.isPending}
+              loading={remove.isPending}
               onPress={() =>
                 confirmAction({
                   title: 'Ștergi documentul?',
@@ -73,15 +72,15 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
               }
             />
           </View>
-        </Card>
+        </RecordCard>
       ))}
-      {query.hasNextPage ? (
-        <AppButton
-          label="Mai multe documente"
-          disabled={query.isFetchingNextPage}
-          onPress={() => query.fetchNextPage()}
-        />
-      ) : null}
+      <PaginationFooter
+        hasMore={Boolean(query.hasNextPage)}
+        loading={query.isFetchingNextPage}
+        error={query.isFetchNextPageError ? query.error : undefined}
+        onLoadMore={() => query.fetchNextPage()}
+        label="Mai multe documente"
+      />
       {editing ? (
         <DocumentForm
           visible

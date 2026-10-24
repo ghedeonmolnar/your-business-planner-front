@@ -2,9 +2,10 @@ import React from 'react';
 import { ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
 import { AppButton } from '@/shared/components/AppButton';
 import { Screen } from '@/shared/components/Screen';
+import { ContentSection } from '@/shared/components/ContentSection';
 import { showError } from '@/shared/feedback/showError';
 
 export function SubscriptionBlockedScreen() {
@@ -12,7 +13,7 @@ export function SubscriptionBlockedScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={styles.title}>Accesul companiei este inactiv</Text>
+        <ContentSection title="Accesul companiei este inactiv" size="page" />
         <Text style={styles.text}>
           Datele sunt păstrate. Contactează administratorul platformei pentru
           activarea sau prelungirea abonamentului.

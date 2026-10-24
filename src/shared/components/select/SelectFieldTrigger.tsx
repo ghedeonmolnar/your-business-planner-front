@@ -11,6 +11,7 @@ import { Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { formInputStyles } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
+import { IconName } from '@/shared/types/icon';
 
 type SelectFieldTriggerProps = {
   accessibilityLabel: string;
@@ -23,6 +24,7 @@ type SelectFieldTriggerProps = {
   onPress: () => void;
   placeholder: string;
   style?: StyleProp<ViewStyle>;
+  icon?: IconName;
 };
 
 export function SelectFieldTrigger({
@@ -36,6 +38,7 @@ export function SelectFieldTrigger({
   onPress,
   placeholder,
   style,
+  icon,
 }: SelectFieldTriggerProps) {
   return (
     <Pressable
@@ -44,7 +47,9 @@ export function SelectFieldTrigger({
       accessibilityState={{ disabled, expanded }}
       accessibilityValue={{ text: accessibilityValueText }}
       disabled={disabled}
-      onPress={onPress}
+      onPress={() => {
+        if (!disabled) onPress();
+      }}
       style={[
         formInputStyles.field,
         formInputStyles.fieldDimensions,
@@ -54,6 +59,15 @@ export function SelectFieldTrigger({
         style,
       ]}
     >
+      {icon ? (
+        <Ionicons
+          accessible={false}
+          name={icon}
+          size={theme.typography.title}
+          color={theme.colors.menu.muted}
+          style={styles.leadingIcon}
+        />
+      ) : null}
       {children ?? (
         <Text numberOfLines={1} style={selectFieldStyles.placeholder}>
           {placeholder}
@@ -63,10 +77,11 @@ export function SelectFieldTrigger({
         <Pressable
           accessibilityLabel={`Golește ${accessibilityLabel}`}
           accessibilityRole="button"
-          hitSlop={8}
+          disabled={disabled}
+          hitSlop={theme.spacing.sm}
           onPress={event => {
             event.stopPropagation();
-            onClear();
+            if (!disabled) onClear();
           }}
           style={styles.accessory}
         >
@@ -102,6 +117,7 @@ export const selectFieldStyles = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
+  leadingIcon: { marginRight: theme.spacing.sm },
   field: {
     flexDirection: 'row',
     justifyContent: 'space-between',

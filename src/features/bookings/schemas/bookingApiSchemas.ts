@@ -19,6 +19,7 @@ export const bookingSchema = z.object({
   client_id: z.string(),
   client_name: z.string().nullable(),
   client_phone: z.string().nullable(),
+  client_version: z.number().int().positive().nullable().optional(),
   date: z.iso.date(),
   type: z.string(),
   status: z.enum([
@@ -50,6 +51,8 @@ export const bookingSchema = z.object({
   employee_cost: z.string().optional(),
   balance_due: z.string().optional(),
   documents_count: z.number().optional(),
+  incoming_payments_count: z.number().int().nonnegative().optional(),
+  outgoing_payments_count: z.number().int().nonnegative().optional(),
 });
 export const calendarSummarySchema = z.object({
   halls: z.array(
@@ -61,7 +64,24 @@ export const calendarSummarySchema = z.object({
       confirmed: z.number().int().nonnegative(),
       tentative: z.number().int().nonnegative(),
       free: z.number().int().nonnegative(),
+      occupied_halls: z.number().int().nonnegative().optional(),
     }),
   ),
 });
 export const bookingResponseSchema = bookingSchema;
+export const bookingPageSchema = z.object({
+  data: z.array(bookingSchema),
+  meta: z.object({
+    current_page: z.number().int().positive(),
+    last_page: z.number().int().positive(),
+    total: z.number().int().nonnegative(),
+    months: z
+      .array(
+        z.object({
+          month: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/),
+          total: z.number().int().nonnegative(),
+        }),
+      )
+      .optional(),
+  }),
+});

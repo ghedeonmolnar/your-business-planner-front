@@ -9,6 +9,7 @@ export const bookingFormDefaults = (
   date: string,
   hallId?: string,
   booking?: Booking,
+  defaultMinimumGuests?: number | null,
 ): BookingFormValues => ({
   hall_id: booking?.hall_id ?? hallId ?? '',
   client_id: booking?.client_id ?? '',
@@ -21,7 +22,9 @@ export const bookingFormDefaults = (
   starts_at: formatCompanyInput(booking?.starts_at),
   ends_at: formatCompanyInput(booking?.ends_at),
   expires_at: formatCompanyInput(booking?.expires_at),
-  minimum_guests: String(booking?.minimum_guests ?? 0),
+  minimum_guests: String(
+    booking ? (booking.minimum_guests ?? 0) : (defaultMinimumGuests ?? 0),
+  ),
   final_guests:
     booking?.final_guests == null ? '' : String(booking.final_guests),
   menu_price: booking?.menu_price ?? '0',

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card } from '@/shared/components/Card';
-import { Text } from 'react-native-paper';
+import { FormPanel } from '@/shared/components/FormPanel';
+import { FormActions } from '@/shared/components/FormActions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
@@ -63,8 +63,7 @@ export function ResetPasswordPanel({
   });
 
   return (
-    <Card style={authPanelStyles.formPanel}>
-      <Text style={authPanelStyles.panelTitle}>Cod resetare</Text>
+    <FormPanel title="Cod resetare" busy={resetPassword.isPending}>
       <ControlledTextField
         autoCapitalize="none"
         control={resetForm.control}
@@ -105,14 +104,14 @@ export function ResetPasswordPanel({
         placeholder="Repetă parola"
         secureTextEntry={!isNewPasswordVisible}
       />
-      <AppButton
-        disabled={resetPassword.isPending}
-        fullWidth
-        icon="checkmark"
-        iconPosition="right"
-        label={resetPassword.isPending ? 'Se salvează...' : 'Resetează parola'}
-        onPress={onSubmit}
-        size="large"
+      <FormActions
+        busy={resetPassword.isPending}
+        primary={{
+          label: 'Resetează parola',
+          loadingLabel: 'Se salvează…',
+          onPress: onSubmit,
+          icon: 'checkmark',
+        }}
       />
       <AppButton
         fullWidth
@@ -122,6 +121,6 @@ export function ResetPasswordPanel({
         style={authPanelStyles.linkButton}
         variant="ghost"
       />
-    </Card>
+    </FormPanel>
   );
 }

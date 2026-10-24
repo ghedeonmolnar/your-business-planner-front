@@ -15,6 +15,7 @@ type ControlledDateFieldProps<T extends FieldValues> = {
   displayFormat?: DatePickerFieldProps['displayFormat'];
   style?: DatePickerFieldProps['style'];
   fieldStyle?: DatePickerFieldProps['fieldStyle'];
+  disabled?: boolean;
 };
 
 export function ControlledDateField<T extends FieldValues>({
@@ -27,6 +28,7 @@ export function ControlledDateField<T extends FieldValues>({
   displayFormat,
   style,
   fieldStyle,
+  disabled,
 }: ControlledDateFieldProps<T>) {
   return (
     <Controller
@@ -48,6 +50,7 @@ export function ControlledDateField<T extends FieldValues>({
           displayFormat={displayFormat}
           style={style}
           fieldStyle={fieldStyle}
+          disabled={disabled}
         />
       )}
     />

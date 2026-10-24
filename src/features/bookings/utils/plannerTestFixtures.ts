@@ -27,6 +27,7 @@ export const plannerBooking: Booking = {
   hall_id: 'hall-1',
   hall_name: 'Sala Imperial',
   client_id: 'client-1',
+  client_version: 1,
   client_name: 'Client test',
   client_phone: null,
   date: '2027-11-13',

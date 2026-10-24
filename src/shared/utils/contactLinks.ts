@@ -1,6 +1,7 @@
 import { Linking } from 'react-native';
 import { CommunicationChannel } from '@/shared/types/contact';
 import { showMessage } from '@/shared/feedback/showMessage';
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 
 export const contactChannelLabels: Record<CommunicationChannel, string> = {
   whatsapp: 'WhatsApp',
@@ -32,6 +33,9 @@ const socialHosts: Record<
 };
 
 const normalizePhone = (value: string) => {
+  if (!/^[+0-9\s().-]+$/.test(value.trim())) {
+    return null;
+  }
   let phone = value.trim().replace(/[^0-9+]/g, '');
 
   if (phone.startsWith('00')) {
@@ -203,9 +207,11 @@ export const openWhatsAppShare = async (
   phone: string | null | undefined,
   message: string,
 ) => {
+  const generation = getSessionGeneration();
   try {
     await Linking.openURL(buildWhatsAppShareUrl(phone, message));
   } catch {
+    if (generation !== getSessionGeneration()) return;
     showMessage(
       'Nu am putut deschide WhatsApp',
       'Verifică dacă aplicația este instalată și încearcă din nou.',
@@ -217,6 +223,7 @@ export const openContact = async (
   channel?: CommunicationChannel | null,
   value?: string | null,
 ) => {
+  const generation = getSessionGeneration();
   const url = buildContactUrl(channel, value);
 
   if (!url) {
@@ -227,6 +234,7 @@ export const openContact = async (
   try {
     await Linking.openURL(url);
   } catch {
+    if (generation !== getSessionGeneration()) return;
     showMessage(
       'Nu am putut deschide aplicația',
       'Verifică dacă aplicația potrivită este instalată și încearcă din nou.',

@@ -10,16 +10,20 @@ import { CalendarYear } from '@/features/bookings/components/CalendarYear';
 import { CalendarMonthSummary } from '@/features/bookings/components/CalendarMonthSummary';
 import { CalendarDayHalls } from '@/features/bookings/components/CalendarDayHalls';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { QueryState } from '@/shared/components/QueryState';
 import { getMonthStatistics } from '@/features/bookings/utils/calendarStatistics';
 import { Screen } from '@/shared/components/Screen';
 import { theme } from '@/shared/theme/theme';
 import { DirectoryItem } from '@/features/company/types';
 import { useCalendarRefresh } from '@/features/bookings/hooks/useCalendarRefresh';
+import { HallScreenHeader } from '@/features/halls/components/HallScreenHeader';
 
-export function CalendarScreen() {
+export function CalendarScreen({
+  initialHallId = '',
+  onBack,
+}: { initialHallId?: string; onBack?: () => void } = {}) {
   const calendarView = useCalendarNavigation();
-  const [hallId, setHallId] = useState('');
+  const [hallId, setHallId] = useState(initialHallId);
   const [reservationHall, setReservationHall] =
     useState<DirectoryItem | null>();
   const refresh = useCalendarRefresh();
@@ -46,6 +50,13 @@ export function CalendarScreen() {
 
   return (
     <Screen style={styles.screen}>
+      {onBack ? (
+        <HallScreenHeader
+          title="Disponibilitate sală"
+          subtitle="Calendarul rezervărilor"
+          onBack={onBack}
+        />
+      ) : null}
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -66,7 +77,7 @@ export function CalendarScreen() {
           onToday={calendarView.today}
         />
         <CalendarLegend period={calendarView.period} />
-        <QueryNotice
+        <QueryState
           loading={calendar.isLoading}
           error={calendar.error}
           retry={() => calendar.refetch()}
@@ -101,7 +112,7 @@ export function CalendarScreen() {
                 onSelect={calendarView.selectMonth}
               />
               {needsPreviousYear ? (
-                <QueryNotice
+                <QueryState
                   loading={previousCalendar.isLoading}
                   error={previousCalendar.error}
                   retry={() => previousCalendar.refetch()}

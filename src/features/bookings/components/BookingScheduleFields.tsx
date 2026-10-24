@@ -5,7 +5,10 @@ import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema
 import { DirectoryItem } from '@/features/company/types';
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
-import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
+import {
+  ControlledSelectField,
+  SelectOptionsState,
+} from '@/shared/components/ControlledSelectField';
 import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
 
@@ -14,11 +17,15 @@ export function BookingScheduleFields({
   halls,
   selectedHallId,
   retainedType,
+  hallsState,
+  onHallSelected,
 }: {
   control: Control<BookingFormValues>;
   halls: DirectoryItem[];
   selectedHallId?: string;
   retainedType?: string;
+  hallsState?: SelectOptionsState;
+  onHallSelected?: (id: string) => void;
 }) {
   const catalogs = useCatalogs();
   return (
@@ -27,6 +34,8 @@ export function BookingScheduleFields({
         control={control}
         name="hall_id"
         label="Sală"
+        icon="business-outline"
+        optionsState={hallsState}
         single
         options={halls
           .filter(hall => hall.is_active || hall.id === selectedHallId)
@@ -36,6 +45,7 @@ export function BookingScheduleFields({
           }))}
         placeholder="Alege sala"
         searchPlaceholder="Caută sala"
+        onSelectionChange={values => onHallSelected?.(values[0] ?? '')}
       />
       <ControlledDateField
         control={control}
@@ -47,6 +57,11 @@ export function BookingScheduleFields({
         control={control}
         name="type"
         label="Tip eveniment"
+        optionsState={{
+          loading: catalogs.isLoading,
+          error: catalogs.error,
+          onRetry: () => catalogs.refetch(),
+        }}
         single
         options={
           retainedType &&

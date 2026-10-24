@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -9,7 +9,7 @@ import {
 } from '@/features/company/schemas/companySettingsSchema';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
-import { AppButton } from '@/shared/components/AppButton';
+import { FormActions } from '@/shared/components/FormActions';
 import { showError } from '@/shared/feedback/showError';
 import { CompanyProfile } from '@/features/company/schemas/companyProfileSchemas';
 import {
@@ -27,11 +27,14 @@ export function CompanySettingsForm({
 }) {
   const { retryBootstrap } = useAuth();
   const save = useSaveCompanySettings();
+  const submitting = useRef(false);
   const form = useForm<CompanySettingsValues>({
     resolver: zodResolver(companySettingsSchema),
     defaultValues: companyProfileDefaults(company),
   });
-  const submit = form.handleSubmit(values =>
+  const submit = form.handleSubmit(values => {
+    if (submitting.current) return;
+    submitting.current = true;
     save.mutate(companyProfilePayload(values), {
       onSuccess: () => {
         onClose();
@@ -39,19 +42,22 @@ export function CompanySettingsForm({
       },
       onError: error =>
         showError(error, 'Nu am putut salva profilul companiei.'),
-    }),
-  );
+      onSettled: () => {
+        submitting.current = false;
+      },
+    });
+  });
   return (
     <FormModalFrame
       visible
+      busy={save.isPending}
       title="Profilul firmei"
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
-        <AppButton
-          label="Salvează profilul firmei"
-          disabled={save.isPending}
-          onPress={submit}
+        <FormActions
+          busy={save.isPending}
+          primary={{ label: 'Salvează profilul firmei', onPress: submit }}
         />
       }
     >

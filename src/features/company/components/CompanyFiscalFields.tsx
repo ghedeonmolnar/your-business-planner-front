@@ -8,7 +8,7 @@ import { ControlledSwitchField } from '@/shared/components/ControlledSwitchField
 import { AppButton } from '@/shared/components/AppButton';
 import { showError } from '@/shared/feedback/showError';
 import { showMessage } from '@/shared/feedback/showMessage';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
 
 export function CompanyFiscalFields({
   form,
@@ -83,7 +83,9 @@ export function CompanyFiscalFields({
         keyboardType="number-pad"
       />
       <AppButton
-        label={lookup.isPending ? 'Se caută firma…' : 'Completează după CUI'}
+        label="Completează după CUI"
+        loading={lookup.isPending}
+        loadingLabel="Se caută firma…"
         icon="search-outline"
         variant="outline"
         disabled={lookup.isPending || form.formState.isSubmitting}

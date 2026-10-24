@@ -9,6 +9,7 @@ export type CustomerFilters = {
 export type CustomerListItem = DirectoryItem & { bookings_count: number };
 export type DirectoryItem = {
   id: string;
+  version?: number;
   name: string;
   phone?: string | null;
   notes?: string | null;
@@ -17,10 +18,13 @@ export type DirectoryItem = {
   is_active?: boolean;
   is_available?: boolean;
   capacity?: number;
+  minimum_guests?: number | null;
   address?: string | null;
 };
 export type DirectoryPayload = {
-  name: string;
+  name?: string;
+  version?: number;
+  operation_id?: string;
   phone?: string | null;
   notes?: string | null;
   job_role?: string;
@@ -28,4 +32,8 @@ export type DirectoryPayload = {
   is_active?: boolean;
   capacity?: number;
   address?: string | null;
+};
+export type ClientCreationPayload = DirectoryPayload & {
+  name: string;
+  operation_id: string;
 };

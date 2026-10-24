@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -7,12 +7,13 @@ import { useCompanyProfile } from '@/features/company/hooks/useCompanyProfile';
 import { CompanySettingsForm } from '@/features/company/components/CompanySettingsForm';
 import { OwnerProfileForm } from '@/features/company/components/OwnerProfileForm';
 import { BillingProfileSummary } from '@/features/company/components/BillingProfileSummary';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { QueryState } from '@/shared/components/QueryState';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
 import { Screen } from '@/shared/components/Screen';
 import { Card } from '@/shared/components/Card';
 import { AppButton } from '@/shared/components/AppButton';
 import { IconButton } from '@/shared/components/IconButton';
+import { ContentSection } from '@/shared/components/ContentSection';
 
 export function CompanyProfileScreen() {
   const { user } = useAuth();
@@ -22,26 +23,30 @@ export function CompanyProfileScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.between}>
-          <IconButton
-            icon="arrow-back"
-            accessibilityLabel="Înapoi"
-            onPress={() => navigation.goBack()}
-          />
-          <Text style={[styles.title, styles.grow]}>Profil și facturare</Text>
-        </View>
+        <ContentSection
+          title="Profil și facturare"
+          size="page"
+          leading={
+            <IconButton
+              icon="arrow-back"
+              accessibilityLabel="Înapoi"
+              onPress={() => navigation.goBack()}
+            />
+          }
+        />
         <Card style={styles.card}>
           <Text style={styles.eyebrow}>Profilul meu</Text>
           <Text style={styles.subtitle}>{user?.name}</Text>
           <Text style={styles.muted}>{user?.email}</Text>
           <AppButton
             label="Editează profilul meu"
+            multiline
             variant="ghost"
             icon="person-outline"
             onPress={() => setEditing('owner')}
           />
         </Card>
-        <QueryNotice
+        <QueryState
           loading={query.isLoading}
           error={query.error}
           retry={() => query.refetch()}
@@ -83,6 +88,7 @@ export function CompanyProfileScreen() {
                   </Text>
                   <AppButton
                     label="Completează datele fiscale"
+                    multiline
                     onPress={() => setEditing('company')}
                   />
                 </>

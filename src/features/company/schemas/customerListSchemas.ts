@@ -3,6 +3,7 @@ import { isValidIsoDate } from '@/shared/utils/dateInput';
 
 export const customerSchema = z.object({
   id: z.string().min(1),
+  version: z.number().int().positive(),
   name: z.string(),
   phone: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),

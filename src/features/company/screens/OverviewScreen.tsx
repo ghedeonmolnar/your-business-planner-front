@@ -3,10 +3,13 @@ import { ScrollView, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Card } from '@/shared/components/Card';
 import { useOverview } from '@/features/company/hooks/useCompany';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
+import { QueryState } from '@/shared/components/QueryState';
 import { AppButton } from '@/shared/components/AppButton';
 import { Screen } from '@/shared/components/Screen';
+import { ContentSection } from '@/shared/components/ContentSection';
+import { IconButton } from '@/shared/components/IconButton';
+import { InfoRow } from '@/shared/components/InfoRow';
 import { formatExactMoney } from '@/shared/utils/money';
 import { companyNow, formatMonthLabel } from '@/shared/utils/formatDate';
 import { useNavigation } from '@react-navigation/native';
@@ -19,12 +22,17 @@ export function OverviewScreen() {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
-        <AppButton
-          label="Înapoi"
-          variant="ghost"
-          onPress={() => navigation.goBack()}
+        <ContentSection
+          title={`Financiar și statistici · ${year}`}
+          size="page"
+          leading={
+            <IconButton
+              icon="arrow-back"
+              accessibilityLabel="Înapoi"
+              onPress={() => navigation.goBack()}
+            />
+          }
         />
-        <Text style={styles.title}>Financiar și statistici · {year}</Text>
         <View style={styles.row}>
           <AppButton
             label="Anul anterior"
@@ -35,47 +43,51 @@ export function OverviewScreen() {
             onPress={() => setYear(current => current + 1)}
           />
         </View>
-        <QueryNotice
+        <QueryState
           loading={query.isLoading}
           error={query.error}
           retry={() => query.refetch()}
         />
         {data ? (
           <Card style={styles.card}>
-            <Text style={styles.text}>
-              Rezervări confirmate: {data.confirmed_count}
-            </Text>
-            <Text style={styles.text}>
-              Provizorii active: {data.tentative_count}
-            </Text>
-            <Text style={styles.text}>
-              Ocupare săli active:{' '}
-              {(data.occupancy_basis_points / 100).toLocaleString('ro-RO')}%
-            </Text>
+            {[
+              { label: 'Rezervări confirmate', value: data.confirmed_count },
+              { label: 'Provizorii active', value: data.tentative_count },
+              {
+                label: 'Ocupare săli active',
+                value: `${(data.occupancy_basis_points / 100).toLocaleString('ro-RO')}%`,
+              },
+              {
+                label: 'Valoare contractată',
+                value: formatExactMoney(data.contracted_amount),
+              },
+              {
+                label: 'Cost estimat personal',
+                value: formatExactMoney(data.estimated_staff_cost),
+              },
+              {
+                label: 'Rest de încasat',
+                value: formatExactMoney(data.balance_due),
+              },
+              {
+                label: 'Încasări efective',
+                value: formatExactMoney(data.received_amount),
+              },
+              {
+                label: 'Cheltuieli efective',
+                value: formatExactMoney(data.outgoing_amount),
+              },
+              {
+                label: 'Diferență încasări − cheltuieli',
+                value: formatExactMoney(data.cash_profit_amount),
+              },
+            ].map(item => (
+              <InfoRow key={item.label} {...item} />
+            ))}
             <Text style={styles.muted}>
               {data.occupied_hall_days} zile rezervate din{' '}
               {data.available_hall_days} zile-sală, raportate la sălile active
               în prezent.
-            </Text>
-            <Text style={styles.text}>
-              Valoare contractată: {formatExactMoney(data.contracted_amount)}
-            </Text>
-            <Text style={styles.text}>
-              Cost estimat personal:{' '}
-              {formatExactMoney(data.estimated_staff_cost)}
-            </Text>
-            <Text style={styles.text}>
-              Rest de încasat: {formatExactMoney(data.balance_due)}
-            </Text>
-            <Text style={styles.text}>
-              Încasări efective: {formatExactMoney(data.received_amount)}
-            </Text>
-            <Text style={styles.text}>
-              Cheltuieli efective: {formatExactMoney(data.outgoing_amount)}
-            </Text>
-            <Text style={styles.text}>
-              Diferență încasări − cheltuieli:{' '}
-              {formatExactMoney(data.cash_profit_amount)}
             </Text>
             <Text style={styles.muted}>
               Încasările și cheltuielile sunt grupate după data plății.

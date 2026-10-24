@@ -26,12 +26,14 @@ jest.mock('@/shared/storage/authTokenStorage', () => ({
 
 const ana = {
   id: 'client-1',
+  version: 1,
   name: 'Ana',
   phone: '0720000011',
   bookings_count: 7,
 };
 const zoe = {
   id: 'client-2',
+  version: 1,
   name: 'Zoe',
   phone: '0720000012',
   bookings_count: 3,

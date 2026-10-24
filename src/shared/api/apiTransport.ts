@@ -38,13 +38,16 @@ const readResponseBody = async (
   }
 };
 
-const createRequestSignal = (externalSignal?: AbortSignal) => {
+const createRequestSignal = (
+  externalSignal?: AbortSignal,
+  timeoutMs = REQUEST_TIMEOUT_MS,
+) => {
   const controller = new AbortController();
   let timedOut = false;
   const timeoutId = setTimeout(() => {
     timedOut = true;
     controller.abort();
-  }, REQUEST_TIMEOUT_MS);
+  }, timeoutMs);
   const abortFromCaller = () => controller.abort();
 
   if (externalSignal?.aborted) {
@@ -70,8 +73,9 @@ export const sendRequest = async (
   url: string,
   init: RequestInit,
   externalSignal?: AbortSignal,
+  timeoutMs?: number,
 ) => {
-  const requestSignal = createRequestSignal(externalSignal);
+  const requestSignal = createRequestSignal(externalSignal, timeoutMs);
 
   try {
     const response = await fetch(url, {

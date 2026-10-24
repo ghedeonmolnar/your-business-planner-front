@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { theme } from '@/shared/theme/theme';
@@ -8,7 +8,6 @@ type LegendItem = {
   label: string;
   color: string;
   outline?: boolean;
-  symbol?: string;
 };
 
 export function CalendarLegend({ period }: { period: CalendarPeriod }) {
@@ -18,15 +17,12 @@ export function CalendarLegend({ period }: { period: CalendarPeriod }) {
           { label: 'Azi', color: theme.colors.menu.surface, outline: true },
           { label: 'Selectat', color: theme.colors.menu.primary },
           {
-            label: 'Rezervat',
+            label: 'Parțial rezervat',
             color: theme.colors.menu.primarySoft,
-            symbol: '•',
           },
-          { label: 'Liber', color: theme.colors.menu.border },
           {
-            label: 'Necunoscut',
-            color: theme.colors.menu.surface,
-            symbol: '?',
+            label: 'Complet rezervat',
+            color: theme.colors.menu.success,
           },
         ]
       : [
@@ -41,53 +37,53 @@ export function CalendarLegend({ period }: { period: CalendarPeriod }) {
         ];
   return (
     <View style={styles.legend}>
-      {items.map(item => (
-        <View key={item.label} style={styles.item}>
-          <View
-            style={[
-              styles.dot,
-              { backgroundColor: item.color },
-              item.outline ? styles.outline : undefined,
-            ]}
-          >
-            {item.symbol ? (
-              <Text accessible={false} style={styles.symbol}>
-                {item.symbol}
-              </Text>
-            ) : null}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.row}
+      >
+        {items.map(item => (
+          <View key={item.label} style={styles.item}>
+            <View
+              style={[
+                styles.swatch,
+                { backgroundColor: item.color },
+                item.outline ? styles.outline : undefined,
+              ]}
+            />
+            <Text style={styles.label}>{item.label}</Text>
           </View>
-          <Text style={styles.label}>{item.label}</Text>
-        </View>
-      ))}
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   legend: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
     backgroundColor: theme.colors.menu.background,
     borderColor: theme.colors.menu.border,
     borderWidth: 1,
     borderRadius: theme.radius.md,
-    padding: theme.spacing.md,
+    padding: theme.spacing.sm,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
   },
   item: {
     alignItems: 'center',
     flexDirection: 'row',
-    flexGrow: 1,
-    gap: theme.spacing.sm,
+    flexShrink: 0,
+    gap: theme.spacing.xs,
   },
-  dot: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: theme.spacing.lg,
-    height: theme.spacing.lg,
+  swatch: {
+    width: theme.spacing.md,
+    height: theme.spacing.md,
     borderRadius: theme.radius.pill,
+    flexShrink: 0,
   },
-  symbol: { color: theme.colors.menu.text, fontSize: theme.typography.caption },
   outline: { borderColor: theme.colors.menu.primary, borderWidth: 2 },
   label: {
     color: theme.colors.menu.muted,

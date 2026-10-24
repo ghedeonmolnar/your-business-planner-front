@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { Surface, Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
-import { AppButton } from '@/shared/components/AppButton';
 import { IconButton } from '@/shared/components/IconButton';
 import { SearchField } from '@/shared/components/SearchField';
 import { SelectOptionRow } from '@/shared/components/select/SelectOptionRow';
@@ -17,6 +16,7 @@ import {
   filterSelectOptions,
   SelectOption,
   SelectValue,
+  SelectOptionsState,
 } from '@/shared/components/select/selectOptions';
 import {
   EMPTY_LIST_HEIGHT,
@@ -24,6 +24,9 @@ import {
   selectOptionsModalStyles as styles,
 } from '@/shared/components/select/selectOptionsModalStyles';
 import { theme } from '@/shared/theme/theme';
+import { QueryState } from '@/shared/components/QueryState';
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
+import { SelectModalActions } from '@/shared/components/select/SelectModalActions';
 
 const SEARCH_FROM_OPTIONS = 7;
 const MAX_LIST_HEIGHT = 360;
@@ -39,6 +42,8 @@ type SelectOptionsModalProps<TValue extends SelectValue> = {
   searchPlaceholder: string;
   onClose: () => void;
   onChange: (selectedValues: TValue[]) => void;
+  disabled?: boolean;
+  optionsState?: SelectOptionsState;
 };
 
 export function SelectOptionsModal<TValue extends SelectValue>({
@@ -52,16 +57,25 @@ export function SelectOptionsModal<TValue extends SelectValue>({
   searchPlaceholder,
   onClose,
   onChange,
+  disabled = false,
+  optionsState,
 }: SelectOptionsModalProps<TValue>) {
   const [query, setQuery] = useState('');
   const [draftValues, setDraftValues] = useState<TValue[]>(selectedValues);
+  const selectionKey = JSON.stringify(selectedValues);
+  const previous = useRef({ visible: false, selectionKey });
 
   useEffect(() => {
-    if (visible) {
+    if (
+      visible &&
+      (!previous.current.visible ||
+        previous.current.selectionKey !== selectionKey)
+    ) {
       setDraftValues(selectedValues);
       setQuery('');
     }
-  }, [selectedValues, visible]);
+    previous.current = { visible, selectionKey };
+  }, [selectedValues, visible, selectionKey]);
 
   const isSearchable = options.length >= SEARCH_FROM_OPTIONS;
   const filteredOptions = useMemo(
@@ -77,7 +91,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
     : draftValues.length > 0;
 
   const selectOption = (option: SelectOption<TValue>) => {
-    if (option.disabled) {
+    if (disabled || option.disabled) {
       return;
     }
 
@@ -95,6 +109,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
   };
 
   const clearSelection = () => {
+    if (disabled) return;
     if (single) {
       onChange([]);
       onClose();
@@ -105,6 +120,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
   };
 
   const confirmSelection = () => {
+    if (disabled) return;
     onChange(draftValues);
     onClose();
   };
@@ -143,6 +159,15 @@ export function SelectOptionsModal<TValue extends SelectValue>({
             />
           </View>
 
+          <QueryState
+            loading={Boolean(optionsState?.loading)}
+            error={
+              optionsState?.pagination?.error ? undefined : optionsState?.error
+            }
+            hasData={options.length > 0}
+            retry={optionsState?.onRetry}
+          />
+
           {isSearchable ? (
             <View style={styles.searchField}>
               <SearchField
@@ -164,50 +189,51 @@ export function SelectOptionsModal<TValue extends SelectValue>({
             keyboardShouldPersistTaps="handled"
             keyExtractor={option => `${typeof option.id}:${option.id}`}
             ListEmptyComponent={
-              <View style={styles.emptyState}>
-                <Ionicons
-                  color={theme.colors.subtle}
-                  name="search-outline"
-                  size={28}
-                />
-                <Text style={styles.emptyText}>
-                  {query ? 'Niciun rezultat pentru căutarea ta' : noItemsText}
-                </Text>
-              </View>
+              !optionsState?.loading && !optionsState?.error ? (
+                <View style={styles.emptyState}>
+                  <Ionicons
+                    color={theme.colors.subtle}
+                    name="search-outline"
+                    size={28}
+                  />
+                  <Text style={styles.emptyText}>
+                    {query ? 'Niciun rezultat pentru căutarea ta' : noItemsText}
+                  </Text>
+                </View>
+              ) : undefined
             }
             renderItem={({ item }) => (
               <SelectOptionRow
                 onPress={selectOption}
-                option={item}
+                option={disabled ? { ...item, disabled: true } : item}
                 selected={draftValues.includes(item.id)}
                 single={single}
               />
             )}
             showsVerticalScrollIndicator={false}
-            style={[styles.list, { height: listHeight }]}
+            style={[styles.list, { maxHeight: listHeight }]}
           />
+
+          {optionsState?.pagination ? (
+            <PaginationFooter
+              {...optionsState.pagination}
+              hint={
+                optionsState.pagination.hasMore
+                  ? 'Căutarea se aplică opțiunilor încărcate.'
+                  : undefined
+              }
+            />
+          ) : null}
 
           {(allowClear && canClearSelection) || !single ? (
             <View style={styles.footer}>
-              {allowClear && canClearSelection ? (
-                <AppButton
-                  label="Golește selecția"
-                  onPress={clearSelection}
-                  shape="rounded"
-                  size="small"
-                  style={styles.footerButton}
-                  variant="ghost"
-                />
-              ) : null}
-              {!single ? (
-                <AppButton
-                  label="Confirmă"
-                  onPress={confirmSelection}
-                  shape="rounded"
-                  size="small"
-                  style={styles.footerButton}
-                />
-              ) : null}
+              <SelectModalActions
+                single={single}
+                canClear={allowClear && canClearSelection}
+                disabled={disabled}
+                onClear={clearSelection}
+                onConfirm={confirmSelection}
+              />
             </View>
           ) : null}
         </Surface>

@@ -35,9 +35,9 @@ export function useCalendarNavigation() {
     today: () => setSelected(companyNow().format('YYYY-MM-DD')),
     selectMonth: (month: string) =>
       setSelected(value => {
-        const first = dayjs(`${month}-01`);
-        return first
-          .date(Math.min(dayjs(value).date(), first.daysInMonth()))
+        const firstOfMonth = dayjs(`${month}-01`);
+        return firstOfMonth
+          .date(Math.min(dayjs(value).date(), firstOfMonth.daysInMonth()))
           .format('YYYY-MM-DD');
       }),
   };

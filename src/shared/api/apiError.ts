@@ -32,6 +32,19 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  CLIENT_OPERATION_CONFLICT:
+    'Această creare a fost deja înregistrată cu alte date sau clientul a fost arhivat. Verifică lista clienților înainte de o nouă încercare.',
+  HALL_STORAGE_LIMIT:
+    'Spațiul disponibil pentru fotografiile companiei a fost atins. Elimină imaginile nefolosite și așteaptă curățarea lor înainte de a reîncerca.',
+  HALL_HAS_HISTORY:
+    'Sala are rezervări în istoric și nu poate fi ștearsă. O poți dezactiva.',
+  HALL_IMAGE_LIMIT: 'Poți adăuga cel mult 10 imagini pentru o sală.',
+  HALL_IMAGE_INVALID_SELECTION:
+    'Imaginea principală nu mai este disponibilă. Alege din nou coperta.',
+  HALL_MINIMUM_EXCEEDS_CAPACITY:
+    'Minimul comercial nu poate depăși capacitatea maximă a sălii.',
+  HALL_OPERATION_CONFLICT:
+    'Această creare a fost deja înregistrată cu alte date. Verifică lista sălilor înainte de o nouă încercare.',
   RESOURCE_VERSION_CONFLICT:
     'Înregistrarea a fost modificată de altcineva. Ciorna ta este păstrată; verifică versiunea salvată înainte de a continua.',
   PAYMENT_OPERATION_CONFLICT:
@@ -40,6 +53,8 @@ const errorMessagesByCode: Record<string, string> = {
     'Programul personalului trebuie reconciliat. Reactivează modulul de personal înainte de a muta această rezervare.',
   CLIENT_FILTERS_INVALID:
     'Verifică intervalul evenimentelor și opțiunile listei de clienți.',
+  BOOKING_FILTERS_INVALID:
+    'Verifică intervalul evenimentelor și filtrele rezervărilor.',
   FISCAL_COMPANY_NOT_FOUND:
     'Nu am găsit firma pentru acest CUI. Verifică numărul sau completează datele manual.',
   FISCAL_LOOKUP_UNAVAILABLE:
@@ -66,6 +81,8 @@ const errorMessagesByCode: Record<string, string> = {
     'Verifică data și orele evenimentului, inclusiv ziua de încheiere.',
   BOOKING_DETAILS_INCOMPLETE:
     'Completează programul, minimul garantat și prețul meniului.',
+  BOOKING_CLIENT_PHONE_REQUIRED:
+    'Completează telefonul clientului înainte de a crea rezervarea sau de a schimba clientul.',
   BOOKING_AMOUNT_TOO_LARGE: 'Valoarea calculată depășește limita permisă.',
   CALENDAR_RANGE_TOO_LARGE: 'Alege o perioadă de maximum un an.',
   SERVER_ERROR: SERVER_ERROR_MESSAGE,

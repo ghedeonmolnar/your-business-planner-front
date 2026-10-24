@@ -1,5 +1,6 @@
-import { Card } from '@/shared/components/Card';
-import React from 'react';
+import { FormPanel } from '@/shared/components/FormPanel';
+import React, { useRef, useState } from 'react';
+import { Text } from 'react-native-paper';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,11 +8,13 @@ import {
   newClientSchema,
   NewClientValues,
 } from '@/features/company/schemas/directorySchema';
-import { useSaveDirectory } from '@/features/company/hooks/useCompany';
-import { DirectoryItem } from '@/features/company/types';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { useClientCreation } from '@/features/company/hooks/useClientCreation';
+import { ClientCreationPayload, DirectoryItem } from '@/features/company/types';
+import { createOperationId } from '@/shared/utils/createOperationId';
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
+import { ApiError } from '@/shared/api/apiError';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
-import { AppButton } from '@/shared/components/AppButton';
+import { FormActions } from '@/shared/components/FormActions';
 import { showError } from '@/shared/feedback/showError';
 
 export function InlineClientForm({
@@ -21,30 +24,67 @@ export function InlineClientForm({
   onCreated: (client: DirectoryItem) => void;
   onCancel: () => void;
 }) {
-  const save = useSaveDirectory();
+  const save = useClientCreation();
+  const recovered = save.uncertainCreation;
+  const submitted = useRef<ClientCreationPayload | null>(recovered ?? null);
+  const submitting = useRef(false);
+  const [operationId] = useState(
+    () => recovered?.operation_id ?? createOperationId(),
+  );
+  const [generation] = useState(getSessionGeneration);
+  const [conflict, setConflict] = useState(false);
   const form = useForm<NewClientValues>({
     resolver: zodResolver(newClientSchema),
-    defaultValues: { name: '', phone: '' },
+    defaultValues: {
+      name: recovered?.name ?? '',
+      phone: recovered?.phone ?? '',
+    },
   });
-  const submit = form.handleSubmit(values =>
-    save.mutate(
-      {
-        kind: 'clients',
-        payload: { name: values.name, phone: values.phone || null },
+  const submit = form.handleSubmit(values => {
+    if (submitting.current || conflict || generation !== getSessionGeneration())
+      return;
+    submitting.current = true;
+    submitted.current ??= {
+      name: values.name,
+      phone: values.phone || null,
+      operation_id: operationId,
+    };
+    save.mutate(submitted.current, {
+      onSuccess: client => {
+        if (generation === getSessionGeneration()) onCreated(client);
       },
-      {
-        onSuccess: onCreated,
-        onError: error => showError(error, 'Nu am putut crea clientul.'),
+      onSettled: () => {
+        submitting.current = false;
       },
-    ),
-  );
+      onError: error => {
+        if (generation !== getSessionGeneration()) return;
+        if (error instanceof ApiError && error.status === 409)
+          setConflict(true);
+        if (
+          error instanceof ApiError &&
+          error.status >= 400 &&
+          error.status < 500 &&
+          error.status !== 409
+        )
+          submitted.current = null;
+        showError(error, 'Nu am putut crea clientul.');
+      },
+    });
+  });
+  const uncertain = Boolean(submitted.current || recovered);
   return (
-    <Card style={styles.card}>
+    <FormPanel busy={save.isPending}>
+      {uncertain ? (
+        <Text>
+          Reîncearcă salvarea inițială înainte de a schimba datele clientului.
+        </Text>
+      ) : null}
       <ControlledTextField
         control={form.control}
         name="name"
         label="Numele clientului nou"
         placeholder="Nume complet"
+        disabled={uncertain}
       />
       <ControlledTextField
         control={form.control}
@@ -52,18 +92,21 @@ export function InlineClientForm({
         label="Telefonul clientului nou"
         placeholder="07…"
         keyboardType="phone-pad"
+        disabled={uncertain}
       />
-      <AppButton
-        label="Salvează clientul"
-        disabled={save.isPending}
-        onPress={submit}
+      <FormActions
+        busy={save.isPending}
+        primary={{
+          label: 'Salvează clientul',
+          onPress: submit,
+          disabled: conflict,
+        }}
+        secondary={{
+          label: 'Renunță la clientul nou',
+          variant: 'ghost',
+          onPress: onCancel,
+        }}
       />
-      <AppButton
-        label="Renunță la clientul nou"
-        variant="ghost"
-        disabled={save.isPending}
-        onPress={onCancel}
-      />
-    </Card>
+    </FormPanel>
   );
 }

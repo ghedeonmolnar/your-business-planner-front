@@ -3,10 +3,7 @@ import { theme } from '@/shared/theme/theme';
 
 export const calendarStyles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.menu.surface,
-    borderRadius: theme.radius.lg,
-    borderWidth: 0,
-    padding: theme.spacing.md,
+    gap: theme.spacing.md,
   },
   title: {
     color: theme.colors.menu.text,

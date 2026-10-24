@@ -30,6 +30,7 @@ test('lista compactă a clienților oferă istoric, creare și stare clară pent
         : paginatedResponse([
             {
               id: 'client-1',
+              version: 1,
               name: 'Client test',
               phone: null,
               bookings_count: 7,

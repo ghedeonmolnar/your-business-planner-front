@@ -1,11 +1,12 @@
+import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React, { useState } from 'react';
 import { FlatList, View } from 'react-native';
-import { Text } from 'react-native-paper';
 import { DirectoryItem, DirectoryKind } from '@/features/company/types';
 import { useDirectory } from '@/features/company/hooks/useCompany';
 import { DirectoryForm } from '@/features/company/components/DirectoryForm';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
+import { QueryState } from '@/shared/components/QueryState';
 import { AppButton } from '@/shared/components/AppButton';
 import { Screen } from '@/shared/components/Screen';
 import { useNavigation } from '@react-navigation/native';
@@ -15,6 +16,8 @@ import { SearchField } from '@/shared/components/SearchField';
 import { DirectoryCard } from '@/features/company/components/DirectoryCard';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { useDebouncedValue } from '@/shared/hooks/useDebouncedValue';
+import { ContentSection } from '@/shared/components/ContentSection';
+import { IconButton } from '@/shared/components/IconButton';
 
 const titles = { clients: 'Clienți', employees: 'Personal', halls: 'Săli' };
 const SEARCH_DELAY_MS = 300;
@@ -40,25 +43,33 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
     <Screen>
       <FlatList
         data={items}
+        ItemSeparatorComponent={ListItemSeparator}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.content}
         refreshing={query.isRefetching && !query.isFetchingNextPage}
         onRefresh={() => query.refetch()}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.title}>{titles[kind]}</Text>
-            <Text style={styles.muted}>{descriptions[kind]}</Text>
-            {kind !== 'clients' && navigation.canGoBack() ? (
-              <AppButton
-                label="Înapoi"
-                variant="ghost"
-                onPress={() => navigation.goBack()}
-              />
-            ) : null}
-            <AppButton
-              icon="add"
-              label={addLabels[kind]}
-              onPress={() => setEditing('new')}
+            <ContentSection
+              title={titles[kind]}
+              subtitle={descriptions[kind]}
+              size="page"
+              leading={
+                kind !== 'clients' && navigation.canGoBack() ? (
+                  <IconButton
+                    icon="arrow-back"
+                    accessibilityLabel="Înapoi"
+                    onPress={() => navigation.goBack()}
+                  />
+                ) : undefined
+              }
+              action={
+                <AppButton
+                  icon="add"
+                  label={addLabels[kind]}
+                  onPress={() => setEditing('new')}
+                />
+              }
             />
             <SearchField
               value={search}
@@ -70,9 +81,10 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
                   : 'Caută după nume'
               }
             />
-            <QueryNotice
+            <QueryState
               loading={query.isLoading}
-              error={query.error}
+              hasData={items.length > 0}
+              error={query.isFetchNextPageError ? undefined : query.error}
               retry={() => query.refetch()}
             />
           </View>
@@ -95,8 +107,12 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
               message={
                 debouncedSearch
                   ? 'Încearcă un alt nume sau golește căutarea.'
-                  : descriptions[kind] +
-                    ' Folosește butonul de adăugare pentru a începe.'
+                  : descriptions[kind]
+              }
+              action={
+                debouncedSearch
+                  ? { label: 'Golește căutarea', onPress: () => setSearch('') }
+                  : { label: addLabels[kind], onPress: () => setEditing('new') }
               }
             />
           ) : undefined
@@ -112,13 +128,13 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
           />
         )}
         ListFooterComponent={
-          query.hasNextPage ? (
-            <AppButton
-              label="Încarcă mai multe"
-              disabled={query.isFetchingNextPage}
-              onPress={() => query.fetchNextPage()}
-            />
-          ) : undefined
+          <PaginationFooter
+            hasMore={Boolean(query.hasNextPage)}
+            loading={query.isFetchingNextPage}
+            error={query.isFetchNextPageError ? query.error : undefined}
+            onLoadMore={() => query.fetchNextPage()}
+            label="Încarcă mai multe"
+          />
         }
       />
       {editing ? (
@@ -132,9 +148,6 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
   );
 }
 export { CustomersScreen } from '@/features/company/screens/CustomersScreen';
-export function HallsScreen() {
-  return <DirectoryScreen kind="halls" />;
-}
 export function StaffScreen() {
   return <DirectoryScreen kind="employees" />;
 }

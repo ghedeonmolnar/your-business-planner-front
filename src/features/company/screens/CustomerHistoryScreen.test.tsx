@@ -5,7 +5,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CustomerHistoryScreen } from '@/features/company/screens/CustomerHistoryScreen';
 import { DirectoryForm } from '@/features/company/components/DirectoryForm';
-import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
+import {
+  plannerAccount,
+  plannerBooking,
+} from '@/features/bookings/utils/plannerTestFixtures';
+import { BookingCard } from '@/features/bookings/components/BookingCard';
+import { catalogsFixture } from '@/shared/test/apiFixtures';
 import { RootStackParamList } from '@/shared/navigation/types';
 import {
   jsonResponse,
@@ -28,10 +33,13 @@ test('istoricul păstrează editarea profilului după compactarea cardurilor', a
     if (path.endsWith('/me')) {
       return Promise.resolve(jsonResponse(200, plannerAccount));
     }
+    if (path.endsWith('/catalogs'))
+      return Promise.resolve(jsonResponse(200, catalogsFixture));
     return Promise.resolve(
       path.endsWith('/clients/client-1')
         ? jsonResponse(200, {
             id: 'client-1',
+            version: 1,
             name: 'Ana',
             phone: '0720000011',
             notes: 'Observații client',
@@ -66,4 +74,56 @@ test('istoricul păstrează editarea profilului după compactarea cardurilor', a
     '0720000011',
   );
   await unmount();
+});
+
+test('istoricul afișează tipul rezervării din catalog în cardul comun', async () => {
+  globalThis.fetch = jest.fn(url => {
+    const path = String(url);
+    if (path.endsWith('/me'))
+      return Promise.resolve(jsonResponse(200, plannerAccount));
+    if (path.endsWith('/catalogs'))
+      return Promise.resolve(
+        jsonResponse(200, {
+          ...catalogsFixture,
+          event_types: [
+            { id: plannerBooking.type, name: 'Nuntă personalizată' },
+          ],
+        }),
+      );
+    if (path.endsWith('/clients/client-1'))
+      return Promise.resolve(
+        jsonResponse(200, {
+          id: 'client-1',
+          version: 1,
+          name: 'Ana',
+          phone: null,
+          notes: null,
+        }),
+      );
+    return Promise.resolve(paginatedResponse([plannerBooking]));
+  }) as typeof globalThis.fetch;
+  const { renderer, unmount } = await renderWithProviders(
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen
+          name="CustomerHistory"
+          component={CustomerHistoryScreen}
+          initialParams={{ clientId: 'client-1' }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>,
+  );
+  try {
+    await waitForUi(() =>
+      expect(renderer.root.findByType(BookingCard).props.eventType).toBe(
+        'Nuntă personalizată',
+      ),
+    );
+    expect(renderedText(renderer)).toContain('Nuntă personalizată');
+    expect(renderer.root.findByType(BookingCard).props.booking.id).toBe(
+      plannerBooking.id,
+    );
+  } finally {
+    await unmount();
+  }
 });

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Card } from '@/shared/components/Card';
-import { Text } from 'react-native-paper';
+import { FormPanel } from '@/shared/components/FormPanel';
+import { FormActions } from '@/shared/components/FormActions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
@@ -49,8 +49,7 @@ export function LoginPanel({
   });
 
   return (
-    <Card style={authPanelStyles.formPanel}>
-      <Text style={authPanelStyles.panelTitle}>Autentificare</Text>
+    <FormPanel title="Autentificare" busy={login.isPending}>
       <ControlledTextField
         autoCapitalize="none"
         control={loginForm.control}
@@ -73,14 +72,14 @@ export function LoginPanel({
         }
         secureTextEntry={!isPasswordVisible}
       />
-      <AppButton
-        disabled={login.isPending}
-        fullWidth
-        icon="arrow-forward"
-        iconPosition="right"
-        label={login.isPending ? 'Se autentifică...' : 'Intră în aplicație'}
-        onPress={onSubmit}
-        size="large"
+      <FormActions
+        busy={login.isPending}
+        primary={{
+          label: 'Intră în aplicație',
+          loadingLabel: 'Se autentifică…',
+          onPress: onSubmit,
+          icon: 'arrow-forward',
+        }}
       />
       <AppButton
         fullWidth
@@ -98,6 +97,6 @@ export function LoginPanel({
         style={authPanelStyles.linkButton}
         variant="ghost"
       />
-    </Card>
+    </FormPanel>
   );
 }

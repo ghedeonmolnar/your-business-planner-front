@@ -30,6 +30,7 @@ type ApiRequestOptions<T> = {
   body?: unknown;
   auth?: boolean;
   signal?: AbortSignal;
+  timeoutMs?: number;
   schema?: z.ZodType<T>;
 };
 
@@ -96,7 +97,14 @@ export const apiRequest = async <T>(
     );
   }
 
-  const { method = 'GET', body, auth = true, signal, schema } = options;
+  const {
+    method = 'GET',
+    body,
+    auth = true,
+    signal,
+    schema,
+    timeoutMs,
+  } = options;
   const generation = getSessionGeneration();
   const isMultipart = isFormDataBody(body);
   const hasJsonBody = body !== undefined && !isMultipart;
@@ -111,6 +119,7 @@ export const apiRequest = async <T>(
       body: isMultipart ? body : hasJsonBody ? JSON.stringify(body) : undefined,
     },
     signal,
+    timeoutMs,
   ).finally(() => assertCurrentRequestSession(generation));
 
   if (!response.ok) {
