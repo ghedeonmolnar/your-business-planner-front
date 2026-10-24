@@ -166,7 +166,7 @@ export function BookingsScreen() {
               onLoadMore={() => query.fetchNextPage()}
               label="Încarcă mai multe rezervări"
             />
-          ) : null
+          ) : undefined
         }
       />
       {manager ? (

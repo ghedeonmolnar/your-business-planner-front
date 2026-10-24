@@ -80,11 +80,12 @@ export function HallsScreen({
               loading={false}
               empty
               emptyState={{
+                icon: 'business-outline',
                 title: 'Nu există săli pentru criteriile selectate',
                 message: 'Adaugă o sală sau modifică filtrele.',
               }}
             />
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
           <HallCard

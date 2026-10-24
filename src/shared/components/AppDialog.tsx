@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Dialog, Surface, Text } from 'react-native-paper';
 import { AppButton } from '@/shared/components/AppButton';
@@ -20,11 +20,7 @@ type AppDialogProps = {
 };
 
 export function AppDialog({ dialog, onCancel, onConfirm }: AppDialogProps) {
-  const [shownDialog, setShownDialog] = useState(dialog);
-  if (dialog && dialog !== shownDialog) {
-    setShownDialog(dialog);
-  }
-  const content = dialog ?? shownDialog;
+  const content = dialog;
   const actionLabels = content
     ? [content.confirmLabel, content.cancelLabel].filter(
         (actionLabel): actionLabel is string => Boolean(actionLabel),

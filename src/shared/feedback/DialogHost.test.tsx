@@ -56,10 +56,13 @@ test('schimbarea sesiunii elimina datele private si dezactiveaza confirmarile ve
     });
     showMessage('Alt client privat', 'Date in asteptare');
   });
-  const previousConfirm = getVisibleDialog(renderer)?.onConfirm;
+  const previousConfirm = renderer.root.findByType(AppDialog).props.onConfirm;
   expect(previousConfirm).toBeDefined();
   await openDialog(advanceSessionGeneration);
   expect(getVisibleDialog(renderer)).toBeNull();
+  expect(JSON.stringify(renderer.toJSON())).not.toContain(
+    'Telefon si contract',
+  );
   await openDialog(() => {
     previousConfirm?.();
     showDialog({

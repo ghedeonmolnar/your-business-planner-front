@@ -123,7 +123,9 @@ export function HallDetailsScreen({
         refreshControl={
           <RefreshControl
             refreshing={query.isRefetching}
-            onRefresh={() => query.refetch()}
+            onRefresh={async () => {
+              await query.refetch();
+            }}
           />
         }
       >

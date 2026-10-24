@@ -66,13 +66,14 @@ export function HallBookingsScreen({
               loading={false}
               empty
               emptyState={{
+                icon: 'calendar-outline',
                 title: showHistory
                   ? 'Nu există rezervări'
                   : 'Nu există rezervări viitoare',
                 message: 'Rezervările acestei săli vor apărea aici.',
               }}
             />
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
           <BookingCard

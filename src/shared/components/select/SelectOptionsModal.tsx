@@ -200,7 +200,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
                     {query ? 'Niciun rezultat pentru căutarea ta' : noItemsText}
                   </Text>
                 </View>
-              ) : null
+              ) : undefined
             }
             renderItem={({ item }) => (
               <SelectOptionRow
