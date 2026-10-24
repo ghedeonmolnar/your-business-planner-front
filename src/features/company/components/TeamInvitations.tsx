@@ -1,13 +1,16 @@
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Card } from '@/shared/components/Card';
+import { RecordCard } from '@/shared/components/RecordCard';
+import { MetaPill } from '@/shared/components/MetaPill';
+import { ContentSection } from '@/shared/components/ContentSection';
 import {
   useAccountInvitations,
   useRevokeInvitation,
 } from '@/features/company/hooks/useCompany';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
+import { QueryState } from '@/shared/components/QueryState';
 import { AppButton } from '@/shared/components/AppButton';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { showError } from '@/shared/feedback/showError';
@@ -19,18 +22,25 @@ export function TeamInvitations() {
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
     <View style={styles.content}>
-      <Text style={styles.subtitle}>Invitații neacceptate</Text>
-      <QueryNotice
+      <ContentSection title="Invitații neacceptate" />
+      <QueryState
         loading={query.isLoading}
-        error={query.error}
+        hasData={items.length > 0}
+        error={query.isFetchNextPageError ? undefined : query.error}
         empty={!items.length}
         retry={() => query.refetch()}
       />
       {items.map(item => (
-        <Card key={item.id} style={styles.card}>
-          <Text style={styles.text}>
-            {item.name} · {item.email}
-          </Text>
+        <RecordCard
+          key={item.id}
+          title={item.name}
+          subtitle={item.email}
+          badge={
+            item.expired ? (
+              <MetaPill label="Expirată" tone="danger" />
+            ) : undefined
+          }
+        >
           <Text style={styles.muted}>
             {item.expired
               ? 'Expirată'
@@ -49,7 +59,7 @@ export function TeamInvitations() {
             <AppButton
               label="Revocă invitația"
               variant="outline"
-              disabled={revoke.isPending}
+              loading={revoke.isPending}
               onPress={() =>
                 confirmAction({
                   title: 'Revoci invitația?',
@@ -64,15 +74,15 @@ export function TeamInvitations() {
               }
             />
           ) : null}
-        </Card>
+        </RecordCard>
       ))}
-      {query.hasNextPage ? (
-        <AppButton
-          label="Mai multe invitații"
-          disabled={query.isFetchingNextPage}
-          onPress={() => query.fetchNextPage()}
-        />
-      ) : null}
+      <PaginationFooter
+        hasMore={Boolean(query.hasNextPage)}
+        loading={query.isFetchingNextPage}
+        error={query.isFetchNextPageError ? query.error : undefined}
+        onLoadMore={() => query.fetchNextPage()}
+        label="Mai multe invitații"
+      />
     </View>
   );
 }

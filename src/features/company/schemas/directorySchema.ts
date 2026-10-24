@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { requiredPhoneSchema } from '@/shared/schemas/phoneSchema';
 
 export const directorySchema = z
   .object({
@@ -32,6 +33,6 @@ export type DirectoryFormValues = z.infer<typeof directorySchema>;
 
 export const newClientSchema = z.object({
   name: z.string().trim().min(1, 'Completează numele.').max(255),
-  phone: z.string().trim().max(15, 'Telefonul este prea lung.'),
+  phone: requiredPhoneSchema,
 });
 export type NewClientValues = z.infer<typeof newClientSchema>;

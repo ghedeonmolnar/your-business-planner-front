@@ -5,12 +5,20 @@ import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { MultilineButton } from '@/shared/components/MultilineButton';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
+import {
+  AppButtonSize,
+  AppButtonVariant,
+  buttonPresentation,
+  disabledButtonBackground,
+} from '@/shared/components/buttonPresentation';
+import { useFormBusy } from '@/shared/components/FormInteractionContext';
 
-export type AppButtonVariant =
-  'primary' | 'outline' | 'soft' | 'ghost' | 'danger';
-export type AppButtonSize = 'small' | 'medium' | 'large' | 'icon';
+export type {
+  AppButtonSize,
+  AppButtonVariant,
+} from '@/shared/components/buttonPresentation';
 
-type AppButtonProps = {
+export type AppButtonProps = {
   accessibilityLabel?: string;
   backgroundColor?: string;
   color?: string;
@@ -20,6 +28,8 @@ type AppButtonProps = {
   iconElement?: React.ReactNode;
   iconPosition?: 'left' | 'right';
   label?: string;
+  loading?: boolean;
+  loadingLabel?: string;
   multiline?: boolean;
   onPress: () => void;
   shape?: 'pill' | 'rounded';
@@ -29,16 +39,8 @@ type AppButtonProps = {
   variant?: AppButtonVariant;
 };
 
-const buttonModes = {
-  primary: 'contained',
-  outline: 'outlined',
-  soft: 'contained-tonal',
-  ghost: 'text',
-  danger: 'contained-tonal',
-} as const;
-
 export const APP_ICON_BUTTON_SIZE =
-  theme.controls.fieldHeight - theme.spacing.md;
+  theme.controls.fieldHeight - theme.spacing.xs;
 
 export function AppButton({
   accessibilityLabel,
@@ -50,26 +52,36 @@ export function AppButton({
   iconElement,
   iconPosition = 'left',
   label,
+  loading = false,
+  loadingLabel,
   multiline = false,
   onPress,
-  shape,
+  shape = 'rounded',
   size = 'medium',
   sizingLabels = [],
   style,
   variant = 'primary',
 }: AppButtonProps) {
   const isIcon = size === 'icon';
-  const buttonColor =
-    backgroundColor ??
-    (variant === 'danger' ? theme.colors.errorContainer : undefined);
-  const textColor =
-    color ?? (variant === 'danger' ? theme.colors.onErrorContainer : undefined);
+  const presentation = buttonPresentation[variant];
+  const formBusy = useFormBusy();
+  const blocked = Boolean(disabled || loading || formBusy);
+  const buttonColor = blocked
+    ? disabledButtonBackground(variant)
+    : (backgroundColor ?? presentation.backgroundColor);
+  const textColor = blocked
+    ? theme.colors.onSurfaceDisabled
+    : (color ?? presentation.color);
+  const displayLabel = loading && loadingLabel ? loadingLabel : label;
+  const handlePress = () => {
+    if (!blocked) onPress();
+  };
   const buttonStyle = [
     {
-      borderRadius:
-        (shape ?? (isIcon ? 'rounded' : 'pill')) === 'pill'
-          ? theme.radius.pill
-          : theme.radius.lg,
+      borderRadius: shape === 'pill' ? theme.radius.pill : theme.radius.lg,
+      borderColor: blocked
+        ? theme.colors.surfaceDisabled
+        : theme.colors.menu.border,
     },
     fullWidth ? styles.fullWidth : undefined,
   ];
@@ -91,12 +103,14 @@ export function AppButton({
     return (
       <IconButton
         accessibilityLabel={accessibilityLabel ?? label}
+        accessibilityState={{ disabled: blocked, busy: loading }}
         containerColor={buttonColor}
-        disabled={disabled}
+        disabled={blocked}
+        loading={loading}
         icon={renderIcon}
         iconColor={textColor}
-        mode="contained-tonal"
-        onPress={onPress}
+        mode={presentation.iconMode}
+        onPress={handlePress}
         size={theme.typography.sectionTitle}
         style={[styles.icon, buttonStyle, style]}
       />
@@ -107,13 +121,15 @@ export function AppButton({
     return (
       <MultilineButton
         accessibilityLabel={accessibilityLabel ?? label}
-        backgroundColor={backgroundColor}
-        color={color}
-        disabled={disabled}
+        backgroundColor={buttonColor}
+        color={textColor}
+        disabled={blocked}
+        loading={loading}
         icon={icon || iconElement ? renderIcon : undefined}
         iconPosition={iconPosition}
-        label={label}
-        onPress={onPress}
+        label={displayLabel}
+        onPress={handlePress}
+        size={size}
         style={[buttonStyle, style]}
         variant={variant}
       />
@@ -123,6 +139,7 @@ export function AppButton({
   const button = (
     <Button
       accessibilityLabel={accessibilityLabel ?? label}
+      accessibilityState={{ disabled: blocked, busy: loading }}
       buttonColor={buttonColor}
       compact={size === 'small'}
       contentStyle={[
@@ -130,16 +147,17 @@ export function AppButton({
         size === 'large' ? styles.largeContent : undefined,
         iconPosition === 'right' ? styles.reversed : undefined,
       ]}
-      disabled={disabled}
+      disabled={blocked}
+      loading={loading}
       icon={icon || iconElement ? renderIcon : undefined}
       labelStyle={labelStyle}
-      mode={buttonModes[variant]}
-      onPress={onPress}
+      mode={presentation.mode}
+      onPress={handlePress}
       style={[buttonStyle, sizingLabels.length ? undefined : style]}
       textColor={textColor}
       uppercase={false}
     >
-      {label}
+      {displayLabel}
     </Button>
   );
 

@@ -3,13 +3,11 @@ import { UseFormReturn } from 'react-hook-form';
 import { Booking } from '@/features/bookings/types';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { BookingStaffFields } from '@/features/bookings/components/BookingStaffFields';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
 import {
   useDirectory,
   useStaffAvailability,
 } from '@/features/company/hooks/useCompany';
 import { includeDirectorySelections } from '@/features/company/utils/includeDirectorySelections';
-import { AppButton } from '@/shared/components/AppButton';
 import { toCompanyTimestamp } from '@/shared/utils/formatDate';
 
 export function BookingStaffStep({
@@ -30,13 +28,19 @@ export function BookingStaffStep({
   const query = startsAt && endsAt ? availability : employees;
   return (
     <>
-      <QueryNotice
-        loading={query.isLoading}
-        error={query.error}
-        retry={() => query.refetch()}
-      />
       <BookingStaffFields
         form={form}
+        optionsState={{
+          loading: query.isLoading,
+          error: query.error,
+          onRetry: () => query.refetch(),
+          pagination: {
+            hasMore: Boolean(query.hasNextPage),
+            loading: query.isFetchingNextPage,
+            error: query.isFetchNextPageError ? query.error : undefined,
+            onLoadMore: () => query.fetchNextPage(),
+          },
+        }}
         employees={includeDirectorySelections(
           query.data?.pages.flatMap(page => page.items) ?? [],
           booking?.staff.map(person => ({
@@ -46,13 +50,6 @@ export function BookingStaffStep({
           })) ?? [],
         )}
       />
-      {query.hasNextPage ? (
-        <AppButton
-          label="Mai multe persoane"
-          disabled={query.isFetchingNextPage}
-          onPress={() => query.fetchNextPage()}
-        />
-      ) : null}
     </>
   );
 }

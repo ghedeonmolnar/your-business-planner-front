@@ -85,5 +85,18 @@ test('mapează câmpul 422 din envelope fără a afișa textul tehnic al serveru
       true,
     ),
   ).toBeNull();
+  await ReactTestRenderer.act(async () => {
+    step = applyBookingApiErrors(
+      new ApiError('Validare', 422, {
+        response: { error: { code: 'BOOKING_CLIENT_PHONE_REQUIRED' } },
+      }),
+      form,
+      true,
+    );
+  });
+  expect(step).toBe(1);
+  expect(form.getFieldState('client_id').error?.message).toBe(
+    'Completează telefonul clientului înainte de rezervare.',
+  );
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });

@@ -1,3 +1,5 @@
+import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React, { useState } from 'react';
 import { FlatList } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -6,11 +8,18 @@ import { useBookings } from '@/features/bookings/hooks/useBookings';
 import { useCustomer } from '@/features/company/hooks/useCustomers';
 import { DirectoryForm } from '@/features/company/components/DirectoryForm';
 import { BookingCard } from '@/features/bookings/components/BookingCard';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { QueryState } from '@/shared/components/QueryState';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
 import { Screen } from '@/shared/components/Screen';
 import { AppButton } from '@/shared/components/AppButton';
 import { RootStackParamList } from '@/shared/navigation/types';
+import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
+import {
+  createCatalogLabelMap,
+  getCatalogLabel,
+} from '@/features/catalogs/utils/catalogLabels';
+import { ContentSection } from '@/shared/components/ContentSection';
+import { IconButton } from '@/shared/components/IconButton';
 
 export function CustomerHistoryScreen({
   route,
@@ -18,22 +27,30 @@ export function CustomerHistoryScreen({
 }: NativeStackScreenProps<RootStackParamList, 'CustomerHistory'>) {
   const query = useBookings({ client_id: route.params.clientId });
   const customer = useCustomer(route.params.clientId);
+  const catalogs = useCatalogs();
+  const typeLabels = createCatalogLabelMap(catalogs.data?.event_types);
   const [editing, setEditing] = useState(false);
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
     <Screen>
       <FlatList
         data={items}
+        ItemSeparatorComponent={ListItemSeparator}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.content}
         ListHeaderComponent={
           <>
-            <AppButton
-              label="Înapoi"
-              variant="ghost"
-              onPress={() => navigation.goBack()}
+            <ContentSection
+              title="Istoricul clientului"
+              size="page"
+              leading={
+                <IconButton
+                  icon="arrow-back"
+                  accessibilityLabel="Înapoi"
+                  onPress={() => navigation.goBack()}
+                />
+              }
             />
-            <Text style={styles.title}>Istoricul clientului</Text>
             {customer.data ? (
               <>
                 <Text style={styles.subtitle}>{customer.data.name}</Text>
@@ -51,35 +68,42 @@ export function CustomerHistoryScreen({
                 />
               </>
             ) : null}
-            <QueryNotice
+            <QueryState
               loading={customer.isLoading}
               error={customer.error}
               retry={() => customer.refetch()}
             />
-            <QueryNotice
+            <QueryState
               loading={query.isLoading}
-              error={query.error}
+              hasData={items.length > 0}
+              error={query.isFetchNextPageError ? undefined : query.error}
               empty={!items.length}
               retry={() => query.refetch()}
+            />
+            <QueryState
+              loading={false}
+              error={catalogs.error}
+              retry={() => catalogs.refetch()}
             />
           </>
         }
         renderItem={({ item }) => (
           <BookingCard
             booking={item}
+            eventType={getCatalogLabel(typeLabels, item.type)}
             onOpen={() =>
               navigation.navigate('EventDetails', { eventId: item.id })
             }
           />
         )}
         ListFooterComponent={
-          query.hasNextPage ? (
-            <AppButton
-              label="Mai multe rezervări"
-              disabled={query.isFetchingNextPage}
-              onPress={() => query.fetchNextPage()}
-            />
-          ) : undefined
+          <PaginationFooter
+            hasMore={Boolean(query.hasNextPage)}
+            loading={query.isFetchingNextPage}
+            error={query.isFetchNextPageError ? query.error : undefined}
+            onLoadMore={() => query.fetchNextPage()}
+            label="Mai multe rezervări"
+          />
         }
       />
       {editing && customer.data ? (

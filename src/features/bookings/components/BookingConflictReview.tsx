@@ -3,7 +3,7 @@ import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Booking } from '@/features/bookings/types';
 import { useBooking } from '@/features/bookings/hooks/useBookings';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { QueryState } from '@/shared/components/QueryState';
 import { plannerStyles } from '@/features/bookings/components/plannerStyles';
 import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
 import { AppButton } from '@/shared/components/AppButton';
@@ -26,7 +26,7 @@ export function BookingConflictReview({
         Ciorna ta este păstrată. Compară datele introduse cu versiunea salvată
         de echipă.
       </Text>
-      <QueryNotice
+      <QueryState
         loading={query.isLoading}
         error={query.error}
         retry={() => query.refetch()}

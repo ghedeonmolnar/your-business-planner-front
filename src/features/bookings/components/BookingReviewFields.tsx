@@ -47,7 +47,10 @@ export function BookingReviewFields({
         Sfârșit: {formatCompanyDateTime(preview.ends_at)}
       </Text>
       <Text style={styles.text}>
-        Minim garantat: {values.minimum_guests} persoane
+        Invitați minimi: {values.minimum_guests} persoane
+      </Text>
+      <Text style={styles.text}>
+        Meniuri comandate: {values.final_guests || 'În așteptarea confirmării'}
       </Text>
       <Text style={styles.text}>
         Preț meniu: {formatExactMoney(preview.menu_price)}
@@ -72,8 +75,8 @@ export function BookingReviewFields({
       <ControlledTextField
         control={form.control}
         name="notes"
-        label="Detalii discutate"
-        placeholder="Meniu, decor, acces furnizori…"
+        label="Note interne"
+        placeholder="Detalii private pentru echipă"
         multiline
       />
     </View>

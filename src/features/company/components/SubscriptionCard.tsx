@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleProp, StyleSheet, View, ViewStyle } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Ionicons } from '@react-native-vector-icons/ionicons/static';
+import { MetaPill } from '@/shared/components/MetaPill';
 import { AuthUser } from '@/features/auth/types';
 import { ActionTile } from '@/shared/components/ActionTile';
 import { Card } from '@/shared/components/Card';
@@ -29,42 +29,19 @@ export function SubscriptionCard({
     : active
       ? 'Activ'
       : 'Inactiv';
-  const statusColor = active
-    ? theme.colors.menu.success
-    : theme.colors.onErrorContainer;
 
   return (
-    <Card style={[styles.card, style]}>
+    <Card style={style}>
       <View style={styles.overview}>
         <IconBadge icon="ribbon" size="medium" />
         <View style={styles.details}>
           <View style={styles.heading}>
             <Text style={styles.title}>{plan?.name ?? 'Abonament'}</Text>
-            <View
-              style={[
-                styles.status,
-                {
-                  backgroundColor: active
-                    ? theme.colors.menu.successSoft
-                    : theme.colors.menu.dangerSoft,
-                },
-              ]}
-            >
-              <Ionicons
-                accessible={false}
-                name={active ? 'checkmark-circle' : 'alert-circle'}
-                color={statusColor}
-                size={theme.typography.bodySmall}
-              />
-              <Text
-                style={[
-                  styles.statusLabel,
-                  { color: active ? theme.colors.menu.text : statusColor },
-                ]}
-              >
-                {status}
-              </Text>
-            </View>
+            <MetaPill
+              label={status}
+              tone={active ? 'success' : 'danger'}
+              icon={active ? 'checkmark-circle' : 'alert-circle'}
+            />
           </View>
           {subscription?.trial ? (
             <Text style={styles.detail}>Perioadă de probă</Text>
@@ -100,11 +77,6 @@ export function SubscriptionCard({
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: theme.colors.menu.surface,
-    borderWidth: 0,
-    padding: theme.spacing.md,
-  },
   overview: {
     alignItems: 'flex-start',
     flexDirection: 'row',
@@ -127,17 +99,6 @@ const styles = StyleSheet.create({
   detail: {
     color: theme.colors.menu.muted,
     fontFamily: theme.fonts.body,
-    fontSize: theme.typography.label,
-  },
-  status: {
-    alignItems: 'center',
-    borderRadius: theme.radius.sm,
-    flexDirection: 'row',
-    gap: theme.spacing.xs,
-    padding: theme.spacing.xs,
-  },
-  statusLabel: {
-    fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.label,
   },
   divider: {

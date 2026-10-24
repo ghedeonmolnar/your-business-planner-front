@@ -50,13 +50,21 @@ export function CalendarMonth({
             const isSelected = iso === selected;
             const isToday = iso === today;
             const occupied =
-              summary && summary.confirmed + summary.tentative > 0;
+              summary !== undefined &&
+              (summary.occupied_halls ??
+                summary.confirmed + summary.tentative) > 0;
+            const fullyBooked = hasHalls && occupied && summary?.free === 0;
+            const occupancyLabel = fullyBooked
+              ? ', complet rezervat'
+              : occupied
+                ? ', parțial rezervat'
+                : '';
             return (
               <Pressable
                 key={iso}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${summary ? `${hasHalls ? `, ${summary.free} săli libere` : ', nicio sală activă în acest filtru'}, ${summary.confirmed} confirmate, ${summary.tentative} provizorii` : ', disponibilitate necunoscută'}`}
+                accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${occupancyLabel}${summary ? `${hasHalls ? `, ${summary.free} săli libere` : ', nicio sală activă în acest filtru'}, ${summary.confirmed} confirmate, ${summary.tentative} provizorii` : ', date indisponibile'}`}
                 onPress={() => onSelect(iso)}
                 style={styles.cell}
               >
@@ -64,8 +72,9 @@ export function CalendarMonth({
                   style={[
                     styles.day,
                     occupied ? styles.occupied : undefined,
-                    isToday ? styles.today : undefined,
                     isSelected ? styles.selected : undefined,
+                    fullyBooked ? styles.fullyBooked : undefined,
+                    isToday || isSelected ? styles.highlighted : undefined,
                   ]}
                 >
                   <Text
@@ -76,21 +85,11 @@ export function CalendarMonth({
                         ? styles.otherMonth
                         : undefined,
                       isSelected ? styles.selectedText : undefined,
+                      fullyBooked ? styles.fullyBookedText : undefined,
                     ]}
                   >
                     {date.date()}
                   </Text>
-                  {occupied || !summary || !hasHalls ? (
-                    <Text
-                      accessible={false}
-                      style={[
-                        styles.marker,
-                        isSelected ? styles.selectedText : undefined,
-                      ]}
-                    >
-                      {occupied ? '•' : !summary ? '?' : '—'}
-                    </Text>
-                  ) : null}
                 </View>
               </Pressable>
             );
@@ -103,7 +102,11 @@ export function CalendarMonth({
 
 const styles = StyleSheet.create({
   calendar: { gap: theme.spacing.xs, paddingHorizontal: theme.spacing.sm },
-  row: { flexDirection: 'row', alignItems: 'stretch' },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: theme.spacing.xs,
+  },
   weekday: {
     color: theme.colors.menu.muted,
     fontFamily: theme.fonts.bodyMedium,
@@ -136,14 +139,18 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.body,
   },
-  marker: { color: theme.colors.menu.text, fontSize: theme.typography.caption },
   occupied: {
     backgroundColor: theme.colors.menu.primarySoft,
     borderColor: theme.colors.menu.primarySoft,
   },
   occupiedText: { color: theme.colors.menu.primary },
+  fullyBooked: {
+    backgroundColor: theme.colors.menu.success,
+    borderColor: theme.colors.menu.success,
+  },
+  fullyBookedText: { color: theme.colors.menu.surface },
   otherMonth: { color: theme.colors.menu.text, fontFamily: theme.fonts.body },
-  today: { borderColor: theme.colors.menu.primary },
+  highlighted: { borderColor: theme.colors.menu.primary },
   selected: {
     backgroundColor: theme.colors.menu.primary,
     borderColor: theme.colors.menu.primary,

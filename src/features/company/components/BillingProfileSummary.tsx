@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text } from 'react-native-paper';
 import { FiscalProfile } from '@/features/company/schemas/companyProfileSchemas';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
 
 export function BillingProfileSummary({ profile }: { profile: FiscalProfile }) {
   return (

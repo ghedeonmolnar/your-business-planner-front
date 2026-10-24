@@ -13,6 +13,7 @@ import {
 
 const directorySchema = z.object({
   id: z.string(),
+  version: z.number().int().positive().optional(),
   name: z.string(),
   phone: z.string().nullable().optional(),
   notes: z.string().nullable().optional(),
@@ -21,6 +22,7 @@ const directorySchema = z.object({
   is_active: z.boolean().optional(),
   is_available: z.boolean().optional(),
   capacity: z.number().optional(),
+  minimum_guests: z.number().int().positive().nullable().optional(),
   address: z.string().nullable().optional(),
 });
 export const getDirectoryApi = (

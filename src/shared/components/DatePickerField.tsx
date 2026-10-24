@@ -29,6 +29,7 @@ export type DatePickerFieldProps = {
   displayFormat?: 'long' | 'numeric';
   style?: StyleProp<ViewStyle>;
   fieldStyle?: StyleProp<ViewStyle>;
+  disabled?: boolean;
 };
 
 export function DatePickerField({
@@ -43,8 +44,10 @@ export function DatePickerField({
   displayFormat = 'long',
   style,
   fieldStyle,
+  disabled = false,
 }: DatePickerFieldProps) {
   const busy = useFormBusy();
+  const blocked = disabled || busy;
   const [isCalendarOpen, setCalendarOpen] = useState(false);
   const valueAsString = typeof value === 'string' ? value : '';
   const selectedDate = isValidIsoDate(valueAsString) ? valueAsString : '';
@@ -55,7 +58,7 @@ export function DatePickerField({
     : '';
 
   const openCalendar = () => {
-    if (busy) return;
+    if (blocked) return;
     Keyboard.dismiss();
     setCalendarOpen(true);
   };
@@ -66,6 +69,7 @@ export function DatePickerField({
   };
 
   const selectDate = (dateString: string) => {
+    if (blocked) return;
     onChange(dateString);
     closeCalendar();
   };
@@ -73,8 +77,8 @@ export function DatePickerField({
   return (
     <FormInput error={error} label={label} style={style}>
       <Pressable
-        disabled={busy}
-        accessibilityState={{ disabled: busy }}
+        disabled={blocked}
+        accessibilityState={{ disabled: blocked }}
         accessibilityLabel={label}
         accessibilityRole="button"
         accessibilityValue={{ text: displayValue || placeholder }}
@@ -84,6 +88,7 @@ export function DatePickerField({
           formInputStyles.fieldDimensions,
           styles.field,
           error ? formInputStyles.fieldError : undefined,
+          blocked ? formInputStyles.fieldDisabled : undefined,
           fieldStyle,
         ]}
       >

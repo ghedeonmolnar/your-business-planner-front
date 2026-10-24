@@ -56,6 +56,7 @@ export const selectOptionsModalStyles = StyleSheet.create({
   },
   list: {
     flexShrink: 1,
+    flexGrow: 0,
   },
   listContent: {
     paddingBottom: theme.spacing.sm,
@@ -74,7 +75,7 @@ export const selectOptionsModalStyles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
   },
   optionRowSelected: {
-    backgroundColor: theme.colors.surfaceMuted,
+    backgroundColor: theme.colors.menu.selected,
   },
   optionRowPressed: {
     opacity: 0.68,
@@ -121,11 +122,7 @@ export const selectOptionsModalStyles = StyleSheet.create({
   footer: {
     borderTopColor: theme.colors.border,
     borderTopWidth: 1,
-    flexDirection: 'row',
     gap: theme.spacing.sm,
     padding: theme.spacing.md,
-  },
-  footerButton: {
-    flex: 1,
   },
 });

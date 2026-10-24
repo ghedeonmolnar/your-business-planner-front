@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card } from '@/shared/components/Card';
-import { Text } from 'react-native-paper';
+import { FormPanel } from '@/shared/components/FormPanel';
+import { FormActions } from '@/shared/components/FormActions';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
@@ -54,8 +54,7 @@ export function ForgotPasswordPanel({
   });
 
   return (
-    <Card style={authPanelStyles.formPanel}>
-      <Text style={authPanelStyles.panelTitle}>Resetare parolă</Text>
+    <FormPanel title="Resetare parolă" busy={forgotPassword.isPending}>
       <ControlledTextField
         autoCapitalize="none"
         control={forgotForm.control}
@@ -65,14 +64,14 @@ export function ForgotPasswordPanel({
         name="email"
         placeholder="email@exemplu.ro"
       />
-      <AppButton
-        disabled={forgotPassword.isPending}
-        fullWidth
-        icon="mail-outline"
-        iconPosition="right"
-        label={forgotPassword.isPending ? 'Se trimite...' : 'Trimite cod'}
-        onPress={onSubmit}
-        size="large"
+      <FormActions
+        busy={forgotPassword.isPending}
+        primary={{
+          label: 'Trimite cod',
+          loadingLabel: 'Se trimite…',
+          onPress: onSubmit,
+          icon: 'mail-outline',
+        }}
       />
       <AppButton
         fullWidth
@@ -82,6 +81,6 @@ export function ForgotPasswordPanel({
         style={authPanelStyles.linkButton}
         variant="ghost"
       />
-    </Card>
+    </FormPanel>
   );
 }

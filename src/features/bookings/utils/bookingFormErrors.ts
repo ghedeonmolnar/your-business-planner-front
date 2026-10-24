@@ -1,6 +1,6 @@
 import { FieldErrors, FieldPath, UseFormReturn } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
-import { ApiError } from '@/shared/api/apiError';
+import { ApiError, responseErrorCode } from '@/shared/api/apiError';
 
 const stepFields: FieldPath<BookingFormValues>[][] = [
   ['hall_id', 'date', 'type', 'status', 'starts_at', 'ends_at', 'expires_at'],
@@ -55,6 +55,16 @@ export const applyBookingApiErrors = (
     return null;
   }
   const response = error.details.response;
+  if (
+    responseErrorCode({ kind: 'json', value: response }) ===
+    'BOOKING_CLIENT_PHONE_REQUIRED'
+  ) {
+    form.setError('client_id', {
+      type: 'server',
+      message: 'Completează telefonul clientului înainte de rezervare.',
+    });
+    return 1;
+  }
   if (
     typeof response !== 'object' ||
     response === null ||

@@ -1,4 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import {
+  getSessionGeneration,
+  subscribeSessionChanges,
+} from '@/shared/api/sessionExpiry';
 
 export type DialogRequest = {
   title: string;
@@ -6,6 +10,7 @@ export type DialogRequest = {
   confirmLabel: string;
   cancelLabel?: string;
   onConfirm?: () => void;
+  sessionGeneration?: number;
 };
 
 export type ActiveDialog = DialogRequest & { id: number };
@@ -29,7 +34,19 @@ const subscribe = (listener: () => void) => {
 };
 
 export const showDialog = (request: DialogRequest) => {
-  dialogQueue = [...dialogQueue, { ...request, id: nextDialogId++ }];
+  const generation = request.sessionGeneration ?? getSessionGeneration();
+  if (generation !== getSessionGeneration()) return;
+  dialogQueue = [
+    ...dialogQueue,
+    {
+      ...request,
+      id: nextDialogId++,
+      sessionGeneration: generation,
+      onConfirm: () => {
+        if (generation === getSessionGeneration()) request.onConfirm?.();
+      },
+    },
+  ];
   notifyListeners();
 };
 
@@ -42,6 +59,8 @@ export const clearDialogs = () => {
   dialogQueue = [];
   notifyListeners();
 };
+
+subscribeSessionChanges(clearDialogs);
 
 export const useActiveDialog = (): ActiveDialog | null => {
   const [hostId] = useState(() => nextHostId++);

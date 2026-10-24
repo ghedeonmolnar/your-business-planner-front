@@ -17,6 +17,8 @@ export const invalidatePlannerBooking = (
     queryKeys.planner.directories(companyId, 'hall-day'),
     queryKeys.planner.reminderWindows(companyId),
     queryKeys.planner.directories(companyId, 'clients'),
+    queryKeys.planner.hallLists(companyId),
+    queryKeys.planner.hallDetails(companyId),
   ]);
 };
 
@@ -91,6 +93,8 @@ export const invalidatePlannerDirectory = (
   ]);
   if (kind === 'halls') {
     invalidateAll(client, [
+      queryKeys.planner.hallLists(companyId),
+      queryKeys.planner.hallDetails(companyId),
       queryKeys.planner.calendars(companyId),
       queryKeys.planner.overviews(companyId),
       queryKeys.planner.directories(companyId, 'hall-day'),
@@ -102,6 +106,16 @@ export const invalidatePlannerDirectory = (
       queryKeys.planner.directories(companyId, 'team'),
     ]);
   }
+  if (kind === 'clients') {
+    invalidateAll(client, [queryKeys.planner.hallDetails(companyId)]);
+  }
+};
+
+export const invalidatePlannerHall = (
+  client: QueryClient,
+  companyId: string,
+) => {
+  invalidatePlannerDirectory(client, companyId, 'halls');
 };
 
 const invalidateAll = (queryClient: QueryClient, keys: QueryKey[]) => {

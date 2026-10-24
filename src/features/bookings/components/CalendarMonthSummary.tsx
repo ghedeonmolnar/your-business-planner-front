@@ -1,14 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
 import {
   MonthStatistics,
   bookingComparison,
 } from '@/features/bookings/utils/calendarStatistics';
 import { calendarStyles } from '@/features/bookings/components/calendarStyles';
 import { AppButton } from '@/shared/components/AppButton';
-import { Card } from '@/shared/components/Card';
-import { IconBadge } from '@/shared/components/IconBadge';
+import { ContentSection } from '@/shared/components/ContentSection';
+import { MetricCard } from '@/shared/components/MetricCard';
 import { useSingleColumnLayout } from '@/shared/hooks/useSingleColumnLayout';
 import { theme } from '@/shared/theme/theme';
 import { formatMonthLabel } from '@/shared/utils/formatDate';
@@ -59,56 +58,24 @@ export function CalendarMonthSummary({
     },
   ];
   return (
-    <Card style={calendarStyles.card}>
-      <Text accessibilityRole="header" style={calendarStyles.title}>
-        {formatMonthLabel(statistics.month)}
-      </Text>
-      <View style={singleColumn ? styles.column : styles.row}>
+    <View style={calendarStyles.section}>
+      <ContentSection title={formatMonthLabel(statistics.month)} />
+      <View style={styles.grid}>
         {items.map(item => (
-          <View
+          <MetricCard
             key={item.label}
-            style={[styles.metric, singleColumn ? undefined : styles.flex]}
-          >
-            <IconBadge icon={item.icon} />
-            <View style={styles.description}>
-              <Text style={styles.label}>{item.label}</Text>
-              <Text style={styles.value}>{item.value}</Text>
-              <Text style={styles.caption}>{item.caption}</Text>
-            </View>
-          </View>
+            {...item}
+            style={singleColumn ? styles.full : styles.metric}
+          />
         ))}
       </View>
-      <AppButton
-        label="Vezi luna"
-        icon="calendar-outline"
-        shape="rounded"
-        backgroundColor={theme.colors.menu.primary}
-        color={theme.colors.menu.surface}
-        onPress={onOpen}
-      />
-    </Card>
+      <AppButton label="Vezi luna" icon="calendar-outline" onPress={onOpen} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: theme.spacing.sm },
-  column: { gap: theme.spacing.md },
-  metric: { gap: theme.spacing.sm, alignItems: 'flex-start' },
-  flex: { flex: 1 },
-  description: { gap: theme.spacing.xs },
-  label: {
-    color: theme.colors.menu.muted,
-    fontFamily: theme.fonts.body,
-    fontSize: theme.typography.caption,
-  },
-  value: {
-    color: theme.colors.menu.primary,
-    fontFamily: theme.fonts.heading,
-    fontSize: theme.typography.title,
-  },
-  caption: {
-    color: theme.colors.menu.muted,
-    fontFamily: theme.fonts.body,
-    fontSize: theme.typography.caption,
-  },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
+  metric: { flex: 1, flexBasis: '30%' },
+  full: { width: '100%' },
 });

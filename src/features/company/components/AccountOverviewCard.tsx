@@ -60,10 +60,7 @@ export function AccountOverviewCard({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: theme.colors.menu.surface,
-    borderWidth: 0,
     gap: theme.spacing.md,
-    padding: theme.spacing.md,
   },
   account: {
     alignItems: 'center',

@@ -9,7 +9,7 @@ const options = Array.from({ length: 12 }, (_, index) => ({
 }));
 
 const listHeight = (renderer: ReactTestRenderer.ReactTestRenderer) =>
-  StyleSheet.flatten(renderer.root.findByType(FlatList).props.style)?.height;
+  StyleSheet.flatten(renderer.root.findByType(FlatList).props.style)?.maxHeight;
 
 const search = async (
   renderer: ReactTestRenderer.ReactTestRenderer,
@@ -79,6 +79,7 @@ test('keeps the dialog height while the search filters the options', async () =>
   }
 
   const initialHeight = listHeight(renderer);
+  expect(initialHeight).toBeGreaterThan(0);
 
   await search(renderer, 'Opțiunea 1');
   expect(listHeight(renderer)).toBe(initialHeight);

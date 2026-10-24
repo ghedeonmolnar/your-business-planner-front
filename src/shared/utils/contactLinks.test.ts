@@ -5,6 +5,10 @@ import {
 } from '@/shared/utils/contactLinks';
 
 describe('buildContactUrl', () => {
+  it('respinge literele și URL-urile în loc să le convertească într-un telefon', () => {
+    expect(buildContactUrl('call', 'abc0712345678')).toBeNull();
+    expect(buildContactUrl('whatsapp', 'https://0712345678')).toBeNull();
+  });
   it.each([
     ['whatsapp', '0732 652 339', 'https://wa.me/40732652339'],
     ['call', '0732 652 339', 'tel:+40732652339'],

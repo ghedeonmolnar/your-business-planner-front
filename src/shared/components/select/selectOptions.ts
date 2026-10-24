@@ -1,5 +1,17 @@
 export type SelectValue = string | number;
 
+export type SelectOptionsState = {
+  loading?: boolean;
+  error?: unknown;
+  onRetry?: () => void | Promise<unknown>;
+  pagination?: {
+    hasMore: boolean;
+    loading: boolean;
+    error?: unknown;
+    onLoadMore: () => void | Promise<unknown>;
+  };
+};
+
 export type SelectOption<T extends SelectValue = SelectValue> = {
   id: T;
   name: string;

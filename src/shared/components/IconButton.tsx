@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleProp, ViewStyle } from 'react-native';
 import { AppButton } from '@/shared/components/AppButton';
-import { theme } from '@/shared/theme/theme';
+import { AppButtonVariant } from '@/shared/components/buttonPresentation';
 import { IconName } from '@/shared/types/icon';
 
 type IconButtonProps = {
@@ -11,16 +11,20 @@ type IconButtonProps = {
   backgroundColor?: string;
   accessibilityLabel: string;
   disabled?: boolean;
+  loading?: boolean;
+  variant?: AppButtonVariant;
   style?: StyleProp<ViewStyle>;
 };
 
 export function IconButton({
   icon,
   onPress,
-  color = theme.colors.primary,
-  backgroundColor = theme.colors.surfaceMuted,
+  color,
+  backgroundColor,
   accessibilityLabel,
   disabled,
+  loading,
+  variant = 'soft',
   style,
 }: IconButtonProps) {
   return (
@@ -29,11 +33,12 @@ export function IconButton({
       backgroundColor={backgroundColor}
       color={color}
       disabled={disabled}
+      loading={loading}
       icon={icon}
       onPress={onPress}
       size="icon"
       style={style}
-      variant="soft"
+      variant={variant}
     />
   );
 }

@@ -33,8 +33,6 @@ export function AgendaHeader({ onCreate, onOpenCalendar }: AgendaHeaderProps) {
           <IconButton
             accessibilityLabel="Notificări"
             icon="notifications-outline"
-            color={theme.colors.menu.muted}
-            backgroundColor={theme.colors.menu.primarySoft}
             style={styles.notifications}
             onPress={() => actions.setPanel('notifications')}
           />
@@ -46,9 +44,6 @@ export function AgendaHeader({ onCreate, onOpenCalendar }: AgendaHeaderProps) {
           <AppButton
             icon="add"
             label="Rezervare nouă"
-            backgroundColor={theme.colors.menu.primary}
-            color={theme.colors.menu.surface}
-            shape="rounded"
             size="large"
             onPress={onCreate}
           />

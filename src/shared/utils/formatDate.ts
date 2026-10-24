@@ -48,6 +48,15 @@ export const formatDayMonthDate = (value: string) => {
 export const formatShortDate = (value: string) =>
   dayjs(value).format('DD.MM.YYYY');
 
+export const formatCalendarDateParts = (value: string) => {
+  const date = dayjs(value);
+  return {
+    weekday: date.format('ddd'),
+    day: date.format('DD'),
+    month: date.format('MMM').toUpperCase(),
+  };
+};
+
 export const formatCompactTimeRange = (
   start?: string | null,
   end?: string | null,

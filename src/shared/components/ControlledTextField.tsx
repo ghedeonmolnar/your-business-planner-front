@@ -29,6 +29,7 @@ type ControlledTextFieldProps<T extends FieldValues> = {
   rightIconAccessibilityLabel?: string;
   onRightIconPress?: () => void;
   inputStyle?: StyleProp<TextStyle>;
+  disabled?: boolean;
 };
 
 export function ControlledTextField<T extends FieldValues>({
@@ -47,8 +48,10 @@ export function ControlledTextField<T extends FieldValues>({
   rightIconAccessibilityLabel,
   onRightIconPress,
   inputStyle,
+  disabled = false,
 }: ControlledTextFieldProps<T>) {
   const busy = useFormBusy();
+  const blocked = busy || disabled;
   return (
     <Controller
       control={control}
@@ -59,7 +62,7 @@ export function ControlledTextField<T extends FieldValues>({
       }) => (
         <FormInput error={error?.message} label={label} hideLabel>
           <TextInput
-            disabled={busy}
+            disabled={blocked}
             accessibilityLabel={label}
             autoCapitalize={autoCapitalize ?? (isPassword ? 'none' : undefined)}
             autoCorrect={isPassword ? false : undefined}
@@ -85,7 +88,7 @@ export function ControlledTextField<T extends FieldValues>({
             multiline={multiline}
             onBlur={onBlur}
             onChangeText={text => {
-              if (!busy) onChange(text);
+              if (!blocked) onChange(text);
             }}
             placeholder={placeholder}
             ref={ref}
@@ -93,18 +96,23 @@ export function ControlledTextField<T extends FieldValues>({
               rightIcon ? (
                 <TextInput.Icon
                   accessibilityLabel={rightIconAccessibilityLabel}
-                  disabled={!onRightIconPress}
+                  disabled={blocked || !onRightIconPress}
                   forceTextInputFocus={false}
                   icon={({ color, size }) => (
                     <Ionicons color={color} name={rightIcon} size={size} />
                   )}
-                  onPress={onRightIconPress}
+                  onPress={() => {
+                    if (!blocked) onRightIconPress?.();
+                  }}
                 />
               ) : undefined
             }
             secureTextEntry={secureTextEntry}
             selectTextOnFocus={numeric}
             style={styles.field}
+            outlineStyle={styles.outline}
+            outlineColor={theme.colors.menu.border}
+            activeOutlineColor={theme.colors.menu.primary}
             value={value == null ? '' : String(value)}
           />
         </FormInput>
@@ -114,6 +122,7 @@ export function ControlledTextField<T extends FieldValues>({
 }
 
 const styles = StyleSheet.create({
+  outline: { borderRadius: theme.radius.md },
   field: {
     backgroundColor: theme.colors.surface,
     minHeight: theme.controls.fieldHeight,

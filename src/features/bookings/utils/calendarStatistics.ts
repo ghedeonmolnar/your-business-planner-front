@@ -15,9 +15,11 @@ export function getMonthStatistics(month: string, days: CalendarDay[]) {
   let bookings = 0;
   let freeDays = 0;
   let availableSlots = 0;
+  let occupiedSlots = 0;
   for (const day of monthDays) {
-    const occupied = day.confirmed + day.tentative;
-    bookings += occupied;
+    const occupied = day.occupied_halls ?? day.confirmed + day.tentative;
+    occupiedSlots += occupied;
+    bookings += day.confirmed + day.tentative;
     availableSlots += occupied + day.free;
     if (occupied === 0 && day.free > 0) {
       freeDays += 1;
@@ -41,7 +43,7 @@ export function getMonthStatistics(month: string, days: CalendarDay[]) {
     totalDays,
     weekends: weekends.size,
     occupiedWeekends: occupiedWeekends.size,
-    occupancy: availableSlots ? bookings / availableSlots : 0,
+    occupancy: availableSlots ? occupiedSlots / availableSlots : 0,
     hasHalls: availableSlots > 0,
     complete: monthDays.length === totalDays,
   };
@@ -52,7 +54,7 @@ export type MonthStatistics = ReturnType<typeof getMonthStatistics>;
 export function occupancyLabel(statistics: MonthStatistics) {
   if (!statistics.complete) return 'Date indisponibile';
   if (!statistics.hasHalls) return 'Fără săli';
-  if (statistics.bookings === 0) return 'Liber';
+  if (statistics.occupancy === 0) return 'Liber';
   if (statistics.occupancy < MODERATE_OCCUPANCY) return 'Mai liber';
   if (statistics.occupancy < HIGH_OCCUPANCY) return 'Moderat';
   if (statistics.occupancy < VERY_HIGH_OCCUPANCY) return 'Aglomerat';

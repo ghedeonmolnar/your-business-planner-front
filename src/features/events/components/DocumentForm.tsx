@@ -18,6 +18,7 @@ import { AppButton } from '@/shared/components/AppButton';
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
+import { FormActions } from '@/shared/components/FormActions';
 import { showError } from '@/shared/feedback/showError';
 import { showMessage } from '@/shared/feedback/showMessage';
 import { theme } from '@/shared/theme/theme';
@@ -74,11 +75,7 @@ export function DocumentForm({
     handleSubmit,
     reset,
     setValue,
-  } = useForm<
-    DocumentFormInput,
-    unknown,
-    DocumentFormValues
-  >({
+  } = useForm<DocumentFormInput, unknown, DocumentFormValues>({
     resolver: zodResolver(documentSchema),
     defaultValues: emptyDocumentForm,
   });
@@ -170,14 +167,16 @@ export function DocumentForm({
   return (
     <FormModalFrame
       footer={
-        <AppButton
-          disabled={saving}
-          fullWidth
-          label={saving ? 'Se salvează...' : 'Salvează'}
-          onPress={handleSubmit(submit)}
-          size="large"
+        <FormActions
+          busy={saving}
+          primary={{
+            label: 'Salvează',
+            loadingLabel: 'Se salvează…',
+            onPress: handleSubmit(submit),
+          }}
         />
       }
+      busy={saving}
       hasUnsavedChanges={isDirty || file !== null}
       onClose={onCancel}
       title={initialDocument ? 'Editează document' : 'Document nou'}

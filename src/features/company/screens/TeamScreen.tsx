@@ -1,16 +1,20 @@
+import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { useAuth } from '@/features/auth/AuthProvider';
 import React, { useState } from 'react';
 import { FlatList, View } from 'react-native';
-import { Text } from 'react-native-paper';
-import { Card } from '@/shared/components/Card';
+import { RecordCard } from '@/shared/components/RecordCard';
+import { MetaPill } from '@/shared/components/MetaPill';
+import { ContentSection } from '@/shared/components/ContentSection';
+import { IconButton } from '@/shared/components/IconButton';
 import {
   useTeam,
   useBlockAccount,
   useUnblockAccount,
 } from '@/features/company/hooks/useCompany';
 import { AccountInvitationForm } from '@/features/company/components/AccountInvitationForm';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
+import { QueryState } from '@/shared/components/QueryState';
 import { AppButton } from '@/shared/components/AppButton';
 import { Screen } from '@/shared/components/Screen';
 import { confirmAction } from '@/shared/feedback/confirmAction';
@@ -30,50 +34,64 @@ export function TeamScreen() {
     <Screen>
       <FlatList
         data={items}
+        ItemSeparatorComponent={ListItemSeparator}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.content}
         ListHeaderComponent={
-          <View style={styles.content}>
-            <AppButton
-              label="Înapoi"
-              variant="ghost"
-              onPress={() => navigation.goBack()}
+          <View style={styles.header}>
+            <ContentSection
+              title="Conturile companiei"
+              size="page"
+              subtitle={
+                user?.plan
+                  ? `${user.plan.users_used} / ${user.plan.user_limit ?? 'nelimitat'} locuri ocupate`
+                  : undefined
+              }
+              leading={
+                <IconButton
+                  icon="arrow-back"
+                  accessibilityLabel="Înapoi"
+                  onPress={() => navigation.goBack()}
+                />
+              }
+              action={
+                <AppButton
+                  label="Invită o persoană"
+                  onPress={() => setInviting(true)}
+                />
+              }
             />
-            <Text style={styles.title}>Conturile companiei</Text>
-            {user?.plan ? (
-              <Text style={styles.muted}>
-                {user.plan.users_used} / {user.plan.user_limit ?? 'nelimitat'}{' '}
-                locuri ocupate
-              </Text>
-            ) : null}
-            <AppButton
-              label="Invită o persoană"
-              onPress={() => setInviting(true)}
-            />
-            <QueryNotice
+            <QueryState
               loading={query.isLoading}
-              error={query.error}
+              hasData={items.length > 0}
+              error={query.isFetchNextPageError ? undefined : query.error}
               empty={!items.length}
               retry={() => query.refetch()}
             />
           </View>
         }
         renderItem={({ item }) => (
-          <Card style={styles.card}>
-            <Text style={styles.subtitle}>{item.name}</Text>
-            <Text style={styles.text}>{item.email}</Text>
-            <Text style={styles.muted}>
-              {item.role === 'owner'
-                ? 'Proprietar'
-                : item.role === 'admin'
-                  ? 'Administrator'
-                  : 'Angajat'}
-              {item.blocked ? ' · Blocat' : ''}
-            </Text>
+          <RecordCard
+            title={item.name}
+            subtitle={item.email}
+            badge={
+              <MetaPill
+                label={
+                  item.role === 'owner'
+                    ? 'Proprietar'
+                    : item.role === 'admin'
+                      ? 'Administrator'
+                      : 'Angajat'
+                }
+                tone="primary"
+              />
+            }
+          >
+            {item.blocked ? <MetaPill label="Blocat" tone="danger" /> : null}
             {item.blocked ? (
               <AppButton
                 label="Reactivează accesul"
-                disabled={unblock.isPending}
+                loading={unblock.isPending}
                 onPress={() =>
                   unblock.mutate(item.id, {
                     onError: error =>
@@ -86,7 +104,7 @@ export function TeamScreen() {
               <AppButton
                 label="Revocă accesul"
                 variant="outline"
-                disabled={block.isPending}
+                loading={block.isPending}
                 onPress={() =>
                   confirmAction({
                     title: 'Revoci accesul?',
@@ -101,17 +119,17 @@ export function TeamScreen() {
                 }
               />
             ) : null}
-          </Card>
+          </RecordCard>
         )}
         ListFooterComponent={
           <>
-            {query.hasNextPage ? (
-              <AppButton
-                label="Mai multe conturi"
-                disabled={query.isFetchingNextPage}
-                onPress={() => query.fetchNextPage()}
-              />
-            ) : null}
+            <PaginationFooter
+              hasMore={Boolean(query.hasNextPage)}
+              loading={query.isFetchingNextPage}
+              error={query.isFetchNextPageError ? query.error : undefined}
+              onLoadMore={() => query.fetchNextPage()}
+              label="Mai multe conturi"
+            />
             <TeamInvitations />
           </>
         }

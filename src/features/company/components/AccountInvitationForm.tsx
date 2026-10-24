@@ -11,7 +11,7 @@ import {
   useDirectory,
   useInviteAccount,
 } from '@/features/company/hooks/useCompany';
-import { AppButton } from '@/shared/components/AppButton';
+import { FormActions } from '@/shared/components/FormActions';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
@@ -54,10 +54,9 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
-        <AppButton
-          label="Trimite invitația"
-          disabled={invite.isPending}
-          onPress={submit}
+        <FormActions
+          busy={invite.isPending}
+          primary={{ label: 'Trimite invitația', onPress: submit }}
         />
       }
     >
@@ -92,6 +91,20 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
           control={form.control}
           name="employee_id"
           label="Persoană din personal"
+          icon="person-outline"
+          optionsState={{
+            loading: employees.isLoading,
+            error: employees.error,
+            onRetry: () => employees.refetch(),
+            pagination: {
+              hasMore: Boolean(employees.hasNextPage),
+              loading: employees.isFetchingNextPage,
+              error: employees.isFetchNextPageError
+                ? employees.error
+                : undefined,
+              onLoadMore: () => employees.fetchNextPage(),
+            },
+          }}
           single
           options={
             employees.data?.pages
@@ -101,13 +114,6 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
           }
           placeholder="Alege persoana"
           searchPlaceholder="Caută persoană"
-        />
-      ) : null}
-      {role === 'employee' && employees.hasNextPage ? (
-        <AppButton
-          label="Mai multe persoane"
-          disabled={employees.isFetchingNextPage}
-          onPress={() => employees.fetchNextPage()}
         />
       ) : null}
     </FormModalFrame>

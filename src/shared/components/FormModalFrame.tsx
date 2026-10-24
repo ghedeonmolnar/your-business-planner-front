@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     flex: 1,
     fontSize: theme.typography.title,
-    fontWeight: '800',
+    fontFamily: theme.fonts.heading,
     paddingRight: theme.spacing.md,
   },
   scroll: {

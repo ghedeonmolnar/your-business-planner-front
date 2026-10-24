@@ -1,11 +1,13 @@
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useHallDay } from '@/features/bookings/hooks/useBookings';
 import { CalendarHallRow } from '@/features/bookings/components/CalendarHallRow';
 import { calendarStyles } from '@/features/bookings/components/calendarStyles';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { QueryState } from '@/shared/components/QueryState';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { Card } from '@/shared/components/Card';
 import { AppButton } from '@/shared/components/AppButton';
@@ -38,18 +40,21 @@ export function CalendarDayHalls({
   const halls = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
     <Card style={calendarStyles.card}>
-      <Text accessibilityRole="header" style={calendarStyles.title}>
-        {formatLongDate(date)}
-      </Text>
-      <Text style={calendarStyles.muted}>
-        Săli libere: <Text style={calendarStyles.primary}>{free ?? '—'}</Text>
-      </Text>
-      <QueryNotice
+      <View style={styles.header}>
+        <Text accessibilityRole="header" style={calendarStyles.title}>
+          {formatLongDate(date)}
+        </Text>
+        <Text style={calendarStyles.muted}>
+          Săli libere: <Text style={calendarStyles.primary}>{free ?? '—'}</Text>
+        </Text>
+      </View>
+      <QueryState
         loading={query.isLoading}
-        error={query.error}
+        hasData={halls.length > 0}
+        error={query.isFetchNextPageError ? undefined : query.error}
         retry={() => query.refetch()}
       />
-      <QueryNotice
+      <QueryState
         loading={false}
         error={catalogs.error}
         retry={() => catalogs.refetch()}
@@ -62,42 +67,67 @@ export function CalendarDayHalls({
         />
       ) : null}
       {halls.map(hall => (
-        <CalendarHallRow
-          key={hall.id}
-          hall={hall}
-          typeLabel={getCatalogLabel(typeLabels, hall.type)}
-          onPress={() =>
-            hall.booking_id
-              ? navigation.navigate('EventDetails', {
-                  eventId: hall.booking_id,
-                })
-              : onReserve({
-                  id: hall.id,
-                  name: hall.name,
-                  capacity: hall.capacity,
-                  is_active: true,
-                })
-          }
-        />
+        <View key={hall.id} style={styles.header}>
+          {hall.bookings?.length ? (
+            hall.bookings.map(booking => (
+              <CalendarHallRow
+                key={booking.id}
+                hall={{
+                  ...hall,
+                  booking_id: booking.id,
+                  status: booking.status,
+                  type: booking.type,
+                  starts_at: booking.starts_at,
+                  ends_at: booking.ends_at,
+                }}
+                typeLabel={getCatalogLabel(typeLabels, booking.type)}
+                onPress={() =>
+                  navigation.navigate('EventDetails', { eventId: booking.id })
+                }
+              />
+            ))
+          ) : (
+            <CalendarHallRow
+              hall={hall}
+              typeLabel={getCatalogLabel(typeLabels, hall.type)}
+              onPress={
+                hall.status === 'inactive'
+                  ? undefined
+                  : () =>
+                      hall.booking_id
+                        ? navigation.navigate('EventDetails', {
+                            eventId: hall.booking_id,
+                          })
+                        : onReserve({
+                            id: hall.id,
+                            name: hall.name,
+                            capacity: hall.capacity,
+                            minimum_guests: hall.minimum_guests,
+                            is_active: hall.is_active ?? true,
+                          })
+              }
+            />
+          )}
+        </View>
       ))}
-      {query.hasNextPage ? (
-        <AppButton
-          label="Mai multe săli"
-          variant="outline"
-          disabled={query.isFetchingNextPage}
-          onPress={() => query.fetchNextPage()}
-        />
-      ) : null}
+      <PaginationFooter
+        hasMore={Boolean(query.hasNextPage)}
+        loading={query.isFetchingNextPage}
+        error={query.isFetchNextPageError ? query.error : undefined}
+        onLoadMore={() => query.fetchNextPage()}
+        label="Mai multe săli"
+      />
       <AppButton
         label="Rezervare nouă în această zi"
         multiline
         icon="add"
         variant="soft"
-        shape="rounded"
-        backgroundColor={theme.colors.menu.primarySoft}
-        color={theme.colors.menu.primary}
         onPress={() => onReserve(null)}
       />
     </Card>
   );
 }
+
+const styles = StyleSheet.create({
+  header: { gap: theme.spacing.xs },
+});

@@ -32,6 +32,9 @@ const socialHosts: Record<
 };
 
 const normalizePhone = (value: string) => {
+  if (!/^[+0-9\s().-]+$/.test(value.trim())) {
+    return null;
+  }
   let phone = value.trim().replace(/[^0-9+]/g, '');
 
   if (phone.startsWith('00')) {

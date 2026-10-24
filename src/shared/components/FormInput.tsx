@@ -11,16 +11,6 @@ type FormInputProps = {
   style?: StyleProp<ViewStyle>;
 };
 
-const formatLabel = (label: string) => {
-  const normalizedLabel = label.trim().toLocaleLowerCase('ro-RO');
-
-  if (!normalizedLabel) {
-    return '';
-  }
-
-  return `${normalizedLabel.charAt(0).toLocaleUpperCase('ro-RO')}${normalizedLabel.slice(1)}`;
-};
-
 export function FormInput({
   children,
   error,
@@ -32,7 +22,7 @@ export function FormInput({
     <View style={[styles.group, style]}>
       {hideLabel ? null : (
         <Text style={[styles.label, error ? styles.labelError : undefined]}>
-          {formatLabel(label)}
+          {label}
         </Text>
       )}
       {children}
@@ -49,12 +39,12 @@ export const formInputStyles = StyleSheet.create({
   field: {
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.outline,
+    borderColor: theme.colors.menu.border,
     borderWidth: 1,
     paddingHorizontal: theme.spacing.md,
   },
   fieldDimensions: {
-    borderRadius: theme.radius.sm,
+    borderRadius: theme.radius.md,
     minHeight: theme.controls.fieldHeight,
     paddingVertical: 0,
   },

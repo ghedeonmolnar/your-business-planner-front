@@ -1,7 +1,6 @@
 import { useAuth } from '@/features/auth/AuthProvider';
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React, { useRef, useState } from 'react';
-import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,13 +19,12 @@ import { BookingCommercialFields } from '@/features/bookings/components/BookingC
 import { BookingStaffStep } from '@/features/bookings/components/BookingStaffStep';
 import { useSaveBooking } from '@/features/bookings/hooks/useBookings';
 import { useDirectory } from '@/features/company/hooks/useCompany';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
 import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
 import { DirectoryItem } from '@/features/company/types';
 import { includeDirectorySelections } from '@/features/company/utils/includeDirectorySelections';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
-import { AppButton } from '@/shared/components/AppButton';
+import { FormActions } from '@/shared/components/FormActions';
 import { showError } from '@/shared/feedback/showError';
 import {
   bookingStepFields,
@@ -35,6 +33,7 @@ import {
 } from '@/features/bookings/utils/bookingFormErrors';
 import { BookingConflictReview } from '@/features/bookings/components/BookingConflictReview';
 import { ApiError } from '@/shared/api/apiError';
+import { buildContactUrl } from '@/shared/utils/contactLinks';
 
 const allSteps = [
   'Sală și program',
@@ -65,7 +64,12 @@ export function BookingForm({
     : allSteps.filter(title => title !== 'Personal');
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
-    defaultValues: bookingFormDefaults(date, hallId, booking),
+    defaultValues: bookingFormDefaults(
+      date,
+      hallId,
+      booking,
+      selectedHall?.minimum_guests,
+    ),
   });
   const [stepIndex, setStep] = useState(0);
   const step = Math.min(stepIndex, steps.length - 1);
@@ -90,8 +94,24 @@ export function BookingForm({
   const save = useSaveBooking();
   const submitting = useRef(false);
   const values = form.watch();
+  const validateClientPhone = () => {
+    const clientId = form.getValues('client_id');
+    if (
+      booking?.client_id === clientId ||
+      (selectedClient?.id === clientId &&
+        buildContactUrl('call', selectedClient.phone))
+    )
+      return true;
+    form.setError('client_id', {
+      type: 'validate',
+      message: 'Completează telefonul clientului înainte de rezervare.',
+    });
+    setStep(1);
+    return false;
+  };
   const submit = form.handleSubmit(
     data => {
+      if (!validateClientPhone()) return;
       if (submitting.current) {
         return;
       }
@@ -116,6 +136,7 @@ export function BookingForm({
     errors => setStep(firstBookingErrorStep(errors, staffEnabled)),
   );
   const next = async () => {
+    if (step === 1 && !validateClientPhone()) return;
     if (await form.trigger(bookingStepFields(staffEnabled)[step])) {
       setStep(current => Math.min(current + 1, steps.length - 1));
     }
@@ -128,23 +149,23 @@ export function BookingForm({
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
-        <View style={styles.row}>
-          {step > 0 ? (
-            <AppButton
-              label="Înapoi"
-              disabled={save.isPending}
-              variant="outline"
-              onPress={() => setStep(current => current - 1)}
-            />
-          ) : null}
-          <AppButton
-            label={
-              step === steps.length - 1 ? 'Salvează rezervarea' : 'Continuă'
-            }
-            disabled={save.isPending}
-            onPress={step === steps.length - 1 ? submit : next}
-          />
-        </View>
+        <FormActions
+          busy={save.isPending}
+          secondary={
+            step > 0
+              ? {
+                  label: 'Înapoi',
+                  variant: 'outline',
+                  onPress: () => setStep(current => current - 1),
+                }
+              : undefined
+          }
+          primary={{
+            label:
+              step === steps.length - 1 ? 'Salvează rezervarea' : 'Continuă',
+            onPress: step === steps.length - 1 ? submit : next,
+          }}
+        />
       }
     >
       {conflict && booking ? (
@@ -165,24 +186,33 @@ export function BookingForm({
       </Text>
       {step === 0 ? (
         <>
-          <QueryNotice
-            loading={halls.isLoading}
-            error={halls.error}
-            retry={() => halls.refetch()}
-          />
           <BookingScheduleFields
             control={form.control}
             halls={hallItems}
+            hallsState={{
+              loading: halls.isLoading,
+              error: halls.error,
+              onRetry: () => halls.refetch(),
+              pagination: {
+                hasMore: Boolean(halls.hasNextPage),
+                loading: halls.isFetchingNextPage,
+                error: halls.isFetchNextPageError ? halls.error : undefined,
+                onLoadMore: () => halls.fetchNextPage(),
+              },
+            }}
             selectedHallId={booking?.hall_id}
             retainedType={booking?.type}
+            onHallSelected={id => {
+              if (!booking && !form.getFieldState('minimum_guests').isDirty) {
+                form.setValue(
+                  'minimum_guests',
+                  String(
+                    hallItems.find(hall => hall.id === id)?.minimum_guests ?? 0,
+                  ),
+                );
+              }
+            }}
           />
-          {halls.hasNextPage ? (
-            <AppButton
-              label="Mai multe săli"
-              disabled={halls.isFetchingNextPage}
-              onPress={() => halls.fetchNextPage()}
-            />
-          ) : null}
         </>
       ) : null}
       {step === 1 ? (

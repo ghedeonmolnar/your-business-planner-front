@@ -13,6 +13,7 @@ type ContentSectionProps = {
   title: string;
   subtitle?: string;
   action?: ReactNode;
+  leading?: ReactNode;
   children?: ReactNode;
   size?: 'page' | 'section';
   style?: StyleProp<ViewStyle>;
@@ -24,6 +25,7 @@ export function ContentSection({
   title,
   subtitle,
   action,
+  leading,
   children,
   size = 'section',
   style,
@@ -33,14 +35,15 @@ export function ContentSection({
   return (
     <View style={[styles.section, style]}>
       <View style={styles.heading}>
-        <View style={action ? styles.titleRow : undefined}>
+        <View style={action || leading ? styles.titleRow : undefined}>
+          {leading}
           <Text
             accessibilityRole="header"
             style={[
               styles.title,
               size === 'page' ? styles.pageTitle : undefined,
               titleStyle,
-              action ? styles.titleWithAction : undefined,
+              action || leading ? styles.titleWithAction : undefined,
             ]}
           >
             {title}

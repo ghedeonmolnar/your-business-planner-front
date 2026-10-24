@@ -5,7 +5,13 @@ import { AppButton } from '@/shared/components/AppButton';
 import { AppDialog } from '@/shared/components/AppDialog';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { DialogHost } from '@/shared/feedback/DialogHost';
-import { clearDialogs } from '@/shared/feedback/dialogStore';
+import { clearDialogs, showDialog } from '@/shared/feedback/dialogStore';
+import {
+  advanceSessionGeneration,
+  getSessionGeneration,
+} from '@/shared/api/sessionExpiry';
+import { ApiError } from '@/shared/api/apiError';
+import { showError } from '@/shared/feedback/showError';
 import { showMessage } from '@/shared/feedback/showMessage';
 import {
   getVisibleDialog,
@@ -36,6 +42,40 @@ const dialogTitlesByHost = (renderer: ReactTestRenderer.ReactTestRenderer) =>
   renderer.root
     .findAllByType(AppDialog)
     .map(host => host.props.dialog?.title ?? null);
+
+test('schimbarea sesiunii elimina datele private si dezactiveaza confirmarile vechi', async () => {
+  const renderer = await renderHosts(<DialogHost />);
+  const onConfirm = jest.fn();
+  const generation = getSessionGeneration();
+  await openDialog(() => {
+    confirmAction({
+      title: 'Client privat',
+      message: 'Telefon si contract',
+      confirmLabel: 'Trimite',
+      onConfirm,
+    });
+    showMessage('Alt client privat', 'Date in asteptare');
+  });
+  const previousConfirm = getVisibleDialog(renderer)?.onConfirm;
+  expect(previousConfirm).toBeDefined();
+  await openDialog(advanceSessionGeneration);
+  expect(getVisibleDialog(renderer)).toBeNull();
+  await openDialog(() => {
+    previousConfirm?.();
+    showDialog({
+      title: 'Raspuns vechi',
+      message: 'Privat',
+      confirmLabel: 'OK',
+      sessionGeneration: generation,
+    });
+    showError(new ApiError('ABORTED', 0, {}, 'aborted'), 'Eroare veche');
+  });
+  expect(onConfirm).not.toHaveBeenCalled();
+  expect(getVisibleDialog(renderer)).toBeNull();
+  await openDialog(() => showMessage('Sesiune noua', 'Mesaj curent'));
+  expect(getVisibleDialog(renderer)?.title).toBe('Sesiune noua');
+  await ReactTestRenderer.act(async () => renderer.unmount());
+});
 
 afterEach(async () => {
   await ReactTestRenderer.act(async () => {

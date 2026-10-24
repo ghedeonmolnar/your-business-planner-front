@@ -7,10 +7,12 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { LoginScreen } from '@/features/auth/screens/LoginScreen';
 import HomeTabs from '@/app/navigation/HomeTabs';
 import { BookingDetailsScreen } from '@/features/bookings/screens/BookingDetailsScreen';
-import {
-  HallsScreen,
-  StaffScreen,
-} from '@/features/company/screens/DirectoryScreen';
+import { StaffScreen } from '@/features/company/screens/DirectoryScreen';
+import { HallsScreen } from '@/features/halls/screens/HallsScreen';
+import { HallDetailsScreen } from '@/features/halls/screens/HallDetailsScreen';
+import { HallFormScreen } from '@/features/halls/screens/HallFormScreen';
+import { HallAvailabilityScreen } from '@/features/halls/screens/HallAvailabilityScreen';
+import { HallBookingsScreen } from '@/features/halls/screens/HallBookingsScreen';
 import { CustomerHistoryScreen } from '@/features/company/screens/CustomerHistoryScreen';
 import { TeamScreen } from '@/features/company/screens/TeamScreen';
 import { OverviewScreen } from '@/features/company/screens/OverviewScreen';
@@ -96,6 +98,19 @@ export default function RootNavigator() {
                   component={CustomerHistoryScreen}
                 />
                 <Stack.Screen name="CompanyHalls" component={HallsScreen} />
+                <Stack.Screen
+                  name="HallDetails"
+                  component={HallDetailsScreen}
+                />
+                <Stack.Screen name="HallForm" component={HallFormScreen} />
+                <Stack.Screen
+                  name="HallAvailability"
+                  component={HallAvailabilityScreen}
+                />
+                <Stack.Screen
+                  name="HallBookings"
+                  component={HallBookingsScreen}
+                />
                 {hasCompanyFeature(user, 'staff') ? (
                   <Stack.Screen name="CompanyStaff" component={StaffScreen} />
                 ) : null}

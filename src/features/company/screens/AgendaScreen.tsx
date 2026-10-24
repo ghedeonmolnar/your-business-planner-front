@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { SectionList, StyleSheet, View } from 'react-native';
-import { Text } from 'react-native-paper';
 import {
   useNavigation,
   CompositeNavigationProp,
@@ -9,7 +8,7 @@ import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useBookings } from '@/features/bookings/hooks/useBookings';
-import { QueryNotice } from '@/features/bookings/components/QueryNotice';
+import { QueryState } from '@/shared/components/QueryState';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
 import { AgendaHeader } from '@/features/company/components/AgendaHeader';
 import { AgendaBookingCard } from '@/features/company/components/AgendaBookingCard';
@@ -17,8 +16,9 @@ import { AgendaMonthHeader } from '@/features/company/components/AgendaMonthHead
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { buildAgendaSections } from '@/features/company/utils/agendaSections';
 import { Screen } from '@/shared/components/Screen';
-import { AppButton } from '@/shared/components/AppButton';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { PaginationFooter } from '@/shared/components/PaginationFooter';
+import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
 import {
   HomeTabParamList,
   RootStackParamList,
@@ -60,6 +60,7 @@ export function AgendaScreen() {
     <Screen style={styles.screen}>
       <SectionList
         sections={sections}
+        ItemSeparatorComponent={ListItemSeparator}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.content}
         stickySectionHeadersEnabled={false}
@@ -72,9 +73,10 @@ export function AgendaScreen() {
               onCreate={() => setCreating(true)}
               onOpenCalendar={() => navigation.navigate('Calendar')}
             />
-            <QueryNotice
+            <QueryState
               loading={query.isLoading}
-              error={query.error}
+              hasData={items.length > 0}
+              error={query.isFetchNextPageError ? undefined : query.error}
               retry={() => query.refetch()}
             />
             {nextBooking ? (
@@ -125,21 +127,13 @@ export function AgendaScreen() {
           />
         )}
         ListFooterComponent={
-          query.hasNextPage ? (
-            <View style={styles.pagination}>
-              <Text style={styles.paginationHint}>
-                Numărul evenimentelor reflectă rezervările încărcate.
-              </Text>
-              <AppButton
-                label="Încarcă mai multe"
-                disabled={query.isFetchingNextPage}
-                onPress={() => query.fetchNextPage()}
-                backgroundColor={theme.colors.menu.primarySoft}
-                color={theme.colors.menu.primary}
-                variant="soft"
-              />
-            </View>
-          ) : undefined
+          <PaginationFooter
+            hasMore={Boolean(query.hasNextPage)}
+            loading={query.isFetchingNextPage}
+            error={query.isFetchNextPageError ? query.error : undefined}
+            onLoadMore={() => query.fetchNextPage()}
+            hint="Numărul evenimentelor reflectă rezervările încărcate."
+          />
         }
       />
       {creating ? (
@@ -160,10 +154,4 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   header: { gap: theme.spacing.sm },
-  pagination: { gap: theme.spacing.sm, paddingTop: theme.spacing.lg },
-  paginationHint: {
-    color: theme.colors.menu.muted,
-    fontFamily: theme.fonts.body,
-    fontSize: theme.typography.meta,
-  },
 });

@@ -1,22 +1,13 @@
-import React, { useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  DirectoryItem,
-  DirectoryKind,
-  DirectoryPayload,
-} from '@/features/company/types';
-import {
-  directorySchema,
-  DirectoryFormValues,
-} from '@/features/company/schemas/directorySchema';
-import { useSaveDirectory } from '@/features/company/hooks/useCompany';
+import React from 'react';
+import { DirectoryItem, DirectoryKind } from '@/features/company/types';
+import { useDirectoryForm } from '@/features/company/hooks/useDirectoryForm';
+import { ClientConflictReview } from '@/features/company/components/ClientConflictReview';
+import { Text } from 'react-native-paper';
 import { staffRoleOptions } from '@/features/bookings/utils/bookingLabels';
-import { AppButton } from '@/shared/components/AppButton';
+import { FormActions } from '@/shared/components/FormActions';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
-import { showError } from '@/shared/feedback/showError';
 
 export function DirectoryForm({
   kind,
@@ -27,58 +18,16 @@ export function DirectoryForm({
   item?: DirectoryItem;
   onClose: () => void;
 }) {
-  const save = useSaveDirectory();
-  const submitting = useRef(false);
-  const form = useForm<DirectoryFormValues>({
-    resolver: zodResolver(directorySchema),
-    defaultValues: {
-      kind,
-      name: item?.name ?? '',
-      phone: item?.phone ?? '',
-      notes: item?.notes ?? '',
-      job_role: item?.job_role ?? 'other',
-      hourly_rate: String(item?.hourly_rate ?? 0),
-      capacity: String(item?.capacity ?? ''),
-      address: item?.address ?? '',
-      active: item?.is_active === false ? 'no' : 'yes',
-    },
-  });
-  const submit = form.handleSubmit(values => {
-    if (submitting.current) {
-      return;
-    }
-    submitting.current = true;
-    const payload: DirectoryPayload = { name: values.name };
-    if (kind === 'clients') {
-      payload.phone = values.phone || null;
-      payload.notes = values.notes || null;
-    }
-    if (kind === 'halls') {
-      payload.capacity = Number(values.capacity);
-      payload.address = values.address || null;
-    }
-    if (kind === 'employees') {
-      payload.job_role = values.job_role;
-      payload.hourly_rate = values.hourly_rate.replace(',', '.');
-    }
-    if (kind !== 'clients') {
-      payload.is_active = values.active === 'yes';
-    }
-    save.mutate(
-      { kind, id: item?.id, payload },
-      {
-        onSuccess: onClose,
-        onSettled: () => {
-          submitting.current = false;
-        },
-        onError: error => showError(error, 'Nu am putut salva înregistrarea.'),
-      },
-    );
-  });
+  const { form, submit, busy, conflict, reload, readOnly } = useDirectoryForm(
+    kind,
+    item,
+    onClose,
+  );
   return (
     <FormModalFrame
       visible
-      busy={save.isPending}
+      readOnly={readOnly}
+      busy={busy}
       title={
         kind === 'clients'
           ? item
@@ -95,13 +44,27 @@ export function DirectoryForm({
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
-        <AppButton
-          label="Salvează"
-          disabled={save.isPending}
-          onPress={submit}
+        <FormActions
+          busy={busy}
+          primary={{ label: 'Salvează', onPress: submit, disabled: conflict }}
         />
       }
     >
+      {conflict && kind === 'clients' && item ? (
+        <ClientConflictReview clientId={item.id} onReload={reload} />
+      ) : null}
+      {conflict && !item ? (
+        <Text>
+          Verifică lista clienților înainte de o nouă creare. Ciorna este
+          păstrată.
+        </Text>
+      ) : null}
+      {readOnly ? (
+        <Text>
+          Rezultatul salvării este incert. Reîncearcă aceeași operațiune înainte
+          de a modifica datele.
+        </Text>
+      ) : null}
       <ControlledTextField
         control={form.control}
         name="name"

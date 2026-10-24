@@ -2,6 +2,7 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { BookingsScreen } from '@/features/bookings/screens/BookingsScreen';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
+import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
 import { DatePickerField } from '@/shared/components/DatePickerField';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import {
@@ -98,7 +99,7 @@ beforeEach(() => {
     if (path.includes('/clients')) {
       return Promise.resolve(
         paginatedResponse([
-          { id: 'client-1', name: 'Client test', phone: null },
+          { id: 'client-1', name: 'Client test', phone: '+40712345678' },
         ]),
       );
     }
@@ -126,7 +127,7 @@ test('creates an overnight reservation through all five steps with the API mocke
   await press(renderer, 'Continuă');
   await select(renderer, 'Client', 'client-1');
   await press(renderer, 'Continuă');
-  await fill(renderer, 'Număr minim garantat', '200');
+  await fill(renderer, 'Invitați minimi', '200');
   await fill(renderer, 'Preț meniu / persoană (lei)', '350');
   await press(renderer, 'Continuă');
   await press(renderer, 'Continuă');
@@ -149,5 +150,43 @@ test('creates an overnight reservation through all five steps with the API mocke
   });
   expect(payload).not.toHaveProperty('company_id');
   expect(renderer.root.findAllByType(BookingForm)).toHaveLength(0);
+  await unmount();
+});
+
+test('oprește o rezervare nouă la clientul fără telefon și oferă completarea lui', async () => {
+  const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
+  await press(renderer, 'Rezervare nouă');
+  const form = renderer.root.findByType(BookingForm);
+  await ReactTestRenderer.act(async () => {
+    const fields = form.findAllByType(SearchableSelect);
+    fields
+      .find(field => field.props.label === 'Sală')
+      ?.props.onChange(['hall-1']);
+  });
+  await fill(renderer, 'Termen rezervare provizorie', '2099-11-12 12:00');
+  await press(renderer, 'Continuă');
+  await select(renderer, 'Client', 'client-1');
+  const selected = renderer.root
+    .findByType(BookingForm)
+    .findByType(BookingClientFields);
+  await ReactTestRenderer.act(async () => {
+    selected.props.onSelected({
+      id: 'client-1',
+      name: 'Client test',
+      phone: null,
+    });
+  });
+  await press(renderer, 'Continuă');
+  expect(JSON.stringify(renderer.toJSON())).toContain(
+    'Completează telefonul clientului înainte de rezervare.',
+  );
+  expect(
+    renderer.root.findByProps({ accessibilityLabel: 'Completează telefonul' }),
+  ).toBeDefined();
+  expect(
+    jest
+      .mocked(globalThis.fetch)
+      .mock.calls.some(([, init]) => init?.method === 'POST'),
+  ).toBe(false);
   await unmount();
 });

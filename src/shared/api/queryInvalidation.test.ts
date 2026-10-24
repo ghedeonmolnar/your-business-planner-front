@@ -3,8 +3,22 @@ import {
   invalidateEventDocuments,
   invalidateEventFinancials,
   invalidatePlannerBooking,
+  invalidatePlannerDirectory,
 } from '@/shared/api/queryInvalidation';
 import { queryKeys } from '@/shared/api/queryKeys';
+
+test('editarea clientului reinnoieste preview-ul salii numai in compania curenta', () => {
+  const client = new QueryClient();
+  const ownHall = queryKeys.planner.hall('company-1', 'hall-1');
+  const otherHall = queryKeys.planner.hall('company-2', 'hall-2');
+  [ownHall, otherHall].forEach(key =>
+    client.setQueryData(key, { name: 'Client vechi' }),
+  );
+  invalidatePlannerDirectory(client, 'company-1', 'clients');
+  expect(client.getQueryState(ownHall)?.isInvalidated).toBe(true);
+  expect(client.getQueryState(otherHall)?.isInvalidated).toBe(false);
+  client.clear();
+});
 
 test('payment changes refresh earnings and client history without invalidating catalog lists', () => {
   const client = new QueryClient();

@@ -2,6 +2,10 @@ export type RootStackParamList = {
   CompanyProfile: undefined;
   CustomerHistory: { clientId: string };
   CompanyHalls: undefined;
+  HallDetails: { hallId: string };
+  HallForm: { hallId?: string; duplicateHallId?: string };
+  HallAvailability: { hallId: string };
+  HallBookings: { hallId: string };
   CompanyStaff: undefined;
   CompanyOverview: undefined;
   CompanyTeam: undefined;

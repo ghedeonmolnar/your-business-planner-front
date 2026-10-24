@@ -10,7 +10,7 @@ import {
 import { useSaveBookingPayment } from '@/features/bookings/hooks/useBookingFinance';
 import { BookingPayment } from '@/features/bookings/schemas/bookingFinanceSchemas';
 import { bookingPaymentCategories } from '@/features/bookings/utils/bookingLabels';
-import { AppButton } from '@/shared/components/AppButton';
+import { FormActions } from '@/shared/components/FormActions';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
@@ -99,10 +99,9 @@ export function BookingPaymentForm({
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
-        <AppButton
-          label="Salvează plata"
-          disabled={mutation.isPending}
-          onPress={submit}
+        <FormActions
+          busy={mutation.isPending}
+          primary={{ label: 'Salvează plata', onPress: submit }}
         />
       }
     >

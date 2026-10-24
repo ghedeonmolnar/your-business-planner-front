@@ -1,0 +1,9 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Hash Git public al bazei auditului, verificat ca obiect commit; nu este o cheie API."
+condition = "AND"
+paths = ['''^docs/AUDIT_EXTINS_REVIZUIT_2026-10-23\.md$''']
+regexTarget = "secret"
+regexes = ['''^e3579adae187be14406355f5f278a6e65dffb538$''']
