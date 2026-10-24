@@ -27,7 +27,7 @@ Validarea mobilă rulează tsc, ESLint fără avertismente, Jest, build Android 
 
 GitHub refuză protejarea ramurii repository-ului API privat cu HTTP 403: este necesar GitHub Pro. Această limitare de infrastructură nu poate fi remediată din cod; repository-ul rămâne privat, iar livrarea curentă este condiționată de verificarea CI. Impunerea automată a gate-urilor pe ramura API rămâne de activat după schimbarea planului GitHub. Pentru frontend sunt cerute verificările quality, android, dependencies și secrets pe main.
 
-Nu au fost schimbate datele din baza locală de business și nu s-au aplicat noile migrații acolo. Auditul nu validează configurația infrastructurii de producție, restaurarea backupurilor, un dispozitiv iOS, toate combinațiile de fonturi/lățimi sau TalkBack. Probele automate nu reprezintă o garanție că orice caz posibil este acoperit.
+Nu au fost schimbate datele din baza locală de business și nu s-au aplicat noile migrații acolo. Noul build nu a fost instalat și parcurs manual în Android în această remediere. Auditul nu validează configurația infrastructurii de producție, restaurarea backupurilor, un dispozitiv iOS, toate combinațiile de fonturi/lățimi sau TalkBack. Probele automate nu reprezintă o garanție că orice caz posibil este acoperit.
 
 ## Instalare și revenire
 
