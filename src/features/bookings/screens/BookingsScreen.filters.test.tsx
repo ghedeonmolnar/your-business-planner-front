@@ -105,8 +105,10 @@ test('starts with upcoming dates ascending and uses server totals for partially 
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
   expect(eventRequests().at(-1)).toContain('timeframe=upcoming');
   expect(eventRequests().at(-1)).toContain('sort=date_asc');
-  expect(renderer.root.findByType(SectionList).props.sections[0]).toMatchObject(
-    { key: '2027-11', total: 45, data: [plannerBooking] },
+  await waitForUi(() =>
+    expect(
+      renderer.root.findByType(SectionList).props.sections[0],
+    ).toMatchObject({ key: '2027-11', total: 45, data: [plannerBooking] }),
   );
   await unmount();
 });
