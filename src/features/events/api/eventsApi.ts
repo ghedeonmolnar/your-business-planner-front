@@ -162,10 +162,7 @@ export const createEventReviewLinkApi = (eventId: string) =>
     schema: eventReviewSchema,
   });
 
-export const getReviewNotificationsPageApi = (
-  page: number,
-  perPage: number,
-) =>
+export const getReviewNotificationsPageApi = (page: number, perPage: number) =>
   apiPageRequest<ReviewNotification>('/review-notifications', page, perPage, {
     itemSchema: reviewNotificationSchema,
   });
@@ -179,6 +176,11 @@ export const markReviewNotificationDeliveredApi = (id: string) =>
 export const getEventDocumentsApi = (eventId: string) =>
   apiPaginatedRequest<EventDocument>(`/events/${eventId}/documents`, {
     itemSchema: eventDocumentSchema,
+  });
+
+export const getEventDocumentApi = (id: string) =>
+  apiRequest<EventDocument>(`/event-documents/${id}`, {
+    schema: eventDocumentSchema,
   });
 
 export const createEventDocumentApi = (eventId: string, payload: FormData) =>

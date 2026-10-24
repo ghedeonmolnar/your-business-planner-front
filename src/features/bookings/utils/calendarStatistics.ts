@@ -17,10 +17,10 @@ export function getMonthStatistics(month: string, days: CalendarDay[]) {
   let availableSlots = 0;
   let occupiedSlots = 0;
   for (const day of monthDays) {
-    const occupied = day.occupied_halls ?? day.confirmed + day.tentative;
+    const occupied = day.active_occupied_halls ?? 0;
     occupiedSlots += occupied;
     bookings += day.confirmed + day.tentative;
-    availableSlots += occupied + day.free;
+    availableSlots += day.active_capacity ?? 0;
     if (occupied === 0 && day.free > 0) {
       freeDays += 1;
     }
@@ -45,7 +45,13 @@ export function getMonthStatistics(month: string, days: CalendarDay[]) {
     occupiedWeekends: occupiedWeekends.size,
     occupancy: availableSlots ? occupiedSlots / availableSlots : 0,
     hasHalls: availableSlots > 0,
-    complete: monthDays.length === totalDays,
+    complete:
+      monthDays.length === totalDays &&
+      monthDays.every(
+        day =>
+          day.active_capacity !== undefined &&
+          day.active_occupied_halls !== undefined,
+      ),
   };
 }
 

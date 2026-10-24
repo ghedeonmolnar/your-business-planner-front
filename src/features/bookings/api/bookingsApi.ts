@@ -1,9 +1,5 @@
 import { z } from 'zod';
-import {
-  apiPageRequest,
-  apiRequest,
-  DEFAULT_PAGE_SIZE,
-} from '@/shared/api/client';
+import { apiRequest, DEFAULT_PAGE_SIZE } from '@/shared/api/client';
 import {
   Booking,
   BookingFilters,
@@ -107,12 +103,26 @@ export const getHallDayApi = (
   page: number,
   signal?: AbortSignal,
   hallId?: string,
+  snapshot?: string,
 ) =>
-  apiPageRequest(
-    '/calendar/day?' +
-      bookingQuery({ date, hall_id: hallId }) +
-      (hallId ? '&include_inactive=1' : ''),
-    page,
-    undefined,
-    { signal, itemSchema: hallDaySchema },
-  );
+  apiRequest(
+    `/calendar/day?${bookingQuery({ date, hall_id: hallId })}${hallId ? '&include_inactive=1' : ''}&page=${page}&per_page=${DEFAULT_PAGE_SIZE}${snapshot ? `&snapshot=${encodeURIComponent(snapshot)}` : ''}`,
+    {
+      signal,
+      schema: z.object({
+        data: z.array(hallDaySchema),
+        meta: z.object({
+          current_page: z.number().int().positive(),
+          last_page: z.number().int().positive(),
+          total: z.number().int().nonnegative(),
+          snapshot: z.string().regex(/^[a-f0-9]{64}$/),
+        }),
+      }),
+    },
+  ).then(result => ({
+    items: result.data,
+    page: result.meta.current_page,
+    lastPage: result.meta.last_page,
+    total: result.meta.total,
+    snapshot: result.meta.snapshot,
+  }));

@@ -198,6 +198,7 @@ export type EventDocumentType = 'contract' | 'invoice' | 'other';
 
 export type EventDocument = {
   id: string;
+  version: number;
   event_id: string;
   document_type: EventDocumentType;
   title: string;
@@ -209,6 +210,7 @@ export type EventDocument = {
 };
 
 export type EventDocumentMetadataPayload = {
+  version: number;
   document_type: EventDocumentType;
   title: string;
   document_date?: string | null;

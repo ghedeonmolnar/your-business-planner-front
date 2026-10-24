@@ -11,7 +11,7 @@ import { queryKeys } from '@/shared/api/queryKeys';
 import { invalidatePlannerPayments } from '@/shared/api/queryInvalidation';
 import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { assertCurrentRequestSession } from '@/shared/api/requestSession';
-import { ApiError } from '@/shared/api/apiError';
+import { ApiError, apiErrorCode } from '@/shared/api/apiError';
 
 export const useSaveBookingPayment = (eventId: string) => {
   const { user } = useAuth();
@@ -86,6 +86,13 @@ export const useSaveBookingPayment = (eventId: string) => {
     onSuccess: payment => {
       if (generation === getSessionGeneration())
         invalidatePlannerPayments(client, companyId, payment.event_id);
+    },
+    onError: error => {
+      if (
+        generation === getSessionGeneration() &&
+        apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT'
+      )
+        return invalidatePlannerPayments(client, companyId, eventId);
     },
   });
   return {

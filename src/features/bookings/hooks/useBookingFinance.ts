@@ -19,6 +19,7 @@ import {
   invalidatePlannerDocuments,
   invalidatePlannerPayments,
 } from '@/shared/api/queryInvalidation';
+import { apiErrorCode } from '@/shared/api/apiError';
 
 export { useSaveBookingPayment } from '@/features/bookings/hooks/useSaveBookingPayment';
 
@@ -71,6 +72,10 @@ export const useCancelBookingPayment = (eventId: string) => {
   const { client, companyId } = useCompanyQueryClient();
   return useMutation({
     mutationFn: cancelBookingPaymentApi,
+    onError: error => {
+      if (apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT')
+        return invalidatePlannerPayments(client, companyId, eventId);
+    },
     onSuccess: () => invalidatePlannerPayments(client, companyId, eventId),
   });
 };
@@ -85,7 +90,15 @@ export const useUploadBookingDocument = () => {
 export const useUpdateBookingDocument = () => {
   const { client, companyId } = useCompanyQueryClient();
   return useMutation({
-    mutationFn: updateBookingDocumentApi,
+    mutationFn: (
+      variables: Parameters<typeof updateBookingDocumentApi>[0] & {
+        eventId: string;
+      },
+    ) => updateBookingDocumentApi(variables),
+    onError: (error, variables) => {
+      if (apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT')
+        return invalidatePlannerDocuments(client, companyId, variables.eventId);
+    },
     onSuccess: document =>
       invalidatePlannerDocuments(client, companyId, document.event_id),
   });

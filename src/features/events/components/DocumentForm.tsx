@@ -1,48 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { StyleSheet } from 'react-native';
-import { useForm, useWatch } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useWatch } from 'react-hook-form';
+import { EventDocumentType } from '@/features/events/types';
 import {
-  DocumentPickerResponse,
-  errorCodes,
-  isErrorWithCode,
-  pick,
-} from '@react-native-documents/picker';
-import {
-  EventDocument,
-  EventDocumentMetadataPayload,
-  EventDocumentType,
-} from '@/features/events/types';
+  useDocumentForm,
+  DocumentFormProps,
+} from '@/features/events/hooks/useDocumentForm';
 import { AppSegmentedControl } from '@/shared/components/AppSegmentedControl';
 import { AppButton } from '@/shared/components/AppButton';
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { FormActions } from '@/shared/components/FormActions';
-import { showError } from '@/shared/feedback/showError';
-import { showMessage } from '@/shared/feedback/showMessage';
+import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice';
 import { theme } from '@/shared/theme/theme';
-import {
-  DocumentFormInput,
-  DocumentFormValues,
-  documentSchema,
-  emptyDocumentForm,
-} from '@/features/events/schemas/documentSchema';
-
-type DocumentFormProps = {
-  visible: boolean;
-  initialDocument?: EventDocument | null;
-  saving: boolean;
-  onCancel: () => void;
-  onCreate: (payload: FormData) => void;
-  onUpdate: (payload: EventDocumentMetadataPayload) => void;
-};
-
-type ReactNativeDocumentFile = {
-  uri: string;
-  name: string;
-  type: string;
-};
 
 const documentTypes: Array<{ value: EventDocumentType; label: string }> = [
   { value: 'contract', label: 'Contract' },
@@ -50,120 +21,17 @@ const documentTypes: Array<{ value: EventDocumentType; label: string }> = [
   { value: 'other', label: 'Altul' },
 ];
 
-const acceptedTypes = [
-  'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'image/jpeg',
-  'image/png',
-  'text/plain',
-];
-
-export function DocumentForm({
-  visible,
-  initialDocument,
-  saving,
-  onCancel,
-  onCreate,
-  onUpdate,
-}: DocumentFormProps) {
-  const [file, setFile] = useState<DocumentPickerResponse | null>(null);
+export function DocumentForm(props: DocumentFormProps) {
+  const { visible, initialDocument, saving, onCancel } = props;
+  const state = useDocumentForm(props);
+  const { form, file, pickFile, submit } = state;
   const {
     control,
     formState: { isDirty },
-    getValues,
     handleSubmit,
-    reset,
     setValue,
-  } = useForm<DocumentFormInput, unknown, DocumentFormValues>({
-    resolver: zodResolver(documentSchema),
-    defaultValues: emptyDocumentForm,
-  });
+  } = form;
   const documentType = useWatch({ control, name: 'document_type' });
-
-  useEffect(() => {
-    if (!visible) {
-      return;
-    }
-
-    reset({
-      document_type: initialDocument?.document_type ?? 'contract',
-      title: initialDocument?.title ?? '',
-      document_date: initialDocument?.document_date ?? '',
-      notes: initialDocument?.notes ?? '',
-    });
-    setFile(null);
-  }, [initialDocument, reset, visible]);
-
-  const pickFile = async () => {
-    try {
-      const [selectedFile] = await pick({
-        allowMultiSelection: false,
-        mode: 'import',
-        type: acceptedTypes,
-      });
-
-      if (!selectedFile.hasRequestedType) {
-        showMessage('Fișier invalid', 'Alege PDF, Word, imagine sau text.');
-        return;
-      }
-
-      setFile(selectedFile);
-      if (!getValues('title').trim() && selectedFile.name) {
-        setValue('title', selectedFile.name, { shouldValidate: true });
-      }
-    } catch (error) {
-      if (
-        isErrorWithCode(error) &&
-        error.code === errorCodes.OPERATION_CANCELED
-      ) {
-        return;
-      }
-
-      showError(error, 'Nu am putut alege fișierul.');
-    }
-  };
-
-  const submit = (values: DocumentFormValues) => {
-    const metadata: EventDocumentMetadataPayload = {
-      document_type: values.document_type,
-      title: values.title,
-      document_date: values.document_date || null,
-      notes: values.notes || null,
-    };
-
-    if (initialDocument) {
-      onUpdate(metadata);
-      return;
-    }
-
-    if (!file) {
-      showMessage('Fișier lipsă', 'Alege un fișier pentru încărcare.');
-      return;
-    }
-
-    const formData = new FormData();
-    const uploadFile: ReactNativeDocumentFile = {
-      uri: file.uri,
-      name: file.name ?? `document-${Date.now()}`,
-      type: file.type ?? 'application/octet-stream',
-    };
-
-    formData.append('file', uploadFile as unknown as Blob);
-    formData.append('document_type', metadata.document_type);
-    formData.append('title', metadata.title);
-
-    if (metadata.document_date) {
-      formData.append('document_date', metadata.document_date);
-    }
-
-    if (metadata.notes) {
-      formData.append('notes', metadata.notes);
-    }
-
-    onCreate(formData);
-  };
-
   return (
     <FormModalFrame
       footer={
@@ -173,6 +41,7 @@ export function DocumentForm({
             label: 'Salvează',
             loadingLabel: 'Se salvează…',
             onPress: handleSubmit(submit),
+            disabled: state.conflict || state.reloading,
           }}
         />
       }
@@ -182,6 +51,9 @@ export function DocumentForm({
       title={initialDocument ? 'Editează document' : 'Document nou'}
       visible={visible}
     >
+      {state.conflict ? (
+        <VersionConflictNotice onReload={state.reloadCurrent} />
+      ) : null}
       <AppSegmentedControl
         containerStyle={styles.typeRow}
         onChangeIndex={index =>

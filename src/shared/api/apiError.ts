@@ -32,6 +32,14 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  OVERVIEW_RANGE_TOO_LARGE:
+    'Alege un interval de cel mult un an pentru statistici.',
+  DOCUMENT_STORAGE_LIMIT:
+    'Spațiul disponibil pentru documentele companiei a fost atins. Șterge documentele nefolosite și așteaptă curățarea lor înainte de a reîncerca.',
+  BOOKING_OPERATION_CONFLICT:
+    'Această creare a fost deja înregistrată cu alte date. Verifică lista rezervărilor înainte de o nouă încercare.',
+  CALENDAR_DAY_LIST_CHANGED:
+    'Lista sălilor s-a schimbat. Se reîncarcă de la început pentru a afișa datele curente.',
   BOOKING_LIST_CHANGED:
     'Lista rezervărilor s-a schimbat. Se reîncarcă de la început pentru a afișa datele curente.',
   CLIENT_OPERATION_CONFLICT:

@@ -2,6 +2,7 @@ name: Mobile quality
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
   push:
     branches: [main]
   workflow_dispatch:
@@ -9,12 +10,18 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   quality:
+    name: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft && 'quality-affected' || 'quality' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
@@ -24,7 +31,14 @@ jobs:
       - run: cp .env.example .env
       - run: npx tsc --noEmit
       - run: npx eslint . --max-warnings=0
+      - run: node --test tools/testing/changes.test.cjs tools/testing/frontend-impact.test.cjs
+      - name: Teste afectate pentru PR draft
+        if: github.event_name == 'pull_request' && github.event.pull_request.draft
+        env:
+          AFFECTED_BASE: ${{ github.event.pull_request.base.sha }}
+        run: npm run test:affected -- --base="$AFFECTED_BASE"
       - run: npx jest --runInBand
+        if: github.event_name != 'pull_request' || !github.event.pull_request.draft
 
   android:
     runs-on: ubuntu-latest
