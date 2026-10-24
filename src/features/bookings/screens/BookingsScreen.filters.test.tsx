@@ -136,8 +136,10 @@ test('clears old results on status and hall changes and ignores a late response 
   expect(eventRequests().at(-1)).toContain('status=confirmed');
   expect(eventRequests().at(-1)).toContain('hall_id=hall-2');
   expect(renderer.root.findAllByType(BookingCard)).toHaveLength(0);
-  expect(renderer.root.findByType(EmptyState).props.title).toBe(
-    'Nu există rezervări pentru criteriile selectate',
+  await waitForUi(() =>
+    expect(renderer.root.findByType(EmptyState).props.title).toBe(
+      'Nu există rezervări pentru criteriile selectate',
+    ),
   );
   await unmount();
 });
