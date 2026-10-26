@@ -9,6 +9,7 @@ import {
 
 export const employeeSchema: z.ZodType<Employee> = z.object({
   id: z.string().min(1),
+  version: z.number().int().positive(),
   name: z.string(),
   gender: z.enum(['male', 'female']).nullable(),
   hourly_rate: z.number().nullable(),
@@ -48,11 +49,13 @@ export const employeeProfileSchema: z.ZodType<EmployeeProfile> =
     }),
   );
 
-export const employeeInvitationSchema: z.ZodType<EmployeeInvitation> = z.object({
-  status: z.literal('pending'),
-  email: z.string().email(),
-  expires_at: z.string(),
-});
+export const employeeInvitationSchema: z.ZodType<EmployeeInvitation> = z.object(
+  {
+    status: z.literal('pending'),
+    email: z.string().email(),
+    expires_at: z.string(),
+  },
+);
 
 export const employeeAccessChangeSchema: z.ZodType<EmployeeAccessChange> =
   z.object({

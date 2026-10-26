@@ -214,6 +214,7 @@ const mockTeamResponses = () => {
         paginatedResponse([
           {
             id: maleAnimatorId,
+            version: 1,
             name: 'Molnar Ghedeon',
             gender: 'male',
             hourly_rate: 50,
@@ -222,6 +223,7 @@ const mockTeamResponses = () => {
           },
           {
             id: busyAnimatorId,
+            version: 1,
             name: 'Alexia Pacurar',
             gender: 'female',
             hourly_rate: 50,

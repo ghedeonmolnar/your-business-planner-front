@@ -17,6 +17,7 @@ jest.mock('@/shared/storage/authTokenStorage', () => ({
 
 const profile: EmployeeProfile = {
   id: 'employee-1',
+  version: 1,
   name: 'Animator',
   gender: 'male',
   hourly_rate: 100,
@@ -34,25 +35,40 @@ beforeEach(() => {
     email: 'animator@example.com',
     expires_at: '2026-09-25T12:15:00+03:00',
   };
-  globalThis.fetch = jest.fn(url => String(url).endsWith('/me')
-    ? Promise.resolve(jsonResponse(200, {
-      id: 'admin-1', name: 'Admin', email: 'admin@example.com',
-      role: 'admin', employee_id: null,
-    }))
-    : Promise.resolve(jsonResponse(200, invitation))) as unknown as typeof globalThis.fetch;
+  globalThis.fetch = jest.fn(url =>
+    String(url).endsWith('/me')
+      ? Promise.resolve(
+          jsonResponse(200, {
+            id: 'admin-1',
+            name: 'Admin',
+            email: 'admin@example.com',
+            role: 'admin',
+            employee_id: null,
+          }),
+        )
+      : Promise.resolve(jsonResponse(200, invitation)),
+  ) as unknown as typeof globalThis.fetch;
 });
 
 test('admin sends an invitation from the employee profile', async () => {
-  const { renderer, unmount } = await renderWithProviders(<EmployeeAccountCard profile={profile} />);
+  const { renderer, unmount } = await renderWithProviders(
+    <EmployeeAccountCard profile={profile} />,
+  );
 
   await ReactTestRenderer.act(async () => {
-    renderer.root.findByProps({ accessibilityLabel: 'Trimite invitație' }).props.onPress();
+    renderer.root
+      .findByProps({ accessibilityLabel: 'Trimite invitație' })
+      .props.onPress();
   });
   await ReactTestRenderer.act(async () => {
-    renderer.root.findByProps({ accessibilityLabel: 'Adresa de email' }).props.onChangeText('animator@example.com');
+    renderer.root
+      .findByProps({ accessibilityLabel: 'Adresa de email' })
+      .props.onChangeText('animator@example.com');
   });
   await ReactTestRenderer.act(async () => {
-    renderer.root.findByProps({ accessibilityLabel: 'Trimite codul' }).props.onPress();
+    renderer.root
+      .findByProps({ accessibilityLabel: 'Trimite codul' })
+      .props.onPress();
   });
 
   expect(globalThis.fetch).toHaveBeenCalledWith(

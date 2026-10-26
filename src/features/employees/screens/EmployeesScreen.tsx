@@ -193,6 +193,8 @@ export function EmployeesScreen() {
         }
       />
       <EmployeeForm
+        conflict={employeeAdmin.conflict}
+        onReload={employeeAdmin.reloadCurrent}
         initialEmployee={employeeAdmin.editingEmployee}
         onCancel={employeeAdmin.closeForm}
         onSubmit={employeeAdmin.save}

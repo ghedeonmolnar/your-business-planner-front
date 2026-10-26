@@ -18,6 +18,7 @@ import { BookingFilters } from '@/features/bookings/types';
 import { queryKeys } from '@/shared/api/queryKeys';
 import { invalidatePlannerBooking } from '@/shared/api/queryInvalidation';
 import { apiErrorCode } from '@/shared/api/apiError';
+import { bookingAvailabilityField } from '@/features/bookings/utils/bookingCreationFailure';
 
 const AGENDA_REFRESH_INTERVAL_MS = 30_000;
 
@@ -69,6 +70,15 @@ export const useSaveBooking = () => {
   const { user } = useAuth();
   return useMutation({
     mutationFn: saveBookingApi,
+    onError: (error, variables) => {
+      if (bookingAvailabilityField(error)) {
+        return invalidatePlannerBooking(
+          client,
+          user?.company?.id ?? '',
+          variables.id ?? '',
+        );
+      }
+    },
     onSuccess: booking =>
       invalidatePlannerBooking(client, user?.company?.id ?? '', booking.id),
   });

@@ -57,6 +57,7 @@ export function useDirectoryForm(
       payload.version = item?.version;
     }
     if (kind === 'employees') {
+      payload.version = item ? version : undefined;
       payload.job_role = values.job_role;
       payload.hourly_rate = values.hourly_rate.replace(',', '.');
     }

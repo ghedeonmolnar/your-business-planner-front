@@ -22,8 +22,16 @@ jest.mock('@/shared/storage/authTokenStorage', () => ({
 
 const actions = [
   ['client', deleteClientApi, 'deleted'],
-  ['employee', deleteEmployeeApi, 'archived'],
-  ['employee permanently', forceDeleteEmployeeApi, 'deleted'],
+  [
+    'employee',
+    (id: string) => deleteEmployeeApi({ id, version: 1 }),
+    'archived',
+  ],
+  [
+    'employee permanently',
+    (id: string) => forceDeleteEmployeeApi({ id, version: 1 }),
+    'deleted',
+  ],
   ['event', deleteEventApi, 'deleted'],
   ['payment', deleteEventPaymentApi, 'deleted'],
   ['document', deleteEventDocumentApi, 'deleted'],
