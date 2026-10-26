@@ -15,6 +15,7 @@ import { ControlledSwitchField } from '@/shared/components/ControlledSwitchField
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { AppButton } from '@/shared/components/AppButton';
 import { splitBirthDate } from '@/shared/utils/birthDate';
+import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice';
 
 type EmployeeFormProps = {
   visible: boolean;
@@ -22,6 +23,8 @@ type EmployeeFormProps = {
   saving: boolean;
   onCancel: () => void;
   onSubmit: (values: EmployeeFormValues) => void;
+  conflict?: boolean;
+  onReload?: () => Promise<void>;
 };
 
 const genderOptions = [
@@ -53,17 +56,15 @@ export function EmployeeForm({
   saving,
   onCancel,
   onSubmit,
+  conflict = false,
+  onReload,
 }: EmployeeFormProps) {
   const {
     control,
     formState: { isDirty },
     handleSubmit,
     reset,
-  } = useForm<
-    EmployeeFormInput,
-    unknown,
-    EmployeeFormValues
-  >({
+  } = useForm<EmployeeFormInput, unknown, EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
     defaultValues: emptyEmployeeForm,
   });
@@ -77,7 +78,7 @@ export function EmployeeForm({
     <FormModalFrame
       footer={
         <AppButton
-          disabled={saving}
+          disabled={saving || conflict}
           fullWidth
           label={saving ? 'Se salvează...' : 'Salvează'}
           onPress={handleSubmit(onSubmit)}
@@ -89,6 +90,9 @@ export function EmployeeForm({
       title={initialEmployee ? 'Editează angajat' : 'Angajat nou'}
       visible={visible}
     >
+      {conflict && onReload ? (
+        <VersionConflictNotice onReload={onReload} />
+      ) : null}
       <ControlledTextField
         control={control}
         label="Nume"

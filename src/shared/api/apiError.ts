@@ -51,6 +51,8 @@ const errorMessagesByCode: Record<string, string> = {
   HALL_IMAGE_LIMIT: 'Poți adăuga cel mult 10 imagini pentru o sală.',
   HALL_IMAGE_INVALID_SELECTION:
     'Imaginea principală nu mai este disponibilă. Alege din nou coperta.',
+  HALL_IMAGE_UPLOAD_EXPIRED:
+    'Încărcarea fotografiilor a expirat. Alege din nou imaginile și reîncearcă salvarea.',
   HALL_MINIMUM_EXCEEDS_CAPACITY:
     'Minimul comercial nu poate depăși capacitatea maximă a sălii.',
   HALL_OPERATION_CONFLICT:
@@ -94,6 +96,8 @@ const errorMessagesByCode: Record<string, string> = {
   BOOKING_CLIENT_PHONE_REQUIRED:
     'Completează telefonul clientului înainte de a crea rezervarea sau de a schimba clientul.',
   BOOKING_AMOUNT_TOO_LARGE: 'Valoarea calculată depășește limita permisă.',
+  BOOKING_BALANCE_TOO_LARGE:
+    'Soldul rezultat depășește limita permisă. Verifică valoarea contractului, încasările și restituirile.',
   CALENDAR_RANGE_TOO_LARGE: 'Alege o perioadă de maximum un an.',
   SERVER_ERROR: SERVER_ERROR_MESSAGE,
   HTTP_ERROR: REQUEST_FAILED_MESSAGE,

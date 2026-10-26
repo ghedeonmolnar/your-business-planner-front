@@ -1,6 +1,7 @@
 import { FieldErrors, FieldPath, UseFormReturn } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { ApiError, responseErrorCode } from '@/shared/api/apiError';
+import { bookingAvailabilityField } from '@/features/bookings/utils/bookingCreationFailure';
 
 const stepFields: FieldPath<BookingFormValues>[][] = [
   ['hall_id', 'date', 'type', 'status', 'starts_at', 'ends_at', 'expires_at'],
@@ -45,6 +46,17 @@ export const applyBookingApiErrors = (
   form: UseFormReturn<BookingFormValues>,
   staffEnabled: boolean,
 ) => {
+  const availabilityField = bookingAvailabilityField(error);
+  if (availabilityField) {
+    form.setError(availabilityField, {
+      type: 'server',
+      message:
+        availabilityField === 'hall_id'
+          ? 'Sala a fost rezervată între timp. Alege altă sală sau alt interval.'
+          : 'O persoană a fost alocată între timp. Verifică personalul și intervalele.',
+    });
+    return availabilityField === 'staff' && staffEnabled ? 3 : 0;
+  }
   if (
     !(error instanceof ApiError) ||
     error.status !== 422 ||

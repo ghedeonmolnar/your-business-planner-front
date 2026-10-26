@@ -15,6 +15,10 @@ import { BookingScheduleFields } from '@/features/bookings/components/BookingSch
 import { BookingCommercialFields } from '@/features/bookings/components/BookingCommercialFields';
 import { BookingStaffStep } from '@/features/bookings/components/BookingStaffStep';
 import { useBookingSubmission } from '@/features/bookings/hooks/useBookingSubmission';
+import {
+  BookingCreationNotice,
+  BookingCreationReconcileAction,
+} from '@/features/bookings/components/BookingCreationNotice';
 import { getBookingCreationAttempt } from '@/features/bookings/utils/bookingCreationRecovery';
 import { LoadingState } from '@/shared/components/LoadingState';
 import { useDirectory } from '@/features/company/hooks/useCompany';
@@ -138,30 +142,36 @@ function BookingFormEditor({
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
-        <FormActions
-          busy={save.isPending}
-          secondary={
-            step > 0
-              ? {
-                  label: 'Înapoi',
-                  variant: 'outline',
-                  onPress: () => setStep(current => current - 1),
-                }
-              : undefined
-          }
-          primary={{
-            label:
-              step === steps.length - 1 ? 'Salvează rezervarea' : 'Continuă',
-            onPress: step === steps.length - 1 ? save.submit : next,
-          }}
-        />
+        <>
+          {save.operationConflict ? (
+            <BookingCreationReconcileAction
+              onReconcile={save.reconcileCreation}
+              busy={save.isPending}
+            />
+          ) : null}
+          <FormActions
+            busy={save.isPending}
+            secondary={
+              step > 0
+                ? {
+                    label: 'Înapoi',
+                    variant: 'outline',
+                    onPress: () => setStep(current => current - 1),
+                  }
+                : undefined
+            }
+            primary={{
+              disabled: step === steps.length - 1 && save.operationConflict,
+              label:
+                step === steps.length - 1 ? 'Salvează rezervarea' : 'Continuă',
+              onPress: step === steps.length - 1 ? save.submit : next,
+            }}
+          />
+        </>
       }
     >
       {!booking && save.uncertain ? (
-        <Text>
-          Rezultatul creării este incert. Reîncearcă aceeași operațiune pentru a
-          recupera rezervarea.
-        </Text>
+        <BookingCreationNotice operationConflict={save.operationConflict} />
       ) : null}
       {conflict && booking ? (
         <BookingConflictReview

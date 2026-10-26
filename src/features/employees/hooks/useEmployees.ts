@@ -26,6 +26,9 @@ export const useEmployeeProfile = (id: string) =>
     queryFn: () => getEmployeeProfileApi(id),
   });
 
+export const useReloadEmployeeProfile = () =>
+  useMutation({ mutationFn: getEmployeeProfileApi });
+
 export const useCreateEmployee = () => {
   const queryClient = useQueryClient();
 
@@ -68,7 +71,10 @@ export const useInviteEmployee = (id: string) => {
 
   return useMutation({
     mutationFn: (email: string) => inviteEmployeeApi(id, email),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.employees.detail(id) }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.employees.detail(id),
+      }),
   });
 };
 
@@ -77,7 +83,10 @@ export const useBlockEmployee = (id: string) => {
 
   return useMutation({
     mutationFn: () => blockEmployeeApi(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.employees.detail(id) }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.employees.detail(id),
+      }),
   });
 };
 
@@ -86,6 +95,9 @@ export const useUnblockEmployee = (id: string) => {
 
   return useMutation({
     mutationFn: () => unblockEmployeeApi(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.employees.detail(id) }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.employees.detail(id),
+      }),
   });
 };

@@ -48,6 +48,7 @@ export const eventFixture: Event = {
   employees: [
     {
       id: 'employee-1',
+      version: 1,
       name: 'Ana Test',
       gender: 'female',
       hourly_rate: 50,
@@ -92,6 +93,7 @@ export const employeeEventFixture: EmployeeEvent = {
 
 export const employeeProfileFixture: EmployeeProfile = {
   id: 'employee-1',
+  version: 1,
   name: 'Ana Test',
   gender: 'female',
   hourly_rate: 50,

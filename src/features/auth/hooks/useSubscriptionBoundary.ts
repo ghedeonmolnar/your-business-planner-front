@@ -12,6 +12,7 @@ import { reportError } from '@/shared/monitoring/reportError';
 
 const MAXIMUM_TIMER_DELAY_MS = 2_147_483_647;
 const ACCESS_RETRY_DELAY_MS = 5_000;
+const CONFIRMED_ACCESS_RECHECK_DELAY_MS = 30_000;
 
 export const useSubscriptionBoundary = (
   user: AuthUser | null,
@@ -29,13 +30,15 @@ export const useSubscriptionBoundary = (
     }
     let active = true;
     let refreshing = false;
+    let boundaryReached = false;
+    let confirmed = false;
     let timer: ReturnType<typeof setTimeout>;
     const version = sessionVersion.current;
     const revalidate = async () => {
-      if (!active || refreshing) {
+      if (!active || refreshing || version !== sessionVersion.current) {
         return;
       }
-      if (Date.now() < expiry) {
+      if (!boundaryReached && Date.now() < expiry) {
         timer = setTimeout(
           () => {
             void revalidate();
@@ -45,10 +48,13 @@ export const useSubscriptionBoundary = (
         return;
       }
       refreshing = true;
-      setChecking(true);
+      boundaryReached = true;
+      if (!confirmed) setChecking(true);
       try {
         const profile = await getMeApi();
         if (active && version === sessionVersion.current) {
+          confirmed = Boolean(profile.subscription?.active);
+          setChecking(false);
           setUser(current =>
             current &&
             current.id === accountId &&
@@ -63,10 +69,15 @@ export const useSubscriptionBoundary = (
         }
       } finally {
         refreshing = false;
-        if (active) {
-          timer = setTimeout(() => {
-            void revalidate();
-          }, ACCESS_RETRY_DELAY_MS);
+        if (active && version === sessionVersion.current) {
+          timer = setTimeout(
+            () => {
+              void revalidate();
+            },
+            confirmed
+              ? CONFIRMED_ACCESS_RECHECK_DELAY_MS
+              : ACCESS_RETRY_DELAY_MS,
+          );
         }
       }
     };
@@ -77,7 +88,7 @@ export const useSubscriptionBoundary = (
       Math.max(0, Math.min(expiry - Date.now(), MAXIMUM_TIMER_DELAY_MS)),
     );
     const subscription = AppState.addEventListener('change', state => {
-      if (state === 'active' && Date.now() >= expiry) {
+      if (state === 'active' && (boundaryReached || Date.now() >= expiry)) {
         clearTimeout(timer);
         void revalidate();
       }

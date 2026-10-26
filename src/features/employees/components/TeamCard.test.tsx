@@ -28,6 +28,7 @@ test('employee card shows only the name, hourly rate and actions', async () => {
       <EmployeeCard
         employee={{
           birth_date: '2026-07-28',
+          version: 1,
           gender: 'female',
           hourly_rate: 50,
           id: '1',
@@ -125,6 +126,7 @@ test('inactive cards keep the trash action for the permanent delete step', async
         <EmployeeCard
           employee={{
             birth_date: '2026-07-28',
+            version: 1,
             gender: 'female',
             hourly_rate: 50,
             id: '1',
@@ -154,7 +156,9 @@ test('inactive cards keep the trash action for the permanent delete step', async
 
   await ReactTestRenderer.act(async () => {
     renderer?.root
-      .findByProps({ accessibilityLabel: 'Șterge definitiv angajatul Abi Bulcau' })
+      .findByProps({
+        accessibilityLabel: 'Șterge definitiv angajatul Abi Bulcau',
+      })
       .props.onPress();
     renderer?.root
       .findByProps({

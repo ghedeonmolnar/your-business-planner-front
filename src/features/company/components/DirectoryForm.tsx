@@ -8,6 +8,7 @@ import { FormActions } from '@/shared/components/FormActions';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
+import { EmployeeConflictReview } from '@/features/company/components/EmployeeConflictReview';
 
 export function DirectoryForm({
   kind,
@@ -52,6 +53,9 @@ export function DirectoryForm({
     >
       {conflict && kind === 'clients' && item ? (
         <ClientConflictReview clientId={item.id} onReload={reload} />
+      ) : null}
+      {conflict && kind === 'employees' && item ? (
+        <EmployeeConflictReview employeeId={item.id} onReload={reload} />
       ) : null}
       {conflict && !item ? (
         <Text>

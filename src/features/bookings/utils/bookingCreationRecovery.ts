@@ -5,6 +5,7 @@ import { subscribeSessionChanges } from '@/shared/api/sessionExpiry';
 export type BookingCreationAttempt = {
   values: BookingFormValues;
   payload: BookingPayload;
+  requiresReconciliation?: boolean;
 };
 const attempts = new Map<string, BookingCreationAttempt>();
 export const getBookingCreationAttempt = (owner: string) => attempts.get(owner);

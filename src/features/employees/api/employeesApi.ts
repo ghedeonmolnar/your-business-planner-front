@@ -36,15 +36,29 @@ export const updateEmployeeApi = (id: string, payload: EmployeePayload) =>
     schema: employeeSchema,
   });
 
-export const deleteEmployeeApi = (id: string) =>
+export const deleteEmployeeApi = ({
+  id,
+  version,
+}: {
+  id: string;
+  version: number;
+}) =>
   apiRequest(`/employees/${id}`, {
     method: 'DELETE',
+    body: { version },
     schema: actionResponseSchema,
   });
 
-export const forceDeleteEmployeeApi = (id: string) =>
+export const forceDeleteEmployeeApi = ({
+  id,
+  version,
+}: {
+  id: string;
+  version: number;
+}) =>
   apiRequest(`/employees/${id}/permanent`, {
     method: 'DELETE',
+    body: { version },
     schema: actionResponseSchema,
   });
 

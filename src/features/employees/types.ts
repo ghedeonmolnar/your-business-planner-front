@@ -2,6 +2,7 @@ export type EmployeeGender = 'male' | 'female';
 
 export type Employee = {
   id: string;
+  version: number;
   name: string;
   gender: EmployeeGender | null;
   hourly_rate: number | null;
@@ -44,6 +45,7 @@ export type EmployeeAccessChange = {
 };
 
 export type EmployeePayload = {
+  version?: number;
   name: string;
   gender: EmployeeGender;
   hourly_rate: number | null;

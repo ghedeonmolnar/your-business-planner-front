@@ -25,6 +25,11 @@ const directorySchema = z.object({
   minimum_guests: z.number().int().positive().nullable().optional(),
   address: z.string().nullable().optional(),
 });
+const versionedDirectorySchema = directorySchema.extend({
+  version: z.number().int().positive(),
+});
+export const getEmployeeDirectoryApi = (id: string) =>
+  apiRequest('/employees/' + id, { schema: versionedDirectorySchema });
 export const getDirectoryApi = (
   kind: DirectoryKind,
   page: number,
@@ -35,7 +40,11 @@ export const getDirectoryApi = (
     '/' + kind + '?search=' + encodeURIComponent(search),
     page,
     undefined,
-    { signal, itemSchema: directorySchema },
+    {
+      signal,
+      itemSchema:
+        kind === 'employees' ? versionedDirectorySchema : directorySchema,
+    },
   );
 export const saveDirectoryApi = ({
   kind,
@@ -49,7 +58,7 @@ export const saveDirectoryApi = ({
   apiRequest('/' + kind + (id ? '/' + id : ''), {
     method: id ? 'PUT' : 'POST',
     body: payload,
-    schema: directorySchema,
+    schema: kind === 'employees' ? versionedDirectorySchema : directorySchema,
   });
 export const getTeamApi = (page: number, signal?: AbortSignal) =>
   apiPageRequest('/team', page, undefined, {
