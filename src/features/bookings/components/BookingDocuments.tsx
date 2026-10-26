@@ -88,18 +88,23 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
           saving={upload.isPending || update.isPending}
           onCancel={() => setEditing(null)}
           onCreate={payload =>
-            upload.mutate(
-              { eventId, payload },
-              { onSuccess: () => setEditing(null), onError },
-            )
+            upload
+              .mutateAsync(
+                { eventId, payload },
+                { onSuccess: () => setEditing(null) },
+              )
+              .then(() => undefined)
           }
           onUpdate={payload => {
             if (editing !== 'new') {
-              update.mutate(
-                { id: editing.id, payload },
-                { onSuccess: () => setEditing(null), onError },
-              );
+              return update
+                .mutateAsync(
+                  { id: editing.id, eventId, payload },
+                  { onSuccess: () => setEditing(null) },
+                )
+                .then(() => undefined);
             }
+            return Promise.resolve();
           }}
         />
       ) : null}

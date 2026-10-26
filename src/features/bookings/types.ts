@@ -47,6 +47,7 @@ export type Booking = {
   outgoing_payments_count?: number;
 };
 export type BookingPayload = {
+  operation_id?: string;
   version?: number;
   hall_id: string;
   client_id: string;
@@ -101,6 +102,9 @@ export type CalendarDay = {
   tentative: number;
   free: number;
   occupied_halls?: number;
+  active_capacity?: number;
+  active_occupied_halls?: number;
+  historical_occupied_halls?: number;
 };
 export type CalendarSummary = {
   halls: { id: string; name: string; is_active: boolean }[];

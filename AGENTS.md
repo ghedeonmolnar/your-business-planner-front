@@ -4,16 +4,17 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 
 ## Mod de lucru
 
-1. Verificarile nu se ruleaza dupa fiecare task. Verificarile sunt: `tsc --noEmit`, `eslint .` si `jest` in `business-front`; `vendor/bin/pint --test` si `php artisan test` in `business-api`.
+1. Verificarile nu se ruleaza dupa fiecare task. Rundele locale obisnuite folosesc `tsc --noEmit`, `eslint .` si `npm run test:affected` in `business-front`; `vendor/bin/pint --test` si `composer test:affected` in `business-api`. Pentru MySQL se foloseste `composer test:affected -- --configuration=phpunit.mysql.xml`, numai in baza dedicata cu sufixul `_test`. Optiunea `--list` doar afiseaza selectia, fara executarea testelor.
 2. La al 5-lea task intreaba utilizatorul daca sa rulezi verificarile. Daca raspunsul este nu, ruleaza-le la al 10-lea task fara sa mai intrebi. Dupa fiecare rulare, numaratoarea o ia de la capat.
 3. Un task este o cerere a utilizatorului; numaratoarea se face pe sesiunea de lucru.
 4. In afara acestui ritm, verificarile se ruleaza doar cand utilizatorul le cere explicit.
-5. Daca exista pachete cu update disponibil, fa update-ul. Cauta-le (`npm outdated` in ambele proiecte, `composer outdated --direct` in `business-api`) la fiecare runda de verificari si aplica-le inainte de rulare, ca verificarile sa valideze si update-urile.
+5. Update-urile dependentelor se fac in runde separate de mentenanta, cerute explicit, nu in rundele selective. In runda de mentenanta cauta pachetele disponibile (`npm outdated` in ambele proiecte, `composer outdated --direct` in `business-api`), aplica update-urile compatibile si ruleaza toate verificarile: tipuri, lint, Jest complet, Pint, PHPUnit complet SQLite/MySQL si buildurile relevante pentru pachetele actualizate. Nu reseta numaratoarea pentru simpla listare a selectiei sau pentru testele uneltelor de selectie.
 6. Update-urile patch si minor se aplica direct. Pentru un update major intreaba intai, pentru ca poate cere schimbari de cod sau native (React Native, React, Babel, Jest, ESLint, TypeScript, PHPUnit, Guzzle).
 7. Pachetele cuplate se actualizeaza impreuna si respecta `peerDependencies`: `react-native` cu toate `@react-native/*`, `react` si `react-test-renderer` cu versiunea ceruta de `react-native`, `react-native-reanimated` cu `react-native-worklets`.
 8. Nu forta instalarea cu `--force` sau `--legacy-peer-deps`; un conflict de `peerDependencies` se rezolva prin versiuni compatibile.
 9. Orice schimbare de contract API, schema de baza de date, ecran sau flux se reflecta in `PROJECT_SCHEMA.md` in aceeasi schimbare.
 10. In mediul local folosim doar aplicatia Android: o deschidem si folosim aplicatia prin interfata ei.
+11. Selectorii compara ramura cu baza comuna fata de `origin/main` sau `--base`, plus staged, unstaged si untracked. Schimbarile globale, configurarile, dependentele, infrastructura testelor, stergerile/redenumirile, fisierele fara mapare/teste si baza Git indisponibila cer rulare completa. In CI, PR-urile draft folosesc `quality-affected`; PR-urile pregatite pentru merge, fiecare commit nou al lor, `main` si declansarea manuala folosesc `quality` cu suita completa. Un rezultat selectiv nu inlocuieste verificarea completa pentru merge sau livrare. Instructiunile si limitele sunt in `docs/TEST_SELECTION.md`.
 
 ## Reguli comune
 

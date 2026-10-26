@@ -18,6 +18,11 @@ import { confirmAction } from '@/shared/feedback/confirmAction';
 import { showError } from '@/shared/feedback/showError';
 import { formatExactMoney } from '@/shared/utils/money';
 import { formatLongDate } from '@/shared/utils/formatDate';
+import { apiErrorCode } from '@/shared/api/apiError';
+import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice';
+import { useReloadBookingPayment } from '@/features/bookings/hooks/useReloadBookingPayment';
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
+import { assertCurrentRequestSession } from '@/shared/api/requestSession';
 
 const paymentMethodLabels = {
   cash: 'Numerar',
@@ -28,6 +33,9 @@ const paymentMethodLabels = {
 export function BookingPayments({ eventId }: { eventId: string }) {
   const query = useBookingPayments(eventId);
   const cancel = useCancelBookingPayment(eventId);
+  const reload = useReloadBookingPayment();
+  const [generation] = useState(getSessionGeneration);
+  const [cancelConflict, setCancelConflict] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<BookingPayment | null>(null);
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
@@ -106,8 +114,15 @@ export function BookingPayments({ eventId }: { eventId: string }) {
                       cancel.mutate(
                         { id: payment.id, version: payment.version },
                         {
-                          onError: error =>
-                            showError(error, 'Nu am putut anula plata.'),
+                          onError: error => {
+                            if (generation !== getSessionGeneration()) return;
+                            if (
+                              apiErrorCode(error) ===
+                              'RESOURCE_VERSION_CONFLICT'
+                            )
+                              setCancelConflict(payment.id);
+                            showError(error, 'Nu am putut anula plata.');
+                          },
                         },
                       ),
                   })
@@ -117,6 +132,17 @@ export function BookingPayments({ eventId }: { eventId: string }) {
           ) : null}
         </RecordCard>
       ))}
+      {cancelConflict ? (
+        <VersionConflictNotice
+          hasDraft={false}
+          onReload={async () => {
+            const current = await reload.mutateAsync(cancelConflict);
+            assertCurrentRequestSession(generation);
+            setCancelConflict(null);
+            setEditing(current);
+          }}
+        />
+      ) : null}
       <PaginationFooter
         hasMore={Boolean(query.hasNextPage)}
         loading={query.isFetchingNextPage}

@@ -1,4 +1,3 @@
-import { companyNow } from '@/shared/utils/formatDate';
 import { Text } from 'react-native-paper';
 import React, { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -17,8 +16,12 @@ import { ControlledSelectField } from '@/shared/components/ControlledSelectField
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { showError } from '@/shared/feedback/showError';
 import { createPaymentOperationId } from '@/features/bookings/utils/paymentOperation';
-import { ApiError } from '@/shared/api/apiError';
+import { ApiError, apiErrorCode } from '@/shared/api/apiError';
 import { getSessionGeneration } from '@/shared/api/sessionExpiry';
+import { assertCurrentRequestSession } from '@/shared/api/requestSession';
+import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice';
+import { useReloadBookingPayment } from '@/features/bookings/hooks/useReloadBookingPayment';
+import { bookingPaymentDefaults } from '@/features/bookings/utils/bookingPaymentDefaults';
 
 export function BookingPaymentEditor({
   eventId,
@@ -33,6 +36,8 @@ export function BookingPaymentEditor({
 }) {
   const [sessionGeneration] = useState(getSessionGeneration);
   const paymentVersion = useRef(payment?.version);
+  const [conflict, setConflict] = useState(false);
+  const reload = useReloadBookingPayment();
   const submitting = useRef(false);
   const recovered = payment ? undefined : mutation.uncertainPayment?.payload;
   const operationId = useRef<string | null>(recovered?.operation_id ?? null);
@@ -41,23 +46,16 @@ export function BookingPaymentEditor({
   );
   const form = useForm<BookingPaymentValues>({
     resolver: zodResolver(bookingPaymentSchema),
-    defaultValues: {
-      type: payment?.type ?? recovered?.type ?? 'incoming',
-      category: payment?.category ?? recovered?.category ?? 'advance',
-      amount: payment ? String(payment.amount) : (recovered?.amount ?? ''),
-      paid_at:
-        payment?.paid_at ??
-        recovered?.paid_at ??
-        companyNow().format('YYYY-MM-DD'),
-      method: payment?.method ?? recovered?.method ?? 'transfer',
-      status: payment?.status ?? recovered?.status ?? 'completed',
-      notes: payment?.notes ?? recovered?.notes ?? '',
-    },
+    defaultValues: bookingPaymentDefaults(payment, recovered),
   });
   const type = form.watch('type');
   const categories = bookingPaymentCategories[type];
   const save = (values: BookingPaymentValues) => {
-    if (submitting.current || sessionGeneration !== getSessionGeneration()) {
+    if (
+      conflict ||
+      submitting.current ||
+      sessionGeneration !== getSessionGeneration()
+    ) {
       return;
     }
     submitting.current = true;
@@ -84,6 +82,8 @@ export function BookingPaymentEditor({
         },
         onError: error => {
           if (sessionGeneration !== getSessionGeneration()) return;
+          if (apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT')
+            setConflict(true);
           const refused =
             error instanceof ApiError &&
             error.status >= 400 &&
@@ -112,10 +112,25 @@ export function BookingPaymentEditor({
       footer={
         <FormActions
           busy={mutation.isPending}
-          primary={{ label: 'Salvează plata', onPress: submit }}
+          primary={{
+            label: 'Salvează plata',
+            onPress: submit,
+            disabled: conflict || reload.isPending,
+          }}
         />
       }
     >
+      {conflict && payment ? (
+        <VersionConflictNotice
+          onReload={async () => {
+            const current = await reload.mutateAsync(payment.id);
+            assertCurrentRequestSession(sessionGeneration);
+            paymentVersion.current = current.version;
+            form.reset(bookingPaymentDefaults(current));
+            setConflict(false);
+          }}
+        />
+      ) : null}
       {!payment &&
       (submittedPayload.current !== null || recovered) &&
       !mutation.isPending ? (

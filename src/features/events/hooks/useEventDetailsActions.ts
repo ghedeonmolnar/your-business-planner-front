@@ -121,27 +121,29 @@ export const useEventDetailsActions = (eventId: string) => {
   };
 
   const saveDocumentCreate = (payload: FormData) => {
-    createDocument.mutate(
-      { eventId, payload },
-      {
-        onSuccess: closeDocumentForm,
-        onError: error => showError(error, 'Nu am putut încărca documentul.'),
-      },
-    );
+    return createDocument
+      .mutateAsync(
+        { eventId, payload },
+        {
+          onSuccess: closeDocumentForm,
+        },
+      )
+      .then(() => undefined);
   };
 
   const saveDocumentUpdate = (payload: EventDocumentMetadataPayload) => {
     if (!editingDocument) {
-      return;
+      return Promise.resolve();
     }
 
-    updateDocument.mutate(
-      { id: editingDocument.id, eventId, payload },
-      {
-        onSuccess: closeDocumentForm,
-        onError: error => showError(error, 'Nu am putut salva documentul.'),
-      },
-    );
+    return updateDocument
+      .mutateAsync(
+        { id: editingDocument.id, eventId, payload },
+        {
+          onSuccess: closeDocumentForm,
+        },
+      )
+      .then(() => undefined);
   };
 
   const confirmDeleteDocument = (document: EventDocument) => {

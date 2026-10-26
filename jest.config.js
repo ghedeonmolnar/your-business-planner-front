@@ -1,6 +1,7 @@
 module.exports = {
   preset: '@react-native/jest-preset',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  testPathIgnorePatterns: ['/node_modules/', '<rootDir>/tools/testing/'],
   resolver: 'react-native-reanimated/jest/resolver',
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',

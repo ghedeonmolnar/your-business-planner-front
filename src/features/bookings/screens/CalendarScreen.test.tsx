@@ -38,15 +38,18 @@ test('numără sălile libere din lista afișată chiar dacă sumarul lunar este
       return Promise.resolve(jsonResponse(200, catalogsFixture));
     if (path.includes('/calendar/day'))
       return Promise.resolve(
-        paginatedResponse([
-          {
-            id: 'hall-1',
-            name: 'Sala ocupată',
-            capacity: 100,
-            booking_id: refreshFailed ? null : 'event-1',
-            status: refreshFailed ? 'free' : 'confirmed',
-          },
-        ]),
+        paginatedResponse(
+          [
+            {
+              id: 'hall-1',
+              name: 'Sala ocupată',
+              capacity: 100,
+              booking_id: refreshFailed ? null : 'event-1',
+              status: refreshFailed ? 'free' : 'confirmed',
+            },
+          ],
+          { snapshot: 'a'.repeat(64) },
+        ),
       );
     if (refreshFailed)
       return Promise.resolve(
@@ -69,20 +72,25 @@ test('numără sălile libere din lista afișată chiar dacă sumarul lunar este
   const { renderer, queryClient, unmount } = await renderWithProviders(
     <CalendarScreen />,
   );
-  await waitForUi(() =>
-    expect(renderedText(renderer)).toContain('Sala ocupată'),
-  );
-  expect(renderedText(renderer)).toMatch(/Săli libere:\s*0/);
-  expect(renderedText(renderer)).toContain('Ultima actualizare:');
-  refreshFailed = true;
-  await ReactTestRenderer.act(async () => {
-    await queryClient.invalidateQueries({
-      queryKey: queryKeys.planner.all('company-1'),
+  try {
+    await waitForUi(() =>
+      expect(renderedText(renderer)).toContain('Sala ocupată'),
+    );
+    expect(renderedText(renderer)).toMatch(/Săli libere:\s*0/);
+    expect(renderedText(renderer)).toContain('Ultima actualizare:');
+    refreshFailed = true;
+    await ReactTestRenderer.act(async () => {
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.planner.all('company-1'),
+      });
     });
-  });
-  await waitForUi(() => expect(renderedText(renderer)).toContain('Date vechi'));
-  expect(renderedText(renderer)).toMatch(/Săli libere:\s*1/);
-  await unmount();
+    await waitForUi(() =>
+      expect(renderedText(renderer)).toContain('Date vechi'),
+    );
+    expect(renderedText(renderer)).toMatch(/Săli libere:\s*1/);
+  } finally {
+    await unmount();
+  }
 });
 
 test('calendarul se montează pe date valide și schimbă împreună luna, ziua și filtrul sălii', async () => {
@@ -98,15 +106,18 @@ test('calendarul se montează pe date valide și schimbă împreună luna, ziua 
     }
     if (path.includes('/calendar/day')) {
       return Promise.resolve(
-        paginatedResponse([
-          {
-            id: 'hall-1',
-            name: 'Sala test',
-            capacity: 100,
-            booking_id: null,
-            status: 'free',
-          },
-        ]),
+        paginatedResponse(
+          [
+            {
+              id: 'hall-1',
+              name: 'Sala test',
+              capacity: 100,
+              booking_id: null,
+              status: 'free',
+            },
+          ],
+          { snapshot: 'a'.repeat(64) },
+        ),
       );
     }
     return Promise.resolve(
@@ -178,7 +189,9 @@ test('vederea anuală selectează luna, ajustează ziua și păstrează filtrul 
     if (path.endsWith('/me'))
       return Promise.resolve(jsonResponse(200, plannerAccount));
     if (path.includes('/calendar/day'))
-      return Promise.resolve(paginatedResponse([]));
+      return Promise.resolve(
+        paginatedResponse([], { snapshot: 'a'.repeat(64) }),
+      );
     const first =
       path.match(/date_from=(\d{4}-\d{2}-\d{2})/)?.[1] ?? `${year}-01-01`;
     const last =

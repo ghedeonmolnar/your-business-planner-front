@@ -65,6 +65,9 @@ export const calendarSummarySchema = z.object({
       tentative: z.number().int().nonnegative(),
       free: z.number().int().nonnegative(),
       occupied_halls: z.number().int().nonnegative().optional(),
+      active_capacity: z.number().int().nonnegative().optional(),
+      active_occupied_halls: z.number().int().nonnegative().optional(),
+      historical_occupied_halls: z.number().int().nonnegative().optional(),
     }),
   ),
 });

@@ -8,6 +8,9 @@ import {
 import { EventDocumentMetadataPayload } from '@/features/events/types';
 import { BookingPaymentPayload } from '@/features/bookings/types';
 
+export const getBookingPaymentApi = (id: string) =>
+  apiRequest('/event-payments/' + id, { schema: bookingPaymentApiSchema });
+
 export const getBookingPaymentsApi = (
   id: string,
   page: number,

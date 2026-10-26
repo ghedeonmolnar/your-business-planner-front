@@ -132,6 +132,7 @@ export const reviewNotificationSchema: z.ZodType<ReviewNotification> = z.object(
 
 export const eventDocumentSchema: z.ZodType<EventDocument> = z.object({
   id: z.string().min(1),
+  version: z.number().int().positive(),
   event_id: z.string().min(1),
   document_type: z.enum(['contract', 'invoice', 'other']),
   title: z.string(),

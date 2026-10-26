@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   getEventDocumentsApi,
+  getEventDocumentApi,
   createEventDocumentApi,
   updateEventDocumentApi,
   deleteEventDocumentApi,
@@ -9,6 +10,10 @@ import {
 import { EventDocumentMetadataPayload } from '@/features/events/types';
 import { invalidateEventDocuments } from '@/shared/api/queryInvalidation';
 import { queryKeys } from '@/shared/api/queryKeys';
+import { apiErrorCode } from '@/shared/api/apiError';
+
+export const useReloadEventDocument = () =>
+  useMutation({ mutationFn: getEventDocumentApi });
 
 export const useEventDocuments = (eventId: string | null, enabled: boolean) =>
   useQuery({
@@ -45,6 +50,10 @@ export const useUpdateEventDocument = () => {
       eventId: string;
       payload: EventDocumentMetadataPayload;
     }) => updateEventDocumentApi(id, payload),
+    onError: (error, variables) => {
+      if (apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT')
+        return invalidateEventDocuments(queryClient, variables.eventId);
+    },
     onSuccess: (_data, variables) =>
       invalidateEventDocuments(queryClient, variables.eventId),
   });

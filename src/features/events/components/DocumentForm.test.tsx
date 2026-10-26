@@ -4,33 +4,40 @@ import { Calendar } from 'react-native-calendars';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { DocumentForm } from '@/features/events/components/DocumentForm';
 import { EventDocumentMetadataPayload } from '@/features/events/types';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const insets = { top: 24, right: 0, bottom: 24, left: 0 };
 
 test('alege data documentului din calendar', async () => {
-  const onUpdate = jest.fn<void, [EventDocumentMetadataPayload]>();
+  const onUpdate = jest
+    .fn<Promise<void>, [EventDocumentMetadataPayload]>()
+    .mockResolvedValue(undefined);
+  const client = new QueryClient();
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
 
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(
-      <SafeAreaInsetsContext.Provider value={insets}>
-        <DocumentForm
-          initialDocument={{
-            id: 'document-1',
-            event_id: 'event-1',
-            document_type: 'contract',
-            title: 'Contract eveniment',
-            original_name: 'contract.pdf',
-            size_bytes: 100,
-            document_date: null,
-          }}
-          onCancel={jest.fn()}
-          onCreate={jest.fn()}
-          onUpdate={onUpdate}
-          saving={false}
-          visible
-        />
-      </SafeAreaInsetsContext.Provider>,
+      <QueryClientProvider client={client}>
+        <SafeAreaInsetsContext.Provider value={insets}>
+          <DocumentForm
+            initialDocument={{
+              id: 'document-1',
+              version: 1,
+              event_id: 'event-1',
+              document_type: 'contract',
+              title: 'Contract eveniment',
+              original_name: 'contract.pdf',
+              size_bytes: 100,
+              document_date: null,
+            }}
+            onCancel={jest.fn()}
+            onCreate={jest.fn()}
+            onUpdate={onUpdate}
+            saving={false}
+            visible
+          />
+        </SafeAreaInsetsContext.Provider>
+      </QueryClientProvider>,
     );
   });
 
@@ -66,5 +73,6 @@ test('alege data documentului din calendar', async () => {
 
   await ReactTestRenderer.act(async () => {
     mountedRenderer.unmount();
+    client.clear();
   });
 });

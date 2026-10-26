@@ -1,6 +1,6 @@
 import { useAuth } from '@/features/auth/AuthProvider';
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { Text } from 'react-native-paper';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -9,15 +9,14 @@ import {
   bookingFormSchema,
   BookingFormValues,
 } from '@/features/bookings/schemas/bookingFormSchema';
-import {
-  bookingFormDefaults,
-  bookingPayload,
-} from '@/features/bookings/utils/bookingFormValues';
+import { bookingFormDefaults } from '@/features/bookings/utils/bookingFormValues';
 import { BookingReviewFields } from '@/features/bookings/components/BookingReviewFields';
 import { BookingScheduleFields } from '@/features/bookings/components/BookingScheduleFields';
 import { BookingCommercialFields } from '@/features/bookings/components/BookingCommercialFields';
 import { BookingStaffStep } from '@/features/bookings/components/BookingStaffStep';
-import { useSaveBooking } from '@/features/bookings/hooks/useBookings';
+import { useBookingSubmission } from '@/features/bookings/hooks/useBookingSubmission';
+import { getBookingCreationAttempt } from '@/features/bookings/utils/bookingCreationRecovery';
+import { LoadingState } from '@/shared/components/LoadingState';
 import { useDirectory } from '@/features/company/hooks/useCompany';
 import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
@@ -25,14 +24,8 @@ import { DirectoryItem } from '@/features/company/types';
 import { includeDirectorySelections } from '@/features/company/utils/includeDirectorySelections';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { FormActions } from '@/shared/components/FormActions';
-import { showError } from '@/shared/feedback/showError';
-import {
-  bookingStepFields,
-  firstBookingErrorStep,
-  applyBookingApiErrors,
-} from '@/features/bookings/utils/bookingFormErrors';
+import { bookingStepFields } from '@/features/bookings/utils/bookingFormErrors';
 import { BookingConflictReview } from '@/features/bookings/components/BookingConflictReview';
-import { ApiError } from '@/shared/api/apiError';
 import { buildContactUrl } from '@/shared/utils/contactLinks';
 
 const allSteps = [
@@ -42,36 +35,48 @@ const allSteps = [
   'Personal',
   'Recapitulare',
 ];
-export function BookingForm({
-  date,
-  hallId,
-  selectedHall,
-  booking: initialBooking,
-  onClose,
-}: {
+type BookingFormProps = {
   date: string;
   hallId?: string;
   selectedHall?: DirectoryItem;
   booking?: Booking;
   onClose: () => void;
-}) {
+};
+export function BookingForm(props: BookingFormProps) {
+  const { user } = useAuth();
+  if (!user?.company?.id) return <LoadingState />;
+  return (
+    <BookingFormEditor
+      key={JSON.stringify([user.company.id, user.id, props.booking?.id])}
+      {...props}
+    />
+  );
+}
+function BookingFormEditor({
+  date,
+  hallId,
+  selectedHall,
+  booking: initialBooking,
+  onClose,
+}: BookingFormProps) {
   const [booking, setBooking] = useState(initialBooking);
   const [conflict, setConflict] = useState(false);
   const { user } = useAuth();
   const staffEnabled = hasCompanyFeature(user, 'staff');
+  const owner = JSON.stringify([user?.company?.id, user?.id]);
+  const [initialAttempt] = useState(() =>
+    initialBooking ? undefined : getBookingCreationAttempt(owner),
+  );
   const steps = staffEnabled
     ? allSteps
     : allSteps.filter(title => title !== 'Personal');
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
-    defaultValues: bookingFormDefaults(
-      date,
-      hallId,
-      booking,
-      selectedHall?.minimum_guests,
-    ),
+    defaultValues:
+      initialAttempt?.values ??
+      bookingFormDefaults(date, hallId, booking, selectedHall?.minimum_guests),
   });
-  const [stepIndex, setStep] = useState(0);
+  const [stepIndex, setStep] = useState(initialAttempt ? steps.length - 1 : 0);
   const step = Math.min(stepIndex, steps.length - 1);
   const [selectedClient, setSelectedClient] = useState<DirectoryItem | null>(
     null,
@@ -91,8 +96,6 @@ export function BookingForm({
         ? [selectedHall]
         : [],
   );
-  const save = useSaveBooking();
-  const submitting = useRef(false);
   const values = form.watch();
   const validateClientPhone = () => {
     const clientId = form.getValues('client_id');
@@ -109,32 +112,17 @@ export function BookingForm({
     setStep(1);
     return false;
   };
-  const submit = form.handleSubmit(
-    data => {
-      if (!validateClientPhone()) return;
-      if (submitting.current) {
-        return;
-      }
-      submitting.current = true;
-      save.mutate(
-        { id: booking?.id, payload: bookingPayload(data, booking) },
-        {
-          onSuccess: onClose,
-          onSettled: () => {
-            submitting.current = false;
-          },
-          onError: error => {
-            const errorStep = applyBookingApiErrors(error, form, staffEnabled);
-            if (errorStep !== null) setStep(errorStep);
-            if (error instanceof ApiError && error.status === 409)
-              setConflict(true);
-            showError(error, 'Nu am putut salva rezervarea.');
-          },
-        },
-      );
-    },
-    errors => setStep(firstBookingErrorStep(errors, staffEnabled)),
-  );
+  const save = useBookingSubmission({
+    form,
+    booking,
+    owner,
+    initialAttempt,
+    staffEnabled,
+    validatePhone: validateClientPhone,
+    onClose,
+    onErrorStep: setStep,
+    onConflict: () => setConflict(true),
+  });
   const next = async () => {
     if (step === 1 && !validateClientPhone()) return;
     if (await form.trigger(bookingStepFields(staffEnabled)[step])) {
@@ -145,6 +133,7 @@ export function BookingForm({
     <FormModalFrame
       visible
       busy={save.isPending}
+      readOnly={!booking && save.uncertain}
       title={steps[step]}
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
@@ -163,11 +152,17 @@ export function BookingForm({
           primary={{
             label:
               step === steps.length - 1 ? 'Salvează rezervarea' : 'Continuă',
-            onPress: step === steps.length - 1 ? submit : next,
+            onPress: step === steps.length - 1 ? save.submit : next,
           }}
         />
       }
     >
+      {!booking && save.uncertain ? (
+        <Text>
+          Rezultatul creării este incert. Reîncearcă aceeași operațiune pentru a
+          recupera rezervarea.
+        </Text>
+      ) : null}
       {conflict && booking ? (
         <BookingConflictReview
           bookingId={booking.id}

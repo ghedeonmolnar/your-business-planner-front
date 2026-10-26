@@ -66,4 +66,8 @@ Regulile proiectului sunt în [AGENTS.md](AGENTS.md), convențiile de text și e
 
 ## Verificări
 
-Comenzile frontend sunt `npx tsc --noEmit`, `npm run lint` și `npm test -- --runInBand`. Rularea lor și actualizarea dependențelor respectă ritmul din `AGENTS.md`.
+Rundele locale folosesc `npx tsc --noEmit`, `npm run lint` și `npm run test:affected`, la ritmul 5/10 din `AGENTS.md`. Pentru previzualizare, fără executarea testelor: `npm run test:affected -- --list`. Baza implicită este `origin/main`; poate fi schimbată prin `--base=<ref>`.
+
+Pe PR draft se rulează testele afectate, în jobul `quality-affected`. La trecerea în „Ready for review” și la fiecare commit ulterior, jobul `quality` rulează toate testele. Pe `main` și la declanșare manuală se verifică integral. Tipurile, lint-ul, build-ul Android și scanările de securitate se păstrează. În protecția ramurii trebuie cerut `quality`; `quality-affected` nu îl înlocuiește. Limitarea planului GitHub pentru repository-uri private rămâne de rezolvat pentru impunerea automată.
+
+Rularea completă rămâne `npm test -- --runInBand`. Actualizările dependențelor se fac separat, la cerere, și necesită verificare completă. Politica de selecție, comenzile și limitele sunt în [docs/TEST_SELECTION.md](docs/TEST_SELECTION.md).

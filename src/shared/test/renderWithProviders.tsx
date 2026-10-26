@@ -21,10 +21,13 @@ export const jsonResponse = (status: number, payload: unknown): Response =>
     text: () => Promise.resolve(JSON.stringify(payload)),
   }) as unknown as Response;
 
-export const paginatedResponse = (items: unknown[]) =>
+export const paginatedResponse = (
+  items: unknown[],
+  metadata: { snapshot?: string } = {},
+) =>
   jsonResponse(200, {
     data: items,
-    meta: { current_page: 1, last_page: 1, total: items.length },
+    meta: { current_page: 1, last_page: 1, total: items.length, ...metadata },
   });
 
 const findVisibleDialog = (renderer: ReactTestRenderer.ReactTestRenderer) =>

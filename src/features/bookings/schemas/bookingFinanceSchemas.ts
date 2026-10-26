@@ -14,6 +14,7 @@ export const bookingPaymentApiSchema = z.object({
 });
 export const bookingDocumentApiSchema = z.object({
   id: z.string(),
+  version: z.number().int().positive(),
   event_id: z.string(),
   document_type: z.enum(['contract', 'invoice', 'other']),
   title: z.string(),
