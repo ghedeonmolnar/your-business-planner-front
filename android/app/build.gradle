@@ -12,9 +12,11 @@ react {
     autolinkLibrariesWithApp()
 }
 
-tasks.withType(com.facebook.react.tasks.BundleHermesCTask).configureEach {
-    if (qualityE2E && name == 'createBundleDebugJsAndAssets') {
-        devEnabled.set(true)
+gradle.projectsEvaluated {
+    if (qualityE2E) {
+        tasks.named('createBundleDebugJsAndAssets', com.facebook.react.tasks.BundleHermesCTask).configure {
+            devEnabled.set(true)
+        }
     }
 }
 

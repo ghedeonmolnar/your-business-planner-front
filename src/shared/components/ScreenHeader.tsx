@@ -11,6 +11,8 @@ type ScreenHeaderProps = {
   action?: ReactNode;
 };
 
+const HEADER_LOGO_WIDTH = 104;
+
 export function ScreenHeader({
   eyebrow,
   title,
@@ -21,7 +23,7 @@ export function ScreenHeader({
     <View style={styles.header}>
       <View style={styles.brandArea}>
         <View style={styles.logoWrap}>
-          <BrandLogo size={43} />
+          <BrandLogo width={HEADER_LOGO_WIDTH} />
         </View>
         <View style={styles.textWrap}>
           <Text style={styles.eyebrow}>{eyebrow}</Text>
@@ -48,15 +50,9 @@ const styles = StyleSheet.create({
   },
   logoWrap: {
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    height: 50,
     justifyContent: 'center',
     marginRight: theme.spacing.md,
-    width: 50,
-    ...theme.shadow,
+    width: HEADER_LOGO_WIDTH,
   },
   textWrap: {
     flex: 1,

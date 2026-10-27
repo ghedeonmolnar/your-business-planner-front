@@ -1,6 +1,6 @@
 # Your Business Planner — contractul actual
 
-Actualizat la 26 octombrie 2026. Acest document descrie comportamentul curent; notele cronologice anterioare sunt in [istoricul pastrat](docs/PROJECT_SCHEMA_ISTORIC_2026-10-26.md). Istoricul nu defineste contracte alternative. Criteriile nevalidate pentru lansare sunt in [registrul de lansare](docs/ROADMAP_LANSARE.md), iar planul integral este in [planul de calitate](docs/PLAN_CALITATE_2026-10-26.md).
+Actualizat la 27 octombrie 2026. Acest document descrie comportamentul curent; notele cronologice anterioare sunt in [istoricul pastrat](docs/PROJECT_SCHEMA_ISTORIC_2026-10-26.md). Istoricul nu defineste contracte alternative. Criteriile nevalidate pentru lansare sunt in [registrul de lansare](docs/ROADMAP_LANSARE.md), iar planul integral este in [planul de calitate](docs/PLAN_CALITATE_2026-10-26.md).
 
 ## Aplicatii si medii
 
@@ -9,6 +9,10 @@ Actualizat la 26 octombrie 2026. Acest document descrie comportamentul curent; n
 - `company_id` izoleaza datele; `user_id` pastreaza autorul. `companies` este radacina. Identificatorii de business sunt UUID.
 - Configuratia API este in `config/gt.php`, citita din mediu; clientul citeste `@env`. Credentialele SQL nu ajung in client.
 - API-ul local este pe 8010; MySQL pe 3307, Mailpit web pe 8026. Porturile/configuratiile sunt ale mediului local, nu adrese de productie.
+
+## Identitate vizuala
+
+Logo-ul produsului este SVG-ul animat Gatify furnizat de utilizator, pastrat in `assets/brand` pe mobil si `public/brand` pe API. Loginul si antetele folosesc aceleasi forme si acelasi ciclu GT-GATIFY de 8 secunde, randat nativ prin SVG/Reanimated. Preferinta de reducere a miscarii afiseaza cuvantul complet; animatia este oprita in fundal. Panoul operatorului si paginile de recenzie folosesc assetul SVG local. Invitatiile HTML includ PNG-ul inline si o alternativa text. Iconitele Android/iOS, faviconul si ecranul nativ de pornire folosesc cadre statice derivate din acelasi logo. Identificatorii nativi si serviciile Keychain raman stabili pentru continuitatea sesiunilor si jurnalelor. Datele firmelor si imaginile incarcate de utilizatori nu sunt logo-uri ale produsului.
 
 ## Identitate si autorizare
 

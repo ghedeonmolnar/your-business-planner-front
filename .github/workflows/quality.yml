@@ -32,7 +32,7 @@ jobs:
       - run: node tools/documentation/check-sync.cjs
       - run: npx tsc --noEmit
       - run: npx eslint . --max-warnings=0
-      - run: node --test tools/testing/changes.test.cjs tools/testing/frontend-impact.test.cjs tools/e2e/quality-control.test.cjs
+      - run: node --test tools/testing/changes.test.cjs tools/testing/frontend-impact.test.cjs tools/e2e/quality-control.test.cjs tools/branding/brand-assets.test.cjs
       - name: Teste afectate pentru PR draft
         if: github.event_name == 'pull_request' && github.event.pull_request.draft
         env:

@@ -66,3 +66,7 @@ Mediul a folosit serverul PHP local cu un singur worker si Docker Desktop, simul
 - Benchmarkurile reprezentative si remedierea bugetelor de citire, upgrade semnat, instalare noua, client vechi/API nou si pilot de 7 zile.
 
 Nu se declara pragul 9/10, conformitate OWASP/WCAG, performanta pentru 100 de companii sau pregatire de productie pe baza acestor probe locale.
+
+## Identitate vizuala Gatify
+
+SVG-ul furnizat a fost pastrat integral, cu SHA256 479f748cfaccfe490165ee8a17d1ecc412f806bb0572d8cdda73b83d97ec042b. Geometria si timpii animatiei de 8 secunde au fost preluati in SVG/Reanimated pentru mobil, cu oprire in fundal si cadru static la reducerea miscarii. Loginul, antetele, panoul operatorului, pagina de recenzie si invitatia HTML folosesc identitatea noua. Iconitele launcher, faviconul si splash-ul sunt derivate statice. Testele verifica formele/cadrele, integritatea sursei, dimensiunile native si absenta canalului alfa din AppIcon iOS; testele de invitatie verifica si escaparea numelui. Pe Android au fost observate cadrele GT, tranzitia la GATIFY si varianta fara miscare; buildul x86_64 a trecut. Un offset SVG scris .5 a fost convertit la numar pentru rendererul nativ, fara a modifica sursa SVG. Buildul si lansarea iOS trebuie verificate pe macOS inainte de livrare.
