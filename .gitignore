@@ -81,6 +81,7 @@ pnpm-debug.log*
 
 # testing
 /coverage
+/e2e/results/
 
 # Generated caches
 .cache/

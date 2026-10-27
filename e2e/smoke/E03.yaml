@@ -1,0 +1,35 @@
+appId: com.yourbusinessplanner.e2e
+env:
+  SCENARIO: E03
+---
+- runFlow: ../flows/login.yaml
+- runFlow: ../flows/calendar.yaml
+- scrollUntilVisible:
+    element:
+      id: ${'calendar-hall:' + output.context.hallId + ':' + output.context.baseId}
+    direction: DOWN
+- tapOn:
+    id: ${'calendar-hall:' + output.context.hallId + ':' + output.context.baseId}
+- tapOn: Acțiuni rezervare
+- tapOn: Anulează rezervarea
+- tapOn: Anulează rezervarea
+- extendedWaitUntil:
+    visible: Anulată
+    timeout: 20000
+- tapOn: Înapoi
+- scrollUntilVisible:
+    element:
+      id: calendar-view:1
+    direction: UP
+- tapOn:
+    id: calendar-view:1
+- assertVisible: ${output.context.year}
+- evalScript: ${if (!http.get(CONTROL + '/verify-cancelled').ok) throw new Error('QUALITY_CANCELLATION_FAILED')}
+- tapOn:
+    id: calendar-view:0
+- scrollUntilVisible:
+    element:
+      id: ${'calendar-hall:' + output.context.hallId + ':free'}
+    direction: DOWN
+- assertVisible:
+    id: ${'calendar-hall:' + output.context.hallId + ':free'}

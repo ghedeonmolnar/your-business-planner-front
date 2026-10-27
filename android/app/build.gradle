@@ -2,14 +2,36 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
-react {
+def qualityE2E = (project.findProperty('qualityE2E') ?: 'false').toBoolean()
 
+react {
+    if (qualityE2E) {
+        debuggableVariants = []
+    }
 
     autolinkLibrariesWithApp()
 }
 
+gradle.projectsEvaluated {
+    if (qualityE2E) {
+        tasks.named('createBundleDebugJsAndAssets', com.facebook.react.tasks.BundleHermesCTask).configure {
+            devEnabled.set(true)
+        }
+    }
+}
+
 def enableProguardInReleaseBuilds = false
 def maximumCmakeObjectPathLength = 250
+def releaseRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+def appEnvironmentFile = rootProject.file('../' + (System.getenv('ENVFILE') ?: (releaseRequested ? '.env.production' : '.env')))
+def appEnvironment = new Properties()
+if (appEnvironmentFile.exists()) {
+    appEnvironmentFile.withReader('UTF-8') { appEnvironment.load(it) }
+}
+def configuredAppBuild = appEnvironment.getProperty('APP_BUILD')
+if (configuredAppBuild == null || !(configuredAppBuild ==~ /[1-9][0-9]{0,8}/)) {
+    throw new GradleException('APP_BUILD trebuie configurat identic pentru Android si JavaScript in fisierul de mediu selectat.')
+}
 def nativeBuildDirectory = new File(System.getProperty("java.io.tmpdir"), "ybp-" + Integer.toHexString(rootProject.projectDir.absolutePath.hashCode()))
 def releaseSigningProperties = new Properties()
 def releaseSigningPropertiesFile = rootProject.file("app/signing.properties")
@@ -34,6 +56,12 @@ android {
     compileSdk rootProject.ext.compileSdkVersion
 
     namespace "com.gteventsapp"
+    if (qualityE2E) {
+        sourceSets.debug {
+            java.srcDirs += 'src/quality/java'
+            manifest.srcFile 'src/quality/AndroidManifest.xml'
+        }
+    }
     externalNativeBuild {
         cmake {
             buildStagingDirectory nativeBuildDirectory
@@ -41,9 +69,10 @@ android {
     }
     defaultConfig {
         applicationId "com.yourbusinessplanner"
+        buildConfigField "boolean", "QUALITY_E2E", qualityE2E.toString()
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
+        versionCode configuredAppBuild.toInteger()
         versionName "0.1.0"
         externalNativeBuild {
             cmake {
@@ -69,6 +98,9 @@ android {
     }
     buildTypes {
         debug {
+            if (qualityE2E) {
+                applicationIdSuffix '.e2e'
+            }
             signingConfig signingConfigs.debug
         }
         release {

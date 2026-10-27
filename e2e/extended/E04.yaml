@@ -1,0 +1,44 @@
+appId: com.yourbusinessplanner.e2e
+env:
+  SCENARIO: E04
+---
+- runFlow: ../flows/login.yaml
+- runFlow: ../flows/create-draft.yaml
+- runFlow: ../flows/save-created.yaml
+- runFlow: ../flows/open-created.yaml
+- runFlow: ../flows/open-payment.yaml
+- tapOn:
+    id: input:amount
+- inputText: '1000'
+- hideKeyboard
+- evalScript: ${if (!http.get(CONTROL + '/drop-next-payment').ok) throw new Error('QUALITY_FAULT_NOT_ARMED')}
+- tapOn:
+    id: form-submit
+- extendedWaitUntil:
+    visible: Eroare
+    timeout: 30000
+- tapOn: OK
+- stopApp
+- launchApp
+- extendedWaitUntil:
+    visible: Mai târziu|Calendar
+    timeout: 30000
+- runFlow:
+    when:
+      visible: Mai târziu
+    commands:
+      - tapOn: Mai târziu
+- extendedWaitUntil:
+    visible:
+      id: tab:Calendar
+    timeout: 30000
+- runFlow: ../flows/calendar.yaml
+- runFlow: ../flows/open-created.yaml
+- runFlow: ../flows/open-payment.yaml
+- assertVisible: Rezultatul înregistrării nu este încă sigur.*
+- tapOn:
+    id: form-submit
+- extendedWaitUntil:
+    notVisible: Salvează plata
+    timeout: 20000
+- evalScript: ${if (!http.get(CONTROL + '/verify-payment').ok) throw new Error('QUALITY_DUPLICATE_PAYMENT')}

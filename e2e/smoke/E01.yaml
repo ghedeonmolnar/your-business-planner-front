@@ -1,0 +1,20 @@
+appId: com.yourbusinessplanner.e2e
+env:
+  SCENARIO: E01
+---
+- runFlow: ../flows/login.yaml
+- runFlow: ../flows/create-draft.yaml
+- runFlow: ../flows/save-created.yaml
+- runFlow: ../flows/open-created.yaml
+- runFlow: ../flows/open-payment.yaml
+- tapOn:
+    id: input:amount
+- inputText: '1000'
+- hideKeyboard
+- tapOn:
+    id: form-submit
+- extendedWaitUntil:
+    notVisible: Salvează plata
+    timeout: 20000
+- evalScript: ${if (!http.get(CONTROL + '/verify-payment').ok) throw new Error('QUALITY_PAYMENT_FAILED')}
+- assertVisible: '.*34[. ]000.*'

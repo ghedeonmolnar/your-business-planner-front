@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { theme } from '@/shared/theme/theme';
@@ -17,15 +17,10 @@ export function CalendarLegend({ period }: { period: CalendarPeriod }) {
           { label: 'Azi', color: theme.colors.menu.surface, outline: true },
           { label: 'Selectat', color: theme.colors.menu.primary },
           {
-            label: '◐ Parțial rezervat',
+            label: 'Rezervat',
             color: theme.colors.menu.primarySoft,
           },
-          {
-            label: '● Complet rezervat',
-            color: theme.colors.menu.success,
-          },
-          { label: '○ Liber', color: theme.colors.menu.surface },
-          { label: '? Date indisponibile', color: theme.colors.menu.surface },
+          { label: 'Liber', color: theme.colors.menu.border },
         ]
       : [
           { label: 'Liber', color: theme.colors.menu.border },
@@ -39,50 +34,42 @@ export function CalendarLegend({ period }: { period: CalendarPeriod }) {
         ];
   return (
     <View style={styles.legend}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.row}
-      >
-        {items.map(item => (
-          <View key={item.label} style={styles.item}>
-            <View
-              style={[
-                styles.swatch,
-                { backgroundColor: item.color },
-                item.outline ? styles.outline : undefined,
-              ]}
-            />
-            <Text style={styles.label}>{item.label}</Text>
-          </View>
-        ))}
-      </ScrollView>
+      {items.map(item => (
+        <View key={item.label} style={styles.item}>
+          <View
+            style={[
+              styles.swatch,
+              { backgroundColor: item.color },
+              item.outline ? styles.outline : undefined,
+            ]}
+          />
+          <Text style={styles.label}>{item.label}</Text>
+        </View>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   legend: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.sm,
     backgroundColor: theme.colors.menu.background,
     borderColor: theme.colors.menu.border,
     borderWidth: 1,
     borderRadius: theme.radius.md,
-    padding: theme.spacing.sm,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing.sm,
+    padding: theme.spacing.md,
   },
   item: {
     alignItems: 'center',
     flexDirection: 'row',
-    flexShrink: 0,
+    flexGrow: 1,
     gap: theme.spacing.xs,
   },
   swatch: {
-    width: theme.spacing.md,
-    height: theme.spacing.md,
+    width: theme.spacing.lg,
+    height: theme.spacing.lg,
     borderRadius: theme.radius.pill,
     flexShrink: 0,
   },

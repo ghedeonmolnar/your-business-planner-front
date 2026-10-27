@@ -18,6 +18,10 @@ import { ApiError, apiErrorCode } from '@/shared/api/apiError';
 import { isDefinitiveBookingCreationFailure } from '@/features/bookings/utils/bookingCreationFailure';
 import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { showError } from '@/shared/feedback/showError';
+import {
+  persistBookingCreationJournal,
+  clearBookingCreationJournal,
+} from '@/features/bookings/utils/bookingCreationJournal';
 
 export const useBookingSubmission = ({
   form,
@@ -42,6 +46,7 @@ export const useBookingSubmission = ({
 }) => {
   const mutation = useSaveBooking();
   const submitting = useRef(false);
+  const [persisting, setPersisting] = useState(false);
   const attempt = useRef(initialAttempt);
   const [uncertain, setUncertain] = useState(Boolean(initialAttempt));
   const [operationConflict, setOperationConflict] = useState(
@@ -57,6 +62,7 @@ export const useBookingSubmission = ({
       return;
     if (!attempt.current && !validatePhone()) return;
     submitting.current = true;
+    setPersisting(true);
     const recovering = Boolean(attempt.current);
     try {
       const formPayload = bookingPayload(values, booking);
@@ -66,13 +72,18 @@ export const useBookingSubmission = ({
         staff: staffEnabled ? formPayload.staff : undefined,
       };
       if (!booking) {
-        attempt.current = { values, payload };
+        const nextAttempt = attempt.current ?? { values, payload };
+        await persistBookingCreationJournal(owner, nextAttempt, generation);
+        attempt.current = nextAttempt;
         rememberBookingCreationAttempt(owner, attempt.current);
         setUncertain(true);
       }
       await mutation.mutateAsync({ id: booking?.id, payload });
       if (generation !== getSessionGeneration()) return;
-      if (!booking) forgetBookingCreationAttempt(owner);
+      if (!booking) {
+        await clearBookingCreationJournal(generation);
+        forgetBookingCreationAttempt(owner);
+      }
       onClose();
     } catch (error) {
       if (generation !== getSessionGeneration()) return;
@@ -88,12 +99,34 @@ export const useBookingSubmission = ({
         attempt.current.requiresReconciliation = true;
         rememberBookingCreationAttempt(owner, attempt.current);
         setOperationConflict(true);
+        try {
+          await persistBookingCreationJournal(
+            owner,
+            attempt.current,
+            generation,
+          );
+        } catch (storageError) {
+          showError(
+            storageError,
+            'Nu am putut păstra starea reconcilierii. Reîncearcă pe acest dispozitiv.',
+          );
+          return;
+        }
       }
       if (
         !booking &&
         !recovering &&
         isDefinitiveBookingCreationFailure(error)
       ) {
+        try {
+          await clearBookingCreationJournal(generation);
+        } catch (storageError) {
+          showError(
+            storageError,
+            'Nu am putut încheia încercarea salvată. Reîncearcă înainte de a crea o rezervare nouă.',
+          );
+          return;
+        }
         attempt.current = undefined;
         forgetBookingCreationAttempt(owner);
         setUncertain(false);
@@ -101,6 +134,7 @@ export const useBookingSubmission = ({
       showError(error, 'Nu am putut salva rezervarea.');
     } finally {
       submitting.current = false;
+      if (generation === getSessionGeneration()) setPersisting(false);
     }
   };
   const submit = () =>
@@ -109,24 +143,39 @@ export const useBookingSubmission = ({
       : form.handleSubmit(save, errors =>
           onErrorStep(firstBookingErrorStep(errors, staffEnabled)),
         )();
-  const reconcileCreation = () => {
+  const reconcileCreation = async () => {
     if (
       !operationConflict ||
       submitting.current ||
       generation !== getSessionGeneration()
     )
       return;
-    attempt.current = undefined;
-    forgetBookingCreationAttempt(owner);
-    setOperationConflict(false);
-    setUncertain(false);
-    onErrorStep(0);
+    submitting.current = true;
+    setPersisting(true);
+    try {
+      await clearBookingCreationJournal(generation);
+      if (generation !== getSessionGeneration()) return;
+      attempt.current = undefined;
+      forgetBookingCreationAttempt(owner);
+      setOperationConflict(false);
+      setUncertain(false);
+      onErrorStep(0);
+    } catch (error) {
+      if (generation === getSessionGeneration())
+        showError(
+          error,
+          'Nu am putut încheia reconcilierea. Încearcă din nou.',
+        );
+    } finally {
+      submitting.current = false;
+      if (generation === getSessionGeneration()) setPersisting(false);
+    }
   };
   return {
     submit,
     uncertain,
     operationConflict,
     reconcileCreation,
-    isPending: mutation.isPending,
+    isPending: mutation.isPending || persisting,
   };
 };

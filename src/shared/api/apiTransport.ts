@@ -34,6 +34,7 @@ const readResponseBody = async (
       response.status,
       error,
       'invalid_response',
+      response.headers.get('x-request-id') ?? undefined,
     );
   }
 };

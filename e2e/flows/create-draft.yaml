@@ -1,0 +1,56 @@
+appId: com.yourbusinessplanner.e2e
+---
+- runFlow: calendar.yaml
+- scrollUntilVisible:
+    element:
+      id: ${'calendar-hall:' + output.context.hallId + ':free'}
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: ${'calendar-hall:' + output.context.hallId + ':free'}
+- tapOn:
+    id: select:status
+- tapOn:
+    id: select-option:confirmed
+- scrollUntilVisible:
+    element:
+      id: input:starts_at
+    direction: DOWN
+- tapOn:
+    id: input:starts_at
+- inputText: ${output.context.startsAt}
+- hideKeyboard
+- scrollUntilVisible:
+    element:
+      id: input:ends_at
+    direction: DOWN
+- tapOn:
+    id: input:ends_at
+- inputText: ${output.context.endsAt}
+- hideKeyboard
+- tapOn:
+    id: form-submit
+- tapOn:
+    id: select:client_id
+- tapOn:
+    id: ${'select-option:' + output.context.clientId}
+- tapOn:
+    id: form-submit
+- scrollUntilVisible:
+    element:
+      id: input:menu_price
+    direction: DOWN
+- tapOn:
+    id: input:menu_price
+- eraseText
+- inputText: '350'
+- hideKeyboard
+- tapOn:
+    id: form-submit
+- runFlow:
+    when:
+      visible: Personal
+    commands:
+      - tapOn:
+          id: form-submit
+- assertVisible: Recapitulare

@@ -13,6 +13,7 @@ type FormAction = Pick<
   | 'loadingLabel'
   | 'variant'
   | 'accessibilityLabel'
+  | 'testID'
 >;
 
 type FormActionsProps = {
@@ -32,6 +33,7 @@ export function FormActions({
       {secondary ? (
         <AppButton
           {...secondary}
+          testID={secondary.testID ?? 'form-secondary'}
           variant={secondary.variant ?? 'soft'}
           disabled={busy || secondary.disabled}
           multiline
@@ -40,6 +42,7 @@ export function FormActions({
       ) : null}
       <AppButton
         {...primary}
+        testID={primary.testID ?? 'form-submit'}
         loading={busy}
         disabled={busy || primary.disabled}
         multiline

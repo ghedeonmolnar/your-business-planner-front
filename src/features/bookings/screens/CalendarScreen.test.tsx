@@ -21,6 +21,7 @@ import {
 jest.mock('@react-navigation/native', () => ({
   ...jest.requireActual('@react-navigation/native'),
   useNavigation: () => ({ navigate: jest.fn() }),
+  useIsFocused: () => true,
 }));
 jest.mock('@/shared/storage/authTokenStorage', () => ({
   clearAuthToken: jest.fn(() => Promise.resolve()),
@@ -77,7 +78,7 @@ test('numără sălile libere din lista afișată chiar dacă sumarul lunar este
       expect(renderedText(renderer)).toContain('Sala ocupată'),
     );
     expect(renderedText(renderer)).toMatch(/Săli libere:\s*0/);
-    expect(renderedText(renderer)).toContain('Ultima actualizare:');
+    expect(renderedText(renderer)).not.toContain('Ultima actualizare:');
     refreshFailed = true;
     await ReactTestRenderer.act(async () => {
       await queryClient.invalidateQueries({

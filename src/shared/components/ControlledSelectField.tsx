@@ -71,6 +71,7 @@ export function ControlledSelectField<
         return (
           <FormInput error={error?.message} label={label}>
             <SearchableSelect
+              testID={`select:${name}`}
               allowClear={!single || singleEmptyValue !== undefined}
               disabled={disabled}
               error={error?.message}

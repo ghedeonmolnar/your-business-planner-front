@@ -1,0 +1,14 @@
+appId: com.yourbusinessplanner.e2e
+---
+- scrollUntilVisible:
+    element: Plăți și cheltuieli
+    direction: DOWN
+- tapOn: Plăți și cheltuieli
+- scrollUntilVisible:
+    element: Adaugă încasare sau cheltuială
+    direction: DOWN
+- tapOn: Adaugă încasare sau cheltuială
+- extendedWaitUntil:
+    visible:
+      id: input:amount
+    timeout: 15000

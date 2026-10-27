@@ -1,0 +1,31 @@
+appId: com.yourbusinessplanner.e2e
+---
+- launchApp:
+    clearState: true
+- evalScript: ${var result = http.get(CONTROL + '/begin/' + SCENARIO); if (!result.ok) throw new Error('QUALITY_SEED_FAILED'); output.context = json(result.body)}
+- extendedWaitUntil:
+    visible:
+      id: input:username
+    timeout: 60000
+- tapOn:
+    id: input:username
+- evalScript: ${if (!http.get(CONTROL + '/paste/username').ok) throw new Error('QUALITY_INPUT_FAILED')}
+- tapOn:
+    id: input:password
+- evalScript: ${if (!http.get(CONTROL + '/paste/password').ok) throw new Error('QUALITY_INPUT_FAILED')}
+- hideKeyboard
+- tapOn:
+    id: form-submit
+- extendedWaitUntil:
+    visible: Mai târziu|Calendar
+    timeout: 30000
+- runFlow:
+    when:
+      visible: Mai târziu
+    commands:
+      - tapOn: Mai târziu
+- extendedWaitUntil:
+    visible:
+      id: tab:Calendar
+    timeout: 30000
+- evalScript: ${if (!http.get(CONTROL + '/cleanup-input').ok) throw new Error('QUALITY_INPUT_CLEANUP_FAILED')}

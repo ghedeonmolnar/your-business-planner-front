@@ -1,4 +1,7 @@
 import React from 'react';
+import { MONITORING_ENABLED } from '@env';
+import { sendErrorReportApi } from '@/features/monitoring/api/monitoringApi';
+import { configureErrorCollector } from '@/shared/monitoring/reportError';
 import {
   MutationCache,
   QueryCache,
@@ -21,6 +24,9 @@ import { configureCalendarLocale } from '@/shared/utils/configureCalendarLocale'
 configureCalendarLocale();
 configureQueryFocus();
 configureQueryOnline();
+configureErrorCollector(
+  MONITORING_ENABLED === 'true' ? sendErrorReportApi : undefined,
+);
 
 const handleServerStateError = (error: unknown) => {
   if (isUnauthorizedError(error)) {

@@ -19,6 +19,7 @@ export type {
 } from '@/shared/components/buttonPresentation';
 
 export type AppButtonProps = {
+  testID?: string;
   accessibilityLabel?: string;
   backgroundColor?: string;
   color?: string;
@@ -43,6 +44,7 @@ export const APP_ICON_BUTTON_SIZE =
   theme.controls.fieldHeight - theme.spacing.xs;
 
 export function AppButton({
+  testID,
   accessibilityLabel,
   backgroundColor,
   color,
@@ -102,6 +104,7 @@ export function AppButton({
   if (isIcon) {
     return (
       <IconButton
+        testID={testID}
         accessibilityLabel={accessibilityLabel ?? label}
         accessibilityState={{ disabled: blocked, busy: loading }}
         containerColor={buttonColor}
@@ -120,6 +123,7 @@ export function AppButton({
   if (multiline) {
     return (
       <MultilineButton
+        testID={testID}
         accessibilityLabel={accessibilityLabel ?? label}
         backgroundColor={buttonColor}
         color={textColor}
@@ -138,6 +142,7 @@ export function AppButton({
 
   const button = (
     <Button
+      testID={testID}
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: blocked, busy: loading }}
       buttonColor={buttonColor}

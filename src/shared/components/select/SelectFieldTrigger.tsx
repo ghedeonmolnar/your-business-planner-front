@@ -14,6 +14,7 @@ import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
 
 type SelectFieldTriggerProps = {
+  testID?: string;
   accessibilityLabel: string;
   accessibilityValueText: string;
   children?: ReactNode;
@@ -39,9 +40,11 @@ export function SelectFieldTrigger({
   placeholder,
   style,
   icon,
+  testID,
 }: SelectFieldTriggerProps) {
   return (
     <Pressable
+      testID={testID}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled, expanded }}

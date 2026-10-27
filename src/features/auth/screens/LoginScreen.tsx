@@ -8,7 +8,7 @@ import {
 import { ForgotPasswordPanel } from '@/features/auth/components/ForgotPasswordPanel';
 import { EmployeeRegistrationPanel } from '@/features/auth/components/EmployeeRegistrationPanel';
 import { LoginPanel } from '@/features/auth/components/LoginPanel';
-import { PulsingBrandLogo } from '@/features/auth/components/PulsingBrandLogo';
+import { LoginBrandLogo } from '@/features/auth/components/LoginBrandLogo';
 import { ResetPasswordPanel } from '@/features/auth/components/ResetPasswordPanel';
 import { Screen } from '@/shared/components/Screen';
 import { theme } from '@/shared/theme/theme';
@@ -54,7 +54,7 @@ export function LoginScreen() {
           }
           keyboardShouldPersistTaps="handled"
         >
-          <PulsingBrandLogo />
+          <LoginBrandLogo />
 
           {authMode === 'login' ? (
             <LoginPanel

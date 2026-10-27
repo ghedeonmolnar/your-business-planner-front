@@ -11,7 +11,7 @@ const envConfig = path => [
 module.exports = {
   presets: ['module:@react-native/babel-preset'],
   plugins: [
-    envConfig('.env'),
+    envConfig(process.env.ENVFILE || '.env'),
     [
       'module-resolver',
       {
@@ -32,7 +32,10 @@ module.exports = {
   ],
   env: {
     production: {
-      plugins: [envConfig('.env.production'), 'react-native-paper/babel'],
+      plugins: [
+        envConfig(process.env.ENVFILE || '.env.production'),
+        'react-native-paper/babel',
+      ],
     },
   },
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import dayjs from 'dayjs';
+import { useIsFocused } from '@react-navigation/native';
 import { useCalendar } from '@/features/bookings/hooks/useBookings';
 import { useCalendarNavigation } from '@/features/bookings/hooks/useCalendarNavigation';
 import { CalendarControls } from '@/features/bookings/components/CalendarControls';
@@ -24,6 +25,7 @@ export function CalendarScreen({
   onBack,
 }: { initialHallId?: string; onBack?: () => void } = {}) {
   const calendarView = useCalendarNavigation();
+  const focused = useIsFocused();
   const [hallId, setHallId] = useState(initialHallId);
   const [reservationHall, setReservationHall] =
     useState<DirectoryItem | null>();
@@ -33,7 +35,7 @@ export function CalendarScreen({
     date_to: calendarView.to,
     hall_id: hallId || undefined,
   };
-  const calendar = useCalendar(filters);
+  const calendar = useCalendar(filters, focused);
   const selectedMonth = calendarView.selected.slice(0, 7);
   const previousMonth = dayjs(calendarView.selected).subtract(1, 'month');
   const needsPreviousYear =
@@ -45,7 +47,7 @@ export function CalendarScreen({
       date_to: previousMonth.endOf('month').format('YYYY-MM-DD'),
       hall_id: hallId || undefined,
     },
-    needsPreviousYear,
+    needsPreviousYear && focused,
   );
   const days = calendar.data?.days ?? [];
 
@@ -76,6 +78,7 @@ export function CalendarScreen({
           onMove={calendarView.move}
           onHall={setHallId}
           onToday={calendarView.today}
+          onSelectMonth={calendarView.selectMonth}
         />
         <CalendarLegend period={calendarView.period} />
         <QueryState
@@ -105,6 +108,7 @@ export function CalendarScreen({
                 date={calendarView.selected}
                 hallId={hallId || undefined}
                 onReserve={setReservationHall}
+                active={focused}
               />
             </>
           ) : (

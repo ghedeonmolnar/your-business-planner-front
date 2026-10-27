@@ -1,0 +1,8 @@
+appId: com.yourbusinessplanner.e2e
+---
+- tapOn:
+    id: form-submit
+- extendedWaitUntil:
+    notVisible: Salvează rezervarea
+    timeout: 20000
+- evalScript: ${var result = http.get(CONTROL + '/verify-created'); if (!result.ok) throw new Error('QUALITY_BOOKING_FAILED'); output.created = json(result.body)}

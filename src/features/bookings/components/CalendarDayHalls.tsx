@@ -26,12 +26,14 @@ export function CalendarDayHalls({
   date,
   hallId,
   onReserve,
+  active = true,
 }: {
   date: string;
   hallId?: string;
   onReserve: (hall: DirectoryItem | null) => void;
+  active?: boolean;
 }) {
-  const query = useHallDay(date, hallId);
+  const query = useHallDay(date, hallId, active);
   const catalogs = useCatalogs();
   const typeLabels = createCatalogLabelMap(catalogs.data?.event_types);
   const navigation =

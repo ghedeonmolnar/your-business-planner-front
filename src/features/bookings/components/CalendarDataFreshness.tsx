@@ -14,7 +14,7 @@ export function CalendarDataFreshness({
   fetching: boolean;
   stale: boolean;
 }) {
-  if (!updatedAt) return null;
+  if (!updatedAt || !stale) return null;
   return (
     <Text style={calendarStyles.muted}>
       {label} · {fetching ? 'Se actualizează · ' : stale ? 'Date vechi · ' : ''}

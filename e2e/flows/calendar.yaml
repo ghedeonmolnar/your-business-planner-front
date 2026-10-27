@@ -1,0 +1,20 @@
+appId: com.yourbusinessplanner.e2e
+---
+- tapOn:
+    id: tab:Calendar
+- runFlow:
+    when:
+      notVisible: ${output.context.month + ' ' + output.context.year}
+    commands:
+      - tapOn: Perioada următoare
+- tapOn:
+    id: calendar-hall-select
+- tapOn:
+    id: ${'select-option:' + output.context.hallId}
+- scrollUntilVisible:
+    element:
+      id: ${'calendar-day:' + output.context.date}
+    direction: DOWN
+    timeout: 15000
+- tapOn:
+    id: ${'calendar-day:' + output.context.date}

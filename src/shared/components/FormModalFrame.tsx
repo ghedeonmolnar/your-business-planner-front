@@ -1,9 +1,8 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   Modal,
   Platform,
   ScrollView,
-  StyleSheet,
   TextInput,
   useWindowDimensions,
   type LayoutChangeEvent,
@@ -19,6 +18,8 @@ import { DialogHost } from '@/shared/feedback/DialogHost';
 import { useKeyboardOverlap } from '@/shared/hooks/useKeyboardOverlap';
 import { theme } from '@/shared/theme/theme';
 import { FormInteractionContext } from '@/shared/components/FormInteractionContext';
+
+import { formModalStyles as styles } from '@/shared/components/formModalStyles';
 
 const MODAL_HEIGHT_RATIO = 0.9;
 
@@ -59,6 +60,8 @@ export function FormModalFrame({
   const keyboardOverlap = useKeyboardOverlap(visible);
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const scrollOffsetRef = useRef(0);
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [footerHeight, setFooterHeight] = useState(0);
   const scrollViewportRef = useRef<ScrollViewport>({
     offsetTop: 0,
     height: 0,
@@ -76,6 +79,33 @@ export function FormModalFrame({
       windowHeight - modalTop - modalBottomGap,
     ),
   );
+  const scrollChrome =
+    headerHeight > 0 &&
+    modalMaxHeight < headerHeight + footerHeight + theme.controls.fieldHeight;
+  const header = (
+    <View
+      onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
+      style={[styles.header, scrollChrome ? styles.embedded : undefined]}
+    >
+      <Text accessibilityRole="header" style={styles.title}>
+        {title}
+      </Text>
+      <IconButton
+        accessibilityLabel={closeLabel}
+        icon="close"
+        disabled={busy}
+        onPress={() => requestClose()}
+      />
+    </View>
+  );
+  const actions = footer ? (
+    <View
+      onLayout={event => setFooterHeight(event.nativeEvent.layout.height)}
+      style={[styles.footer, scrollChrome ? styles.embedded : undefined]}
+    >
+      {footer}
+    </View>
+  ) : null;
 
   const revealFocusedInput = () => {
     const focusedInput = TextInput.State.currentlyFocusedInput();
@@ -154,15 +184,7 @@ export function FormModalFrame({
             { maxHeight: modalMaxHeight },
           ]}
         >
-          <View style={styles.header}>
-            <Text style={styles.title}>{title}</Text>
-            <IconButton
-              accessibilityLabel={closeLabel}
-              icon="close"
-              disabled={busy}
-              onPress={requestClose}
-            />
-          </View>
+          {scrollChrome ? null : header}
 
           <ScrollView
             contentContainerStyle={styles.scrollContent}
@@ -177,65 +199,19 @@ export function FormModalFrame({
             showsVerticalScrollIndicator={false}
             style={[styles.scroll, fitContent ? styles.fitContent : undefined]}
           >
+            {scrollChrome ? header : null}
             <FormInteractionContext.Provider value={busy || readOnly}>
               <View pointerEvents={busy || readOnly ? 'none' : 'auto'}>
                 {children}
               </View>
             </FormInteractionContext.Provider>
+            {scrollChrome ? actions : null}
           </ScrollView>
 
-          {footer ? <View style={styles.footer}>{footer}</View> : null}
+          {scrollChrome ? null : actions}
         </Surface>
       </View>
       {visible ? <DialogHost /> : null}
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.overlay,
-    flex: 1,
-    justifyContent: 'flex-start',
-    paddingHorizontal: theme.spacing.lg,
-  },
-  content: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    flex: 1,
-    overflow: 'hidden',
-    width: '100%',
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-  },
-  title: {
-    color: theme.colors.text,
-    flex: 1,
-    fontSize: theme.typography.title,
-    fontFamily: theme.fonts.heading,
-    paddingRight: theme.spacing.md,
-  },
-  scroll: {
-    flex: 1,
-  },
-  fitContent: { flex: 0, flexBasis: 'auto', flexGrow: 0, flexShrink: 1 },
-  scrollContent: {
-    paddingBottom: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-  },
-  footer: {
-    backgroundColor: theme.colors.surface,
-    borderTopColor: theme.colors.border,
-    borderTopWidth: 1,
-    paddingBottom: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.sm,
-  },
-});

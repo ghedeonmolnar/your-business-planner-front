@@ -29,6 +29,7 @@ export default function HomeTabs() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarButtonTestID: `tab:${route.name}`,
         tabBarActiveTintColor: theme.colors.menu.primary,
         tabBarActiveBackgroundColor: theme.colors.menu.selected,
         tabBarInactiveTintColor: theme.colors.menu.muted,

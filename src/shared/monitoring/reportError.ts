@@ -1,4 +1,9 @@
-import { ApiError, type ApiErrorReason } from '@/shared/api/client';
+import { ApiError, type ApiErrorReason } from '@/shared/api/apiError';
+import {
+  describeErrorReport,
+  ErrorReport,
+} from '@/shared/monitoring/errorReport';
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 
 export type ErrorContext = Record<string, string | number | boolean>;
 
@@ -16,16 +21,11 @@ const isExpectedError = (error: unknown) => {
   return SUPPRESSED_REASONS.includes(error.reason);
 };
 
-const describeError = (error: unknown) => {
-  if (error instanceof ApiError) {
-    return `ApiError(${error.status}): ${error.message}`;
-  }
+let collector:
+  ((report: ErrorReport, generation: number) => Promise<unknown>) | undefined;
 
-  if (error instanceof Error) {
-    return `${error.name}: ${error.message}`;
-  }
-
-  return String(error);
+export const configureErrorCollector = (send: typeof collector) => {
+  collector = send;
 };
 
 export const reportError = (error: unknown, context: ErrorContext = {}) => {
@@ -33,5 +33,11 @@ export const reportError = (error: unknown, context: ErrorContext = {}) => {
     return;
   }
 
-  console.error('[gt-events]', describeError(error), context);
+  const report = describeErrorReport(error, context.source);
+  console.error('[your-business-planner]', report);
+  void collector?.(report, getSessionGeneration()).catch(() => {
+    console.warn('[your-business-planner]', {
+      category: 'collector_unavailable',
+    });
+  });
 };
