@@ -32,6 +32,8 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  CLIENT_UPDATE_REQUIRED:
+    'Actualizează aplicația pentru a continua în siguranță. Datele operațiunilor neconfirmate rămân păstrate.',
   OVERVIEW_RANGE_TOO_LARGE:
     'Alege un interval de cel mult un an pentru statistici.',
   DOCUMENT_STORAGE_LIMIT:
@@ -170,18 +172,27 @@ export class ApiError extends Error {
   status: number;
   reason: ApiErrorReason;
   details?: unknown;
+  requestId?: string;
 
   constructor(
     message: string,
     status: number,
     details?: unknown,
     reason: ApiErrorReason = 'http',
+    requestId?: string,
   ) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.reason = reason;
     this.details = details;
+    this.requestId =
+      typeof requestId === 'string' &&
+      /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(
+        requestId,
+      )
+        ? requestId.toLowerCase()
+        : undefined;
   }
 }
 

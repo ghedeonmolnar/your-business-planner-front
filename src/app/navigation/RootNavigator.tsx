@@ -29,6 +29,8 @@ import { LoadingState } from '@/shared/components/LoadingState';
 import { ErrorBanner } from '@/shared/components/ErrorBanner';
 import { Screen } from '@/shared/components/Screen';
 import { paperTheme } from '@/shared/theme/theme';
+import { useMobilePolicy } from '@/features/mobilePolicy/hooks/useMobilePolicy';
+import { ClientUpdateScreen } from '@/features/mobilePolicy/screens/ClientUpdateScreen';
 
 const { LightTheme: navigationTheme } = adaptNavigationTheme({
   reactNavigationLight: DefaultTheme,
@@ -46,7 +48,6 @@ export default function RootNavigator() {
   } = useAuth();
   const active =
     isAuthenticated && Boolean(user?.company && user.subscription?.active);
-  useNotificationNavigation(active);
   if (isBootstrapping) {
     return (
       <Screen>
@@ -67,6 +68,35 @@ export default function RootNavigator() {
   if (isAuthenticated && !active) {
     return <SubscriptionBlockedScreen />;
   }
+  return active ? (
+    <MobilePolicyGate>
+      <ApplicationNavigation />
+    </MobilePolicyGate>
+  ) : (
+    <ApplicationNavigation />
+  );
+}
+
+function MobilePolicyGate({ children }: { children: React.ReactNode }) {
+  const mobilePolicy = useMobilePolicy(true);
+  useNotificationNavigation(!mobilePolicy.blocked);
+  if (mobilePolicy.blocked) {
+    return (
+      <ClientUpdateScreen
+        storeUrl={mobilePolicy.data?.store_url}
+        onRetry={() => {
+          void mobilePolicy.refetch();
+        }}
+      />
+    );
+  }
+  return children;
+}
+
+function ApplicationNavigation() {
+  const { isAuthenticated, user } = useAuth();
+  const active =
+    isAuthenticated && Boolean(user?.company && user.subscription?.active);
   return (
     <NavigationContainer
       key={user ? `${user.company?.id}:${user.id}:${user.role}` : 'signed-out'}

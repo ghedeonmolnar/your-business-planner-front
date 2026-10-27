@@ -11,9 +11,10 @@ import {
 import { clearEventReminders } from '@/features/events/notifications/clearEventReminders';
 import { reportError } from '@/shared/monitoring/reportError';
 import { useAuth } from '@/features/auth/AuthProvider';
+import { reminderWindow } from '@/features/events/notifications/reminderWindow';
+import { publishReminderStatus } from '@/features/events/notifications/reminderStatus';
 
 const LEAD_HOURS = [24, 6, 1];
-const MAXIMUM_SCHEDULED_REMINDERS = 40;
 let syncQueue: Promise<unknown> = Promise.resolve();
 
 export function EventRemindersSync({
@@ -32,6 +33,7 @@ export function EventRemindersSync({
   useEffect(() => {
     let cancelled = false;
     if (!enabled) {
+      publishReminderStatus(null);
       syncQueue = syncQueue
         .catch(error =>
           reportError(error, { source: 'previous-reminder-sync' }),
@@ -96,15 +98,20 @@ export function EventRemindersSync({
           'booking-reminders',
           'Reamintiri rezervări',
         );
-        await syncTriggerNotifications(
+        const window = reminderWindow(planned);
+        const scheduled = await syncTriggerNotifications(
           'booking-',
           channel,
-          planned
-            .sort((a, b) => a.timestamp - b.timestamp)
-            .slice(0, MAXIMUM_SCHEDULED_REMINDERS),
+          window.selected,
         );
         if (cancelled) {
           await clearEventReminders();
+        } else {
+          publishReminderStatus({
+            deferred: window.deferred,
+            failed: window.selected.length - scheduled,
+            updatedAt: Date.now(),
+          });
         }
       })
       .catch(error => reportError(error, { source: 'booking-reminders' }));

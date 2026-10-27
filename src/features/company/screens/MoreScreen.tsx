@@ -15,6 +15,7 @@ import { ContentSection } from '@/shared/components/ContentSection';
 import { Screen } from '@/shared/components/Screen';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { theme } from '@/shared/theme/theme';
+import { MobileUpdateRecommendation } from '@/features/mobilePolicy/components/MobileUpdateRecommendation';
 
 export function MoreScreen() {
   const navigation =
@@ -74,6 +75,7 @@ export function MoreScreen() {
           subtitle="Gestionează contul, setările și alte opțiuni"
           size="page"
         />
+        <MobileUpdateRecommendation />
         {user ? (
           <AccountOverviewCard
             name={user.name}

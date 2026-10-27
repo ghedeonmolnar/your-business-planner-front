@@ -62,7 +62,8 @@ export const useCalendar = (filters: BookingFilters, enabled = true) => {
       enabled &&
       Boolean(user?.subscription?.active && user.role !== 'employee'),
     staleTime: 30_000,
-    refetchInterval: 30_000,
+    refetchInterval: enabled ? AGENDA_REFRESH_INTERVAL_MS : false,
+    refetchOnMount: 'always',
   });
 };
 export const useSaveBooking = () => {
@@ -93,7 +94,7 @@ export const useCancelBooking = () => {
   });
 };
 
-export const useHallDay = (date: string, hallId?: string) => {
+export const useHallDay = (date: string, hallId?: string, enabled = true) => {
   const { user } = useAuth();
   const client = useQueryClient();
   const queryKey = queryKeys.planner.directory(
@@ -113,9 +114,12 @@ export const useHallDay = (date: string, hallId?: string) => {
       page.page < page.lastPage
         ? { page: page.page + 1, snapshot: page.snapshot }
         : undefined,
-    enabled: Boolean(user?.subscription?.active && user.role !== 'employee'),
+    enabled:
+      enabled &&
+      Boolean(user?.subscription?.active && user.role !== 'employee'),
     staleTime: 30_000,
-    refetchInterval: 30_000,
+    refetchInterval: enabled ? AGENDA_REFRESH_INTERVAL_MS : false,
+    refetchOnMount: 'always',
   });
   const changed = apiErrorCode(query.error) === 'CALENDAR_DAY_LIST_CHANGED';
   useEffect(() => {

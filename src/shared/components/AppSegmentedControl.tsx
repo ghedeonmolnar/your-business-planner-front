@@ -44,6 +44,7 @@ export function AppSegmentedControl({
         buttons={segments.map(
           ({ label, icon, disabled: segmentDisabled }, index) => ({
             value: String(index),
+            testID: testID ? `${testID}:${index}` : undefined,
             label,
             accessibilityLabel: label,
             disabled: blocked || segmentDisabled,

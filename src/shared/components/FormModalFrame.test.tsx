@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dimensions, StyleSheet } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet } from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import { Text } from 'react-native-paper';
 import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
@@ -119,4 +119,41 @@ test('cere confirmare înainte să închidă un formular modificat', async () =>
   await ReactTestRenderer.act(async () => {
     renderer?.unmount();
   });
+});
+
+test('mută acțiunile în scroll când tastatura lasă prea puțin spațiu pentru header și footer', async () => {
+  (useKeyboardOverlap as jest.Mock).mockReturnValue(windowHeight - 180);
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      <SafeAreaInsetsContext.Provider value={insets}>
+        <FormModalFrame
+          visible
+          title="Formular"
+          onClose={() => undefined}
+          footer={<Text testID="footer-action">Salvează</Text>}
+        >
+          <Text>Conținut</Text>
+        </FormModalFrame>
+      </SafeAreaInsetsContext.Provider>,
+    );
+  });
+  const measuredChrome =
+    renderer?.root.findAll(
+      node =>
+        typeof node.props.onLayout === 'function' &&
+        (StyleSheet.flatten(node.props.style)?.flexDirection === 'row' ||
+          StyleSheet.flatten(node.props.style)?.borderTopWidth === 1),
+    ) ?? [];
+  await ReactTestRenderer.act(async () => {
+    measuredChrome.forEach(node =>
+      node.props.onLayout({ nativeEvent: { layout: { height: 120 } } }),
+    );
+  });
+  expect(
+    renderer?.root
+      .findByType(ScrollView)
+      .findByProps({ testID: 'footer-action' }),
+  ).toBeDefined();
+  await ReactTestRenderer.act(async () => renderer?.unmount());
 });

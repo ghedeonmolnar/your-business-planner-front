@@ -9,6 +9,7 @@ import { AppButton } from '@/shared/components/AppButton';
 import { ContentSection } from '@/shared/components/ContentSection';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { theme } from '@/shared/theme/theme';
+import { ReminderStatusPanel } from '@/features/events/components/ReminderStatusPanel';
 
 type MoreInfoModalProps = {
   panel: MorePanel;
@@ -123,6 +124,9 @@ export function MoreInfoModal({
         ) : null}
         {panel === 'notifications' ? (
           <>
+            {hasCompanyFeature(user, 'reminders') ? (
+              <ReminderStatusPanel />
+            ) : null}
             <Text style={styles.text}>
               {hasCompanyFeature(user, 'reminders')
                 ? 'Mementourile pentru evenimente sunt disponibile pentru compania ta. Permisiunile și afișarea notificărilor se gestionează din setările dispozitivului.'

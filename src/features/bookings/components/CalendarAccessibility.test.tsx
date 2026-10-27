@@ -8,6 +8,10 @@ import { CalendarLegend } from '@/features/bookings/components/CalendarLegend';
 import { MetaPill } from '@/shared/components/MetaPill';
 import { theme } from '@/shared/theme/theme';
 
+jest.mock('@/shared/hooks/useSingleColumnLayout', () => ({
+  useSingleColumnLayout: () => false,
+}));
+
 const luminance = (color: string) => {
   const channels = color
     .replace('#', '')
@@ -53,7 +57,7 @@ test('textul mic pentru sala liberă are contrast de cel puțin 4,5:1 pe fundalu
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });
 
-test('distinge vizual liber, parțial, complet și date lipsă fără a depinde numai de culoare', async () => {
+test('păstrează legenda veche și descrie accesibil ocuparea și datele lipsă', async () => {
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(
@@ -75,9 +79,21 @@ test('distinge vizual liber, parțial, complet și date lipsă fără a depinde 
   const texts = renderer?.root
     .findAllByType(Text)
     .map(node => node.props.children);
-  expect(texts).toEqual(expect.arrayContaining(['○', '◐', '●', '?']));
-  expect(texts).toContain('◐ Parțial rezervat');
-  expect(texts).toContain('● Complet rezervat');
+  expect(texts).toEqual(
+    expect.arrayContaining(['Azi', 'Selectat', 'Rezervat', 'Liber']),
+  );
+  expect(
+    texts?.filter(text => ['○', '◐', '●', '?'].includes(String(text))),
+  ).toEqual([]);
+  for (const label of ['complet rezervat', 'parțial rezervat']) {
+    expect(
+      renderer?.root.findAll(
+        node =>
+          typeof node.props?.accessibilityLabel === 'string' &&
+          node.props.accessibilityLabel.includes(label),
+      ).length,
+    ).toBeGreaterThan(0);
+  }
   expect(
     renderer?.root.findAll(
       node =>
@@ -105,7 +121,7 @@ test.each([
     free: 0,
     hasHalls: true,
     selected: false,
-    background: theme.colors.menu.success,
+    background: theme.colors.menu.primarySoft,
   },
   {
     label: '3 din 3 săli ocupate, inclusiv provizorii, cu ziua selectată',
@@ -114,7 +130,7 @@ test.each([
     free: 0,
     hasHalls: true,
     selected: true,
-    background: theme.colors.menu.success,
+    background: theme.colors.menu.primary,
   },
   {
     label: 'nicio rezervare și nicio sală activă',
@@ -161,7 +177,7 @@ test.each([
   expect(StyleSheet.flatten(day?.parent?.props.style).backgroundColor).toBe(
     example.background,
   );
-  if (example.background === theme.colors.menu.success) {
+  if (example.selected) {
     expect(StyleSheet.flatten(day?.props.style).color).toBe(
       theme.colors.menu.surface,
     );

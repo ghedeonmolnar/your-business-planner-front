@@ -1,0 +1,34 @@
+appId: com.yourbusinessplanner.e2e
+env:
+  SCENARIO: E02
+---
+- runFlow: ../flows/login.yaml
+- runFlow: ../flows/create-draft.yaml
+- evalScript: ${var result = http.get(CONTROL + '/compete'); if (!result.ok) throw new Error('QUALITY_COMPETITION_FAILED'); output.alternative = json(result.body)}
+- tapOn:
+    id: form-submit
+- assertVisible: Sala este deja rezervată.*
+- tapOn: OK
+- assertVisible: Sală și program
+- tapOn:
+    id: select:hall_id
+- scrollUntilVisible:
+    element:
+      id: ${'select-option:' + output.alternative.hallId}
+    direction: DOWN
+- tapOn:
+    id: ${'select-option:' + output.alternative.hallId}
+- tapOn:
+    id: form-submit
+- tapOn:
+    id: form-submit
+- tapOn:
+    id: form-submit
+- runFlow:
+    when:
+      visible: Personal
+    commands:
+      - tapOn:
+          id: form-submit
+- assertVisible: Recapitulare
+- runFlow: ../flows/save-created.yaml

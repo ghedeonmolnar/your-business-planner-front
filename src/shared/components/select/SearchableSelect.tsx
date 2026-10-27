@@ -15,6 +15,7 @@ import {
 import { IconName } from '@/shared/types/icon';
 
 export type SearchableSelectProps<TValue extends SelectValue> = {
+  testID?: string;
   allowClear: boolean;
   multiline?: boolean;
   disabled?: boolean;
@@ -48,6 +49,7 @@ export function SearchableSelect<TValue extends SelectValue>({
   style,
   icon,
   optionsState,
+  testID,
 }: SearchableSelectProps<TValue>) {
   const busy = useFormBusy();
   const blocked = Boolean(disabled || busy);
@@ -62,6 +64,7 @@ export function SearchableSelect<TValue extends SelectValue>({
   return (
     <>
       <SelectFieldTrigger
+        testID={testID}
         style={style}
         accessibilityLabel={label}
         accessibilityValueText={displayValue || placeholder}

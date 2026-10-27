@@ -6,6 +6,8 @@ import { CalendarDay } from '@/features/bookings/types';
 import { companyNow, formatLongDate } from '@/shared/utils/formatDate';
 import { theme } from '@/shared/theme/theme';
 import { calendarStyles } from '@/features/bookings/components/calendarStyles';
+import { useSingleColumnLayout } from '@/shared/hooks/useSingleColumnLayout';
+import { CalendarMonthList } from '@/features/bookings/components/CalendarMonthList';
 
 const DAYS_PER_WEEK = 7;
 const WEEKDAYS = ['Lu', 'Ma', 'Mi', 'Jo', 'Vi', 'Sâ', 'Du'];
@@ -23,6 +25,17 @@ export function CalendarMonth({
   onSelect: (date: string) => void;
   hasHalls?: boolean;
 }) {
+  const list = useSingleColumnLayout();
+  if (list)
+    return (
+      <CalendarMonthList
+        month={month}
+        days={days}
+        selected={selected}
+        hasHalls={hasHalls}
+        onSelect={onSelect}
+      />
+    );
   const first = dayjs(`${month}-01`);
   const offset = (first.day() + DAYS_PER_WEEK - 1) % DAYS_PER_WEEK;
   const cellCount =
@@ -62,6 +75,7 @@ export function CalendarMonth({
             return (
               <Pressable
                 key={iso}
+                testID={`calendar-day:${iso}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
                 accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${occupancyLabel}${summary ? `${hasHalls ? `, ${summary.free} săli libere` : ', nicio sală activă în acest filtru'}, ${summary.confirmed} confirmate, ${summary.tentative} provizorii` : ', date indisponibile'}`}
@@ -72,9 +86,8 @@ export function CalendarMonth({
                   style={[
                     styles.day,
                     occupied ? styles.occupied : undefined,
+                    isToday ? styles.today : undefined,
                     isSelected ? styles.selected : undefined,
-                    fullyBooked ? styles.fullyBooked : undefined,
-                    isToday || isSelected ? styles.highlighted : undefined,
                   ]}
                 >
                   <Text
@@ -87,23 +100,9 @@ export function CalendarMonth({
                         ? styles.otherMonth
                         : undefined,
                       isSelected ? styles.selectedText : undefined,
-                      fullyBooked ? styles.fullyBookedText : undefined,
                     ]}
                   >
                     {date.date()}
-                  </Text>
-                  <Text
-                    accessible={false}
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    style={[
-                      styles.marker,
-                      isSelected || fullyBooked
-                        ? styles.selectedText
-                        : undefined,
-                    ]}
-                  >
-                    {!summary ? '?' : fullyBooked ? '●' : occupied ? '◐' : '○'}
                   </Text>
                 </View>
               </Pressable>
@@ -120,7 +119,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    gap: theme.spacing.xs,
   },
   weekday: {
     color: theme.colors.menu.muted,
@@ -143,7 +141,7 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.menu.surface,
     borderWidth: 2,
     borderRadius: theme.radius.pill,
-    width: '100%',
+    width: theme.spacing.xxl + theme.spacing.sm,
     minWidth: 0,
     minHeight: theme.spacing.xxl + theme.spacing.sm,
     maxWidth: '100%',
@@ -153,23 +151,13 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
     fontSize: theme.typography.body,
   },
-  marker: {
-    color: theme.colors.menu.text,
-    fontSize: theme.typography.caption,
-    fontFamily: theme.fonts.bodyMedium,
-  },
   occupied: {
     backgroundColor: theme.colors.menu.primarySoft,
     borderColor: theme.colors.menu.primarySoft,
   },
   occupiedText: { color: theme.colors.menu.primary },
-  fullyBooked: {
-    backgroundColor: theme.colors.menu.success,
-    borderColor: theme.colors.menu.success,
-  },
-  fullyBookedText: { color: theme.colors.menu.surface },
-  otherMonth: { color: theme.colors.menu.text, fontFamily: theme.fonts.body },
-  highlighted: { borderColor: theme.colors.menu.primary },
+  otherMonth: { color: theme.colors.menu.muted, fontFamily: theme.fonts.body },
+  today: { borderColor: theme.colors.menu.primary },
   selected: {
     backgroundColor: theme.colors.menu.primary,
     borderColor: theme.colors.menu.primary,

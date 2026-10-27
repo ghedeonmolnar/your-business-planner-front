@@ -27,7 +27,12 @@ export function FormInput({
       )}
       {children}
       {error ? (
-        <HelperText accessibilityRole="alert" padding="none" type="error">
+        <HelperText
+          accessibilityRole="alert"
+          accessibilityLiveRegion="assertive"
+          padding="none"
+          type="error"
+        >
           {error}
         </HelperText>
       ) : null}

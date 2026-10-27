@@ -19,6 +19,7 @@ import {
 import { assertCurrentRequestSession } from '@/shared/api/requestSession';
 import { buildRequestHeaders } from '@/shared/api/requestHeaders';
 import { isAllowedApiUrl } from '@/shared/api/apiConfiguration';
+import { requireClientUpdate } from '@/shared/api/clientUpdate';
 
 export { ApiError } from '@/shared/api/apiError';
 export type { ApiErrorReason } from '@/shared/api/apiError';
@@ -69,6 +70,7 @@ const parseWithSchema = <T>(
   schema: z.ZodType<T>,
   value: unknown,
   status: number,
+  requestId?: string,
 ): T => {
   const result = schema.safeParse(value);
 
@@ -78,6 +80,7 @@ const parseWithSchema = <T>(
       status,
       result.error,
       'invalid_response',
+      requestId,
     );
   }
 
@@ -123,6 +126,9 @@ export const apiRequest = async <T>(
   ).finally(() => assertCurrentRequestSession(generation));
 
   if (!response.ok) {
+    if (responseErrorCode(responseBody) === 'CLIENT_UPDATE_REQUIRED') {
+      requireClientUpdate();
+    }
     if (
       auth &&
       [
@@ -151,6 +157,8 @@ export const apiRequest = async <T>(
         response: responseBody.kind === 'json' ? responseBody.value : undefined,
         tokenCleanupError,
       },
+      'http',
+      response.headers.get('x-request-id') ?? undefined,
     );
   }
 
@@ -160,13 +168,19 @@ export const apiRequest = async <T>(
       response.status,
       undefined,
       'invalid_response',
+      response.headers.get('x-request-id') ?? undefined,
     );
   }
 
   const payload = responseBody.kind === 'json' ? responseBody.value : null;
 
   return schema
-    ? parseWithSchema(schema, payload, response.status)
+    ? parseWithSchema(
+        schema,
+        payload,
+        response.status,
+        response.headers.get('x-request-id') ?? undefined,
+      )
     : (payload as T);
 };
 

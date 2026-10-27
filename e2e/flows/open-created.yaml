@@ -1,0 +1,10 @@
+appId: com.yourbusinessplanner.e2e
+---
+- scrollUntilVisible:
+    element:
+      id: ${'calendar-hall:' + output.context.hallId + ':' + output.created.eventId}
+    direction: DOWN
+    timeout: 20000
+- tapOn:
+    id: ${'calendar-hall:' + output.context.hallId + ':' + output.created.eventId}
+- assertVisible: Detalii rezervare

@@ -10,6 +10,7 @@ import {
 import { theme } from '@/shared/theme/theme';
 
 type MultilineButtonProps = {
+  testID?: string;
   accessibilityLabel?: string;
   backgroundColor?: string;
   color?: string;
@@ -25,6 +26,7 @@ type MultilineButtonProps = {
 };
 
 export function MultilineButton({
+  testID,
   accessibilityLabel,
   backgroundColor,
   color,
@@ -44,6 +46,7 @@ export function MultilineButton({
     : (color ?? buttonPresentation[variant].color);
   return (
     <TouchableRipple
+      testID={testID}
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       accessibilityState={{ disabled: blocked, busy: loading }}

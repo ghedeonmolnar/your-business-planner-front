@@ -62,6 +62,7 @@ export function ControlledTextField<T extends FieldValues>({
       }) => (
         <FormInput error={error?.message} label={label} hideLabel>
           <TextInput
+            testID={`input:${name}`}
             disabled={blocked}
             accessibilityLabel={label}
             autoCapitalize={autoCapitalize ?? (isPassword ? 'none' : undefined)}

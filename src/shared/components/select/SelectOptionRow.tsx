@@ -24,6 +24,7 @@ export function SelectOptionRow<TValue extends SelectValue>({
 }: SelectOptionRowProps<TValue>) {
   return (
     <Pressable
+      testID={`select-option:${String(option.id)}`}
       accessibilityLabel={option.name}
       accessibilityRole={single ? 'radio' : 'checkbox'}
       accessibilityState={{ checked: selected, disabled: option.disabled }}

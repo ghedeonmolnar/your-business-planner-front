@@ -171,6 +171,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
           {isSearchable ? (
             <View style={styles.searchField}>
               <SearchField
+                testID="select-search"
                 label={searchPlaceholder}
                 onChange={setQuery}
                 placeholder={searchPlaceholder}

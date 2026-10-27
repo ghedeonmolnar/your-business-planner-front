@@ -1,6 +1,7 @@
 type QueryFilters = Readonly<Record<string, string | undefined>>;
 
 export const queryKeys = {
+  mobilePolicy: ['mobile-policy'] as const,
   planner: {
     clientCreations: (companyId: string) =>
       ['planner', companyId, 'client-creations'] as const,

@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { CalendarSummary } from '@/features/bookings/types';
@@ -10,6 +10,7 @@ import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import { theme } from '@/shared/theme/theme';
 import { formatMonthLabel } from '@/shared/utils/formatDate';
 import { calendarStyles } from '@/features/bookings/components/calendarStyles';
+import { CalendarPeriodPicker } from '@/features/bookings/components/CalendarPeriodPicker';
 
 type CalendarControlsProps = {
   period: CalendarPeriod;
@@ -20,6 +21,7 @@ type CalendarControlsProps = {
   onMove: (direction: number) => void;
   onHall: (hallId: string) => void;
   onToday: () => void;
+  onSelectMonth: (month: string) => void;
 };
 
 export function CalendarControls({
@@ -31,7 +33,9 @@ export function CalendarControls({
   onMove,
   onHall,
   onToday,
+  onSelectMonth,
 }: CalendarControlsProps) {
+  const [pickerOpen, setPickerOpen] = useState(false);
   return (
     <View style={calendarStyles.section}>
       <ContentSection
@@ -47,6 +51,11 @@ export function CalendarControls({
         }
       />
       <AppSegmentedControl
+        testID="calendar-view"
+        containerStyle={styles.segments}
+        segmentStyle={styles.segment}
+        segmentGap={0}
+        inactiveBackgroundColor={theme.colors.menu.background}
         segments={[
           { label: 'Lunar', icon: 'calendar-outline' },
           { label: 'Anual', icon: 'stats-chart-outline' },
@@ -60,23 +69,38 @@ export function CalendarControls({
           icon="chevron-back"
           onPress={() => onMove(-1)}
         />
-        <Text
-          accessibilityRole="header"
-          accessibilityLiveRegion="polite"
-          style={[calendarStyles.title, styles.periodTitle]}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Alege luna și anul"
+          onPress={() => setPickerOpen(true)}
+          style={styles.periodTitle}
         >
-          {period === 'year'
-            ? selected.slice(0, 4)
-            : formatMonthLabel(selected.slice(0, 7))}
-        </Text>
+          <Text
+            accessibilityRole="header"
+            accessibilityLiveRegion="polite"
+            style={[calendarStyles.title, styles.periodText]}
+          >
+            {period === 'year'
+              ? selected.slice(0, 4)
+              : formatMonthLabel(selected.slice(0, 7))}
+          </Text>
+        </Pressable>
         <IconButton
           accessibilityLabel="Perioada următoare"
           icon="chevron-forward"
           onPress={() => onMove(1)}
         />
       </View>
+      {pickerOpen ? (
+        <CalendarPeriodPicker
+          selected={selected}
+          onSelect={onSelectMonth}
+          onClose={() => setPickerOpen(false)}
+        />
+      ) : null}
       <View>
         <SearchableSelect
+          testID="calendar-hall-select"
           label="Sală"
           allowClear={false}
           single
@@ -100,6 +124,25 @@ export function CalendarControls({
 }
 
 const styles = StyleSheet.create({
+  segments: {
+    borderColor: theme.colors.menu.primarySoft,
+    borderWidth: 1,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.menu.background,
+    overflow: 'hidden',
+  },
+  segment: {
+    borderWidth: 0,
+    borderTopLeftRadius: theme.radius.md,
+    borderTopRightRadius: theme.radius.md,
+    borderBottomLeftRadius: theme.radius.md,
+    borderBottomRightRadius: theme.radius.md,
+  },
   period: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.sm },
-  periodTitle: { flex: 1, textAlign: 'center' },
+  periodTitle: {
+    flex: 1,
+    justifyContent: 'center',
+    minHeight: theme.controls.fieldHeight,
+  },
+  periodText: { textAlign: 'center' },
 });

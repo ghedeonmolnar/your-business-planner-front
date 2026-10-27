@@ -15,6 +15,7 @@ export function SearchField({
   inputStyle,
   disabled = false,
   loading = false,
+  testID,
 }: {
   value: string;
   onChange: (value: string) => void;
@@ -24,11 +25,13 @@ export function SearchField({
   inputStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
   loading?: boolean;
+  testID?: string;
 }) {
   const busy = useFormBusy();
   const blocked = disabled || busy;
   return (
     <Searchbar
+      testID={testID}
       accessibilityLabel={label}
       accessibilityState={{ disabled: blocked, busy: loading }}
       autoCapitalize="none"
