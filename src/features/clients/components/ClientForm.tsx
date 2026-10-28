@@ -65,6 +65,7 @@ export function ClientForm({
       footer={
         <AppButton
           disabled={saving}
+          loading={saving}
           fullWidth
           label={saving ? 'Se salvează...' : 'Salvează'}
           onPress={handleSubmit(onSubmit)}
@@ -75,6 +76,7 @@ export function ClientForm({
       onClose={onCancel}
       title={initialClient ? 'Editează client' : 'Client nou'}
       visible={visible}
+      busy={saving}
     >
       <ControlledTextField
         control={control}

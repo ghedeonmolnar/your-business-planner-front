@@ -4,6 +4,7 @@ import { BookingPayment } from '@/features/bookings/schemas/bookingFinanceSchema
 import { BookingPaymentEditor } from '@/features/bookings/components/BookingPaymentEditor';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { QueryState } from '@/shared/components/QueryState';
+import { LoadingState } from '@/shared/components/LoadingState';
 
 export function BookingPaymentForm({
   eventId,
@@ -16,10 +17,11 @@ export function BookingPaymentForm({
 }) {
   const mutation = useSaveBookingPayment(eventId);
   if (!payment && !mutation.recoveryReady) {
+    if (!mutation.recoveryError) return <LoadingState />;
     return (
       <FormModalFrame visible title="Încasare sau cheltuială" onClose={onClose}>
         <QueryState
-          loading={!mutation.recoveryError}
+          loading={false}
           error={mutation.recoveryError}
           retry={() => mutation.retryRecovery()}
         />

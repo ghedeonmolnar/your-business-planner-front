@@ -96,8 +96,8 @@ export function BookingPaymentEditor({
   };
   const submit = () => {
     const saved = submittedPayload.current ?? recovered;
-    if (saved) save(saved);
-    else void form.handleSubmit(save)();
+    if (saved) return save(saved);
+    return form.handleSubmit(save)();
   };
   return (
     <FormModalFrame

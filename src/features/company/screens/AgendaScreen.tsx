@@ -6,19 +6,19 @@ import {
 } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAuth } from '@/features/auth/AuthProvider';
 import { useBookings } from '@/features/bookings/hooks/useBookings';
 import { QueryState } from '@/shared/components/QueryState';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
 import { AgendaHeader } from '@/features/company/components/AgendaHeader';
 import { AgendaBookingCard } from '@/features/company/components/AgendaBookingCard';
 import { AgendaMonthHeader } from '@/features/company/components/AgendaMonthHeader';
-import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { buildAgendaSections } from '@/features/company/utils/agendaSections';
 import { Screen } from '@/shared/components/Screen';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
+import { ContentSection } from '@/shared/components/ContentSection';
+import { MetaPill } from '@/shared/components/MetaPill';
 import {
   HomeTabParamList,
   RootStackParamList,
@@ -33,7 +33,6 @@ type AgendaNavigation = CompositeNavigationProp<
 >;
 
 export function AgendaScreen() {
-  const { user } = useAuth();
   const navigation = useNavigation<AgendaNavigation>();
   const [creating, setCreating] = useState(false);
   const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(
@@ -46,13 +45,7 @@ export function AgendaScreen() {
     if (focused) void refetch();
   }, [focused, refetch]);
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
-  const { nextBooking, sections } = buildAgendaSections(
-    items,
-    collapsedMonths,
-    now,
-  );
-  const showFinance =
-    user?.role !== 'employee' && hasCompanyFeature(user, 'finance');
+  const sections = buildAgendaSections(items, collapsedMonths, now);
 
   const toggleMonth = (key: string) => {
     setCollapsedMonths(previous => {
@@ -80,6 +73,7 @@ export function AgendaScreen() {
         ListHeaderComponent={
           <View style={styles.header}>
             <AgendaHeader
+              creating={creating}
               onCreate={() => setCreating(true)}
               onOpenCalendar={() => navigation.navigate('Calendar')}
             />
@@ -89,18 +83,7 @@ export function AgendaScreen() {
               error={query.isFetchNextPageError ? undefined : query.error}
               retry={() => query.refetch()}
             />
-            {nextBooking ? (
-              <AgendaBookingCard
-                booking={nextBooking}
-                featured
-                showFinance={showFinance}
-                onOpen={() =>
-                  navigation.navigate('EventDetails', {
-                    eventId: nextBooking.id,
-                  })
-                }
-              />
-            ) : !query.isLoading && !query.error ? (
+            {sections.length === 0 && !query.isLoading && !query.error ? (
               <EmptyState
                 icon="calendar-clear-outline"
                 title={
@@ -117,20 +100,27 @@ export function AgendaScreen() {
             ) : null}
           </View>
         }
-        renderSectionHeader={({ section }) => (
-          <AgendaMonthHeader
-            title={section.title}
-            count={section.count}
-            expanded={!collapsedMonths.has(section.key)}
-            onToggle={() => toggleMonth(section.key)}
-          />
-        )}
-        renderItem={({ item, index, section }) => (
+        renderSectionHeader={({ section }) =>
+          section.featured ? (
+            <ContentSection
+              title={section.title}
+              titleStyle={styles.nextDate}
+              style={styles.nextHeader}
+              action={<MetaPill tone="primary" icon="flash" label="Urmează" />}
+            />
+          ) : (
+            <AgendaMonthHeader
+              title={section.title}
+              count={section.count}
+              expanded={!collapsedMonths.has(section.key)}
+              onToggle={() => toggleMonth(section.key)}
+            />
+          )
+        }
+        renderItem={({ item, section }) => (
           <AgendaBookingCard
             booking={item}
-            first={index === 0}
-            last={index === section.data.length - 1}
-            showFinance={showFinance}
+            featured={section.featured}
             onOpen={() =>
               navigation.navigate('EventDetails', { eventId: item.id })
             }
@@ -164,4 +154,10 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   header: { gap: theme.spacing.sm },
+  nextHeader: { paddingVertical: theme.spacing.sm },
+  nextDate: {
+    color: theme.colors.menu.primary,
+    fontFamily: theme.fonts.bodySemibold,
+    fontSize: theme.typography.bodySmall,
+  },
 });

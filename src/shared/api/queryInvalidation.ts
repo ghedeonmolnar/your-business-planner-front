@@ -2,6 +2,37 @@ import { QueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/queryKeys';
 
 type QueryKey = readonly unknown[];
+type CalendarRevisionData = {
+  revision?: string;
+  pages?: { revision?: string }[];
+};
+
+export const reconcilePlannerCalendar = (
+  client: QueryClient,
+  companyId: string,
+  revision: string,
+) => {
+  const cached = [
+    ...client.getQueriesData<CalendarRevisionData>({
+      queryKey: queryKeys.planner.calendars(companyId),
+    }),
+    ...client.getQueriesData<CalendarRevisionData>({
+      queryKey: queryKeys.planner.directories(companyId, 'hall-day'),
+    }),
+  ];
+  for (const [queryKey, data] of cached) {
+    if (!data || client.getQueryState(queryKey)?.isInvalidated) continue;
+    const current = data.pages
+      ? data.pages.every(page => page.revision === revision)
+      : data.revision === revision;
+    if (!current) {
+      void client.invalidateQueries(
+        { queryKey, exact: true },
+        { cancelRefetch: false },
+      );
+    }
+  }
+};
 
 export const invalidatePlannerBooking = (
   client: QueryClient,

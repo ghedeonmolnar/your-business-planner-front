@@ -24,6 +24,7 @@ import {
 } from '@/features/catalogs/utils/catalogLabels';
 import { Screen } from '@/shared/components/Screen';
 import { AppButton } from '@/shared/components/AppButton';
+import { IconButton } from '@/shared/components/IconButton';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { QueryState } from '@/shared/components/QueryState';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
@@ -87,6 +88,16 @@ export function BookingsScreen() {
               title={manager ? 'Rezervări' : 'Evenimentele mele'}
               subtitle="Toate evenimentele, cu starea și detaliile lor."
               size="page"
+              action={
+                <IconButton
+                  accessibilityLabel={
+                    filters.searchOpen ? 'Închide căutarea' : 'Caută rezervări'
+                  }
+                  icon={filters.searchOpen ? 'close' : 'search-outline'}
+                  variant="ghost"
+                  onPress={filters.toggleSearch}
+                />
+              }
             />
             <BookingListFilters
               filters={filters}
@@ -173,6 +184,7 @@ export function BookingsScreen() {
         <View style={styles.create}>
           <AppButton
             label="Rezervare nouă"
+            loading={creating}
             icon="add"
             onPress={() => setCreating(true)}
           />

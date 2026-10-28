@@ -43,6 +43,7 @@ export function BookingPayments({ eventId }: { eventId: string }) {
     <View style={styles.content}>
       <AppButton
         label="Adaugă încasare sau cheltuială"
+        loading={creating}
         multiline
         onPress={() => setCreating(true)}
       />
@@ -97,6 +98,7 @@ export function BookingPayments({ eventId }: { eventId: string }) {
             <View style={styles.row}>
               <AppButton
                 label="Editează plata"
+                loading={editing?.id === payment.id}
                 variant="outline"
                 onPress={() => setEditing(payment)}
               />
@@ -110,21 +112,24 @@ export function BookingPayments({ eventId }: { eventId: string }) {
                     message:
                       'Înregistrarea rămâne în istoric și nu mai intră în sold.',
                     confirmLabel: 'Anulează plata',
-                    onConfirm: () =>
-                      cancel.mutate(
-                        { id: payment.id, version: payment.version },
-                        {
-                          onError: error => {
-                            if (generation !== getSessionGeneration()) return;
-                            if (
-                              apiErrorCode(error) ===
-                              'RESOURCE_VERSION_CONFLICT'
-                            )
-                              setCancelConflict(payment.id);
-                            showError(error, 'Nu am putut anula plata.');
-                          },
-                        },
-                      ),
+                    onConfirm: () => {
+                      const actionGeneration = getSessionGeneration();
+                      return cancel
+                        .mutateAsync({
+                          id: payment.id,
+                          version: payment.version,
+                        })
+                        .catch(error => {
+                          if (actionGeneration !== getSessionGeneration())
+                            return;
+                          if (generation !== getSessionGeneration()) return;
+                          if (
+                            apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT'
+                          )
+                            setCancelConflict(payment.id);
+                          showError(error, 'Nu am putut anula plata.');
+                        });
+                    },
                   })
                 }
               />

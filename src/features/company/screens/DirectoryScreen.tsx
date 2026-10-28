@@ -67,6 +67,7 @@ export function DirectoryScreen({ kind }: { kind: DirectoryKind }) {
                 <AppButton
                   icon="add"
                   label={addLabels[kind]}
+                  loading={editing === 'new'}
                   onPress={() => setEditing('new')}
                 />
               }

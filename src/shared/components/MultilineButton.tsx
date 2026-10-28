@@ -72,7 +72,7 @@ export function MultilineButton({
       <View
         style={[
           styles.content,
-          iconPosition === 'right' ? styles.reversed : undefined,
+          iconPosition === 'right' && !loading ? styles.reversed : undefined,
         ]}
       >
         {loading ? (

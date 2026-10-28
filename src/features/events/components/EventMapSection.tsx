@@ -65,6 +65,7 @@ export function EventMapSection({
               disabled={remove.isPending}
               icon="trash-outline"
               label={remove.isPending ? 'Se șterge pinul…' : 'Șterge pinul'}
+              loading={remove.isPending}
               multiline
               onPress={deletePoint}
               variant="danger"

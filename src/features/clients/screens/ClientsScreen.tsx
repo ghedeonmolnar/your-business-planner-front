@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import React, { useMemo, useState } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -100,10 +101,11 @@ export function ClientsScreen() {
       message: `Ștergi clientul "${client.name}"?`,
       confirmLabel: 'Șterge',
       onConfirm: () => {
-        deleteClient.mutate(client.id, {
-          onError: mutationError => {
-            showError(mutationError, 'Nu am putut șterge clientul.');
-          },
+        const actionGeneration = getSessionGeneration();
+
+        return deleteClient.mutateAsync(client.id).catch(mutationError => {
+          if (actionGeneration !== getSessionGeneration()) return;
+          showError(mutationError, 'Nu am putut șterge clientul.');
         });
       },
     });

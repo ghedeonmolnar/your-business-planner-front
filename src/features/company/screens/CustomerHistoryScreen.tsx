@@ -1,7 +1,7 @@
 import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React, { useState } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useBookings } from '@/features/bookings/hooks/useBookings';
@@ -20,6 +20,7 @@ import {
 } from '@/features/catalogs/utils/catalogLabels';
 import { ContentSection } from '@/shared/components/ContentSection';
 import { IconButton } from '@/shared/components/IconButton';
+import { theme } from '@/shared/theme/theme';
 
 export function CustomerHistoryScreen({
   route,
@@ -60,12 +61,6 @@ export function CustomerHistoryScreen({
                 {customer.data.notes ? (
                   <Text style={styles.text}>{customer.data.notes}</Text>
                 ) : null}
-                <AppButton
-                  label="Editează clientul"
-                  icon="create-outline"
-                  variant="soft"
-                  onPress={() => setEditing(true)}
-                />
               </>
             ) : null}
             <QueryState
@@ -106,6 +101,17 @@ export function CustomerHistoryScreen({
           />
         }
       />
+      {customer.data ? (
+        <View style={footerStyles.actions}>
+          <AppButton
+            label="Editează clientul"
+            loading={editing}
+            icon="create-outline"
+            variant="soft"
+            onPress={() => setEditing(true)}
+          />
+        </View>
+      ) : null}
       {editing && customer.data ? (
         <DirectoryForm
           kind="clients"
@@ -116,3 +122,10 @@ export function CustomerHistoryScreen({
     </Screen>
   );
 }
+
+const footerStyles = StyleSheet.create({
+  actions: {
+    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
+});

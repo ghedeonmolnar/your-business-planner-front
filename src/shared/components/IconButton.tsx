@@ -3,10 +3,11 @@ import { StyleProp, ViewStyle } from 'react-native';
 import { AppButton } from '@/shared/components/AppButton';
 import { AppButtonVariant } from '@/shared/components/buttonPresentation';
 import { IconName } from '@/shared/types/icon';
+import { ButtonAction } from '@/shared/hooks/useButtonAction';
 
 type IconButtonProps = {
   icon: IconName;
-  onPress: () => void;
+  onPress: ButtonAction;
   color?: string;
   backgroundColor?: string;
   accessibilityLabel: string;

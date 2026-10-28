@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -110,11 +111,13 @@ export function TeamScreen() {
                     title: 'Revoci accesul?',
                     message: item.name,
                     confirmLabel: 'Revocă accesul',
-                    onConfirm: () =>
-                      block.mutate(item.id, {
-                        onError: error =>
-                          showError(error, 'Nu am putut revoca accesul.'),
-                      }),
+                    onConfirm: () => {
+                      const actionGeneration = getSessionGeneration();
+                      return block.mutateAsync(item.id).catch(error => {
+                        if (actionGeneration !== getSessionGeneration()) return;
+                        return showError(error, 'Nu am putut revoca accesul.');
+                      });
+                    },
                   })
                 }
               />

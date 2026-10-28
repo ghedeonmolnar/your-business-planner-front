@@ -12,6 +12,7 @@ import { useCustomers } from '@/features/company/hooks/useCustomers';
 import { QueryState } from '@/shared/components/QueryState';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { AppButton } from '@/shared/components/AppButton';
 import { Screen } from '@/shared/components/Screen';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { theme } from '@/shared/theme/theme';
@@ -38,11 +39,12 @@ export function CustomersScreen() {
           <View>
             <CustomerListHeader
               search={filters.search}
+              searchOpen={filters.searchOpen}
+              onToggleSearch={filters.toggleSearch}
               onSearch={filters.setSearch}
               sort={filters.sort}
               onSort={filters.setSort}
               total={query.data?.pages[0]?.total}
-              onAdd={() => setCreating(true)}
             >
               <CustomerEventFilter
                 form={filters.form}
@@ -87,7 +89,7 @@ export function CustomersScreen() {
               action={
                 filtered
                   ? { label: 'Resetează filtrele', onPress: filters.resetAll }
-                  : { label: 'Adaugă client', onPress: () => setCreating(true) }
+                  : undefined
               }
             />
           ) : undefined
@@ -102,6 +104,14 @@ export function CustomersScreen() {
           />
         }
       />
+      <View style={styles.create}>
+        <AppButton
+          label="Adaugă client"
+          loading={creating}
+          icon="add"
+          onPress={() => setCreating(true)}
+        />
+      </View>
       {creating ? (
         <DirectoryForm kind="clients" onClose={() => setCreating(false)} />
       ) : null}
@@ -112,4 +122,8 @@ export function CustomersScreen() {
 const styles = StyleSheet.create({
   screen: { backgroundColor: theme.colors.menu.background },
   content: { padding: theme.spacing.md, paddingBottom: theme.spacing.xl },
+  create: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
 });

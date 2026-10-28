@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Image, TouchableOpacity, View } from 'react-native';
-import { Text } from 'react-native-paper';
+import { ActivityIndicator, Text } from 'react-native-paper';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
@@ -18,6 +18,7 @@ import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { AppButton } from '@/shared/components/AppButton';
 import { showMessage } from '@/shared/feedback/showMessage';
 import { theme } from '@/shared/theme/theme';
+import { useButtonAction } from '@/shared/hooks/useButtonAction';
 
 type MascotFormProps = {
   visible: boolean;
@@ -102,11 +103,14 @@ export function MascotForm({
     );
   };
 
+  const imageAction = useButtonAction(pickImage, saving);
+
   return (
     <FormModalFrame
       footer={
         <AppButton
           disabled={saving}
+          loading={saving}
           fullWidth
           label={saving ? 'Se salvează...' : 'Salvează'}
           onPress={handleSubmit(onSubmit)}
@@ -117,16 +121,24 @@ export function MascotForm({
       onClose={onCancel}
       title={initialMascot ? 'Editează mascota' : 'Mascotă nouă'}
       visible={visible}
+      busy={saving}
     >
       <TouchableOpacity
         accessibilityLabel="Alege poza mascotei"
         accessibilityRole="button"
         activeOpacity={0.75}
-        onPress={pickImage}
+        accessibilityState={{
+          busy: imageAction.pending,
+          disabled: saving || imageAction.pending,
+        }}
+        disabled={saving || imageAction.pending}
+        onPress={imageAction.press}
         style={styles.imagePicker}
       >
         <View style={styles.imagePreview}>
-          {previewUri ? (
+          {imageAction.pending ? (
+            <ActivityIndicator color={theme.colors.primary} />
+          ) : previewUri ? (
             <Image source={{ uri: previewUri }} style={styles.image} />
           ) : (
             <Ionicons

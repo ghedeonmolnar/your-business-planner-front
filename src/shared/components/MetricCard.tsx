@@ -11,6 +11,7 @@ type MetricCardProps = {
   value: string | number;
   caption?: string;
   icon: IconName;
+  layout?: 'horizontal' | 'vertical';
   style?: StyleProp<ViewStyle>;
 };
 
@@ -19,15 +20,34 @@ export function MetricCard({
   value,
   caption,
   icon,
+  layout = 'horizontal',
   style,
 }: MetricCardProps) {
+  const vertical = layout === 'vertical';
   return (
-    <Card style={[styles.card, style]}>
+    <Card style={[styles.card, vertical ? styles.vertical : undefined, style]}>
       <IconBadge icon={icon} />
-      <View style={styles.labels}>
-        <Text style={styles.label}>{label}</Text>
-        <Text style={styles.value}>{value}</Text>
-        {caption ? <Text style={styles.label}>{caption}</Text> : null}
+      <View
+        style={[styles.labels, vertical ? styles.verticalLabels : undefined]}
+      >
+        <Text
+          style={[styles.label, vertical ? styles.verticalTitle : undefined]}
+        >
+          {label}
+        </Text>
+        <Text style={[styles.value, vertical ? styles.centered : undefined]}>
+          {value}
+        </Text>
+        {caption ? (
+          <Text
+            style={[
+              styles.label,
+              vertical ? styles.verticalCaption : undefined,
+            ]}
+          >
+            {caption}
+          </Text>
+        ) : null}
       </View>
     </Card>
   );
@@ -35,6 +55,18 @@ export function MetricCard({
 
 const styles = StyleSheet.create({
   card: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md },
+  vertical: { flexDirection: 'column', gap: theme.spacing.sm },
+  verticalLabels: { flex: 0, alignSelf: 'stretch' },
+  centered: { textAlign: 'center' },
+  verticalTitle: {
+    color: theme.colors.menu.text,
+    fontFamily: theme.fonts.bodySemibold,
+    textAlign: 'center',
+  },
+  verticalCaption: {
+    fontSize: theme.typography.label,
+    textAlign: 'center',
+  },
   labels: { flex: 1, minWidth: 0, gap: theme.spacing.xs },
   label: {
     color: theme.colors.menu.muted,

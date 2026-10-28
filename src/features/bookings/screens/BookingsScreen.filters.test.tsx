@@ -172,13 +172,15 @@ test('switches automatic sorting with timeframe but retains manual sorting until
   await unmount();
 });
 
-test('clears the visible results while search is debouncing and sends the search to the server', async () => {
+test('reveals search on demand, debounces requests and clears the search when closed', async () => {
   mockRequests(path =>
     path.includes('search=')
       ? paginatedResponse([])
       : paginatedResponse([plannerBooking]),
   );
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
+  expect(renderer.root.findAllByType(SearchField)).toHaveLength(0);
+  await press(renderer, 'Caută rezervări');
   jest.useFakeTimers();
   try {
     await ReactTestRenderer.act(async () =>
@@ -188,6 +190,10 @@ test('clears the visible results while search is debouncing and sends the search
     await ReactTestRenderer.act(async () => jest.advanceTimersByTime(350));
     expect(eventRequests().at(-1)).toContain('search=Popescu');
     expect(eventRequests().at(-1)).toContain('timeframe=upcoming');
+    await press(renderer, 'Închide căutarea');
+    expect(renderer.root.findAllByType(SearchField)).toHaveLength(0);
+    await ReactTestRenderer.act(async () => jest.advanceTimersByTime(350));
+    expect(eventRequests().at(-1)).not.toContain('search=');
   } finally {
     jest.useRealTimers();
     await unmount();

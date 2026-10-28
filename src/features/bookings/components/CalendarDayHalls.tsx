@@ -5,7 +5,7 @@ import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useHallDay } from '@/features/bookings/hooks/useBookings';
-import { CalendarHallRow } from '@/features/bookings/components/CalendarHallRow';
+import { CalendarHallGroup } from '@/features/bookings/components/CalendarHallGroup';
 import { calendarStyles } from '@/features/bookings/components/calendarStyles';
 import { QueryState } from '@/shared/components/QueryState';
 import { RootStackParamList } from '@/shared/navigation/types';
@@ -17,10 +17,7 @@ import { CalendarDataFreshness } from '@/features/bookings/components/CalendarDa
 import { theme } from '@/shared/theme/theme';
 import { DirectoryItem } from '@/features/company/types';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
-import {
-  createCatalogLabelMap,
-  getCatalogLabel,
-} from '@/features/catalogs/utils/catalogLabels';
+import { createCatalogLabelMap } from '@/features/catalogs/utils/catalogLabels';
 
 export function CalendarDayHalls({
   date,
@@ -39,24 +36,24 @@ export function CalendarDayHalls({
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const halls = query.data?.pages.flatMap(page => page.items) ?? [];
-  const free = halls.filter(hall => hall.status === 'free').length;
+  const freeHalls = halls.filter(hall => hall.status === 'free');
+  const occupiedHalls = halls.filter(
+    hall => hall.status !== 'free' && hall.status !== 'inactive',
+  );
+  const inactiveHalls = halls.filter(hall => hall.status === 'inactive');
+  const openBooking = (eventId: string) =>
+    navigation.navigate('EventDetails', { eventId });
   return (
     <Card style={calendarStyles.card}>
       <View style={styles.header}>
         <Text accessibilityRole="header" style={calendarStyles.title}>
           {formatLongDate(date)}
         </Text>
-        <Text style={calendarStyles.muted}>
-          {query.hasNextPage
-            ? 'Săli libere în lista încărcată: '
-            : 'Săli libere: '}
-          <Text style={calendarStyles.primary}>{query.data ? free : '—'}</Text>
-        </Text>
         <CalendarDataFreshness
           label="Lista sălilor"
           updatedAt={query.dataUpdatedAt}
           fetching={query.isFetching}
-          stale={query.isError || query.isStale}
+          stale={query.isError}
         />
       </View>
       <QueryState
@@ -77,50 +74,39 @@ export function CalendarDayHalls({
           message="Adaugă o sală din Mai multe → Săli sau selectează o altă sală."
         />
       ) : null}
-      {halls.map(hall => (
-        <View key={hall.id} style={styles.header}>
-          {hall.bookings?.length ? (
-            hall.bookings.map(booking => (
-              <CalendarHallRow
-                key={booking.id}
-                hall={{
-                  ...hall,
-                  booking_id: booking.id,
-                  status: booking.status,
-                  type: booking.type,
-                  starts_at: booking.starts_at,
-                  ends_at: booking.ends_at,
-                }}
-                typeLabel={getCatalogLabel(typeLabels, booking.type)}
-                onPress={() =>
-                  navigation.navigate('EventDetails', { eventId: booking.id })
-                }
-              />
-            ))
-          ) : (
-            <CalendarHallRow
-              hall={hall}
-              typeLabel={getCatalogLabel(typeLabels, hall.type)}
-              onPress={
-                hall.status === 'inactive'
-                  ? undefined
-                  : () =>
-                      hall.booking_id
-                        ? navigation.navigate('EventDetails', {
-                            eventId: hall.booking_id,
-                          })
-                        : onReserve({
-                            id: hall.id,
-                            name: hall.name,
-                            capacity: hall.capacity,
-                            minimum_guests: hall.minimum_guests,
-                            is_active: hall.is_active ?? true,
-                          })
-              }
+      {halls.length ? (
+        <>
+          <CalendarHallGroup
+            title="Săli libere"
+            halls={freeHalls}
+            free
+            typeLabels={typeLabels}
+            partial={Boolean(query.hasNextPage)}
+            onReserve={onReserve}
+            onOpen={openBooking}
+          />
+          {occupiedHalls.length ? (
+            <CalendarHallGroup
+              title="Săli ocupate"
+              halls={occupiedHalls}
+              typeLabels={typeLabels}
+              partial={Boolean(query.hasNextPage)}
+              onReserve={onReserve}
+              onOpen={openBooking}
             />
-          )}
-        </View>
-      ))}
+          ) : null}
+          {inactiveHalls.length ? (
+            <CalendarHallGroup
+              title="Săli inactive"
+              halls={inactiveHalls}
+              typeLabels={typeLabels}
+              partial={Boolean(query.hasNextPage)}
+              onReserve={onReserve}
+              onOpen={openBooking}
+            />
+          ) : null}
+        </>
+      ) : null}
       <PaginationFooter
         hasMore={Boolean(query.hasNextPage)}
         loading={query.isFetchingNextPage}

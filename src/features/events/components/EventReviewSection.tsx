@@ -83,6 +83,7 @@ export function EventReviewSection({
           <AppButton
             color={theme.colors.success}
             disabled={loading || sending}
+            loading={sending}
             fullWidth
             icon="logo-whatsapp"
             label={

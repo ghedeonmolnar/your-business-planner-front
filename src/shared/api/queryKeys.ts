@@ -23,6 +23,8 @@ export const queryKeys = {
       ['planner', companyId, 'booking'] as const,
     calendars: (companyId: string) =>
       ['planner', companyId, 'calendar'] as const,
+    calendarRevision: (companyId: string) =>
+      ['planner', companyId, 'calendar-revision'] as const,
     overviews: (companyId: string) =>
       ['planner', companyId, 'overview'] as const,
     directories: (companyId: string, kind: string) =>

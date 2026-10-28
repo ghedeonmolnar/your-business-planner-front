@@ -57,12 +57,12 @@ test('textul mic pentru sala liberă are contrast de cel puțin 4,5:1 pe fundalu
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });
 
-test('păstrează legenda veche și descrie accesibil ocuparea și datele lipsă', async () => {
+test('arată legenda pentru ocuparea completă și descrie accesibil ocuparea și datele lipsă', async () => {
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(
       <>
-        <CalendarLegend period="month" />
+        <CalendarLegend />
         <CalendarMonth
           month="2026-11"
           selected="2026-11-01"
@@ -80,7 +80,7 @@ test('păstrează legenda veche și descrie accesibil ocuparea și datele lipsă
     .findAllByType(Text)
     .map(node => node.props.children);
   expect(texts).toEqual(
-    expect.arrayContaining(['Azi', 'Selectat', 'Rezervat', 'Liber']),
+    expect.arrayContaining(['Azi', 'Selectat', 'Rezervat', 'Complet']),
   );
   expect(
     texts?.filter(text => ['○', '◐', '●', '?'].includes(String(text))),
@@ -121,7 +121,7 @@ test.each([
     free: 0,
     hasHalls: true,
     selected: false,
-    background: theme.colors.menu.primarySoft,
+    background: theme.colors.menu.success,
   },
   {
     label: '3 din 3 săli ocupate, inclusiv provizorii, cu ziua selectată',
@@ -130,7 +130,7 @@ test.each([
     free: 0,
     hasHalls: true,
     selected: true,
-    background: theme.colors.menu.primary,
+    background: theme.colors.menu.success,
   },
   {
     label: 'nicio rezervare și nicio sală activă',

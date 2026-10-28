@@ -1,10 +1,15 @@
 import { Booking } from '@/features/bookings/types';
-import { companyNow, formatMonthLabel } from '@/shared/utils/formatDate';
+import {
+  companyNow,
+  formatLongDate,
+  formatMonthLabel,
+} from '@/shared/utils/formatDate';
 
-export type AgendaMonthSection = {
+export type AgendaSection = {
   key: string;
   title: string;
   count: number;
+  featured: boolean;
   data: Booking[];
 };
 
@@ -12,7 +17,7 @@ export function buildAgendaSections(
   bookings: Booking[],
   collapsedMonths: ReadonlySet<string>,
   now = Date.now(),
-) {
+): AgendaSection[] {
   const today = companyNow(now).format('YYYY-MM-DD');
   const upcoming = bookings.filter(
     booking =>
@@ -24,15 +29,24 @@ export function buildAgendaSections(
         ? Date.parse(booking.ends_at) > now
         : booking.date >= today),
   );
-  const [nextBooking, ...remaining] = upcoming;
-  const months = new Map<string, AgendaMonthSection>();
+  const nextDate = upcoming.reduce<string | undefined>(
+    (earliest, booking) =>
+      booking.date >= today && (!earliest || booking.date < earliest)
+        ? booking.date
+        : earliest,
+    undefined,
+  );
+  const nextDayBookings = upcoming.filter(booking => booking.date === nextDate);
+  const months = new Map<string, AgendaSection>();
 
-  remaining.forEach(booking => {
+  upcoming.forEach(booking => {
+    if (booking.date === nextDate) return;
     const key = booking.date.slice(0, 7);
-    const section: AgendaMonthSection = months.get(key) ?? {
+    const section: AgendaSection = months.get(key) ?? {
       key,
       title: formatMonthLabel(key),
       count: 0,
+      featured: false,
       data: [],
     };
     section.count += 1;
@@ -42,5 +56,16 @@ export function buildAgendaSections(
     months.set(key, section);
   });
 
-  return { nextBooking, sections: [...months.values()] };
+  const sections: AgendaSection[] = nextDate
+    ? [
+        {
+          key: `next:${nextDate}`,
+          title: formatLongDate(nextDate),
+          count: nextDayBookings.length,
+          featured: true,
+          data: nextDayBookings,
+        },
+      ]
+    : [];
+  return [...sections, ...months.values()];
 }

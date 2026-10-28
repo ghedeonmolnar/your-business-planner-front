@@ -74,6 +74,12 @@ export const getCalendarApi = (filters: BookingFilters, signal?: AbortSignal) =>
     schema: calendarSummarySchema,
   });
 
+export const getCalendarRevisionApi = (signal?: AbortSignal) =>
+  apiRequest('/calendar/revision', {
+    signal,
+    schema: z.object({ revision: z.string().regex(/^[a-f0-9]{64}$/) }),
+  });
+
 export const hallDaySchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -116,6 +122,10 @@ export const getHallDayApi = (
           last_page: z.number().int().positive(),
           total: z.number().int().nonnegative(),
           snapshot: z.string().regex(/^[a-f0-9]{64}$/),
+          revision: z
+            .string()
+            .regex(/^[a-f0-9]{64}$/)
+            .optional(),
         }),
       }),
     },
@@ -125,4 +135,5 @@ export const getHallDayApi = (
     lastPage: result.meta.last_page,
     total: result.meta.total,
     snapshot: result.meta.snapshot,
+    revision: result.meta.revision,
   }));

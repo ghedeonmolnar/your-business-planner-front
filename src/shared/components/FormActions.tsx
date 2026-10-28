@@ -11,6 +11,7 @@ type FormAction = Pick<
   | 'icon'
   | 'disabled'
   | 'loadingLabel'
+  | 'loading'
   | 'variant'
   | 'accessibilityLabel'
   | 'testID'
@@ -43,7 +44,7 @@ export function FormActions({
       <AppButton
         {...primary}
         testID={primary.testID ?? 'form-submit'}
-        loading={busy}
+        loading={busy || primary.loading}
         disabled={busy || primary.disabled}
         multiline
         style={styles.action}

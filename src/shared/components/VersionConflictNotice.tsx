@@ -51,9 +51,7 @@ export function VersionConflictNotice({
               ? 'Modificările nesalvate vor fi înlocuite cu datele salvate de echipă.'
               : 'Vei vedea datele salvate de echipă înainte de a alege din nou acțiunea.',
             confirmLabel: 'Încarcă',
-            onConfirm: () => {
-              void reload();
-            },
+            onConfirm: reload,
           })
         }
       />

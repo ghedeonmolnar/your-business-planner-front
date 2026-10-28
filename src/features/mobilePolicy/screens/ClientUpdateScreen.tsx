@@ -66,7 +66,7 @@ export function ClientUpdateScreen({
                 'Deconectarea șterge de pe dispozitiv ciornele și operațiunile neconfirmate. Continuă numai după verificarea lor.',
               confirmLabel: 'Deconectează-mă',
               onConfirm: () => {
-                void signOut().catch(error =>
+                return signOut().catch(error =>
                   showError(error, 'Nu am putut încheia deconectarea.'),
                 );
               },

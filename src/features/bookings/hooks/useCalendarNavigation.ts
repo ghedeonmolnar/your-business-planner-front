@@ -32,7 +32,6 @@ export function useCalendarNavigation() {
       setSelected(value =>
         dayjs(value).add(direction, period).format('YYYY-MM-DD'),
       ),
-    today: () => setSelected(companyNow().format('YYYY-MM-DD')),
     selectMonth: (month: string) =>
       setSelected(value => {
         const firstOfMonth = dayjs(`${month}-01`);

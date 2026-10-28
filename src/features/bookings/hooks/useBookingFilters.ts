@@ -14,6 +14,7 @@ const SEARCH_DELAY_MS = 300;
 
 export function useBookingFilters(financeEnabled: boolean) {
   const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [timeframe, setTimeframe] = useState<BookingTimeframe>('upcoming');
   const [status, setStatus] = useState('');
   const [hallId, setHallId] = useState('');
@@ -42,6 +43,7 @@ export function useBookingFilters(financeEnabled: boolean) {
 
   const resetAll = () => {
     setSearch('');
+    setSearchOpen(false);
     setTimeframe('upcoming');
     setStatus('');
     setHallId('');
@@ -53,6 +55,11 @@ export function useBookingFilters(financeEnabled: boolean) {
   return {
     search,
     setSearch,
+    searchOpen,
+    toggleSearch: () => {
+      setSearchOpen(!searchOpen);
+      if (searchOpen) setSearch('');
+    },
     timeframe,
     setTimeframe,
     status,

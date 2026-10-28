@@ -43,7 +43,7 @@ const askForAlarmAccess = () => {
     confirmLabel: 'Deschide setările',
     cancelLabel: 'Mai târziu',
     onConfirm: () => {
-      notifee.openAlarmPermissionSettings().catch(error => {
+      return notifee.openAlarmPermissionSettings().catch(error => {
         reportError(error, { source: 'alarm-permission-settings' });
       });
     },

@@ -10,7 +10,7 @@ API_URL se configurează în .env, respectiv .env.production. Aplicația nouă f
 
 ## Audit de securitate și CI
 
-[AUDIT_SECURITATE_2026-10-21.md](AUDIT_SECURITATE_2026-10-21.md) documentează verificările, actualizările și blocajele de lansare. Workflow-ul quality verifică tipurile, lint-ul fără warnings, testele, build-ul Android, dependențele și secretele. Gate-ul npm audit rămâne blocat de cele două advisories tranzitive descrise în raport; protecția ramurii main trebuie activată după integrarea workflow-ului.
+[AUDIT_SECURITATE_2026-10-21.md](AUDIT_SECURITATE_2026-10-21.md) documentează verificările și controalele de lansare. Workflow-ul quality verifică tipurile, lint-ul fără warnings, testele, build-ul Android, dependențele și secretele. [Verificarea dependențelor din 28 octombrie](docs/DEPENDENCY_ADVISORY_2026-10-28.md) consemnează rezultatul actual: pragul CI pentru severitate mare trece, iar advisory-ul tranzitiv de severitate mică fără remediere publicată rămâne blocaj pentru lansarea publică. Limitarea protecției automate a ramurii main rămâne documentată mai jos.
 
 Logout elimină istoricul protejat și cache-ul, iar răspunsurile unei sesiuni vechi nu afectează o autentificare nouă. Tokenul este în Keychain și nu există credențiale SQL în aplicație. În producție, API_URL din .env.production trebuie să fie un URL HTTPS real.
 
@@ -71,3 +71,9 @@ Rundele locale folosesc `npx tsc --noEmit`, `npm run lint` și `npm run test:aff
 Pe PR draft se rulează testele afectate, în jobul `quality-affected`. La trecerea în „Ready for review” și la fiecare commit ulterior, jobul `quality` rulează toate testele. Pe `main` și la declanșare manuală se verifică integral. Tipurile, lint-ul, build-ul Android și scanările de securitate se păstrează. În protecția ramurii trebuie cerut `quality`; `quality-affected` nu îl înlocuiește. Limitarea planului GitHub pentru repository-uri private rămâne de rezolvat pentru impunerea automată.
 
 Rularea completă rămâne `npm test -- --runInBand`. Actualizările dependențelor se fac separat, la cerere, și necesită verificare completă. Politica de selecție, comenzile și limitele sunt în [docs/TEST_SELECTION.md](docs/TEST_SELECTION.md).
+
+## Prezentarea Gatify în Android
+
+[docs/DEMO_PREZENTARE.md](docs/DEMO_PREZENTARE.md) descrie parcursul de 10–15 minute pentru contul `owner1@example.test`: calendar, rezervare, financiar, echipă și statistici. Profilul local cu 5 săli, 80 de persoane și 2.400 de rezervări în 2026–2027 se pregătește din backend prin `business:presentation-data`, cu previzualizare implicită și `--apply` explicit. Parolele sunt păstrate numai în storage privat al API-ului. Se folosește aplicația Android obișnuită conectată la API-ul local de business; aplicația `.e2e` are un mediu separat.
+
+Calendarul păstrează sumarul pe an și filtru în cache, separă sălile libere de cele ocupate și marchează verde zilele complete. Sincronizarea verifică numai `GET /calendar/revision` la 30 de secunde, cât ecranul este vizibil; datele se actualizează când revizia diferă. Nu necesită WebSocket. API-ul cu acest endpoint trebuie livrat înaintea aplicației mobile care îl folosește.

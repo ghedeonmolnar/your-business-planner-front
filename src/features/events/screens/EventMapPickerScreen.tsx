@@ -146,6 +146,7 @@ export function EventMapPickerScreen({ navigation, route }: Props) {
             save.isPending
           }
           icon="checkmark-outline"
+          loading={save.isPending || selection.isResolving}
           label={
             save.isPending
               ? 'Se confirmă…'

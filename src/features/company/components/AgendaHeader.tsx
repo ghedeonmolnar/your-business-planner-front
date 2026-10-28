@@ -14,9 +14,14 @@ import { theme } from '@/shared/theme/theme';
 type AgendaHeaderProps = {
   onCreate: () => void;
   onOpenCalendar: () => void;
+  creating?: boolean;
 };
 
-export function AgendaHeader({ onCreate, onOpenCalendar }: AgendaHeaderProps) {
+export function AgendaHeader({
+  onCreate,
+  onOpenCalendar,
+  creating = false,
+}: AgendaHeaderProps) {
   const { user } = useAuth();
   const actions = useMoreActions();
   const canManage = user?.role !== 'employee';
@@ -44,6 +49,7 @@ export function AgendaHeader({ onCreate, onOpenCalendar }: AgendaHeaderProps) {
           <AppButton
             icon="add"
             label="Rezervare nouă"
+            loading={creating}
             size="large"
             onPress={onCreate}
           />

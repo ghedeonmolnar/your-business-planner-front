@@ -40,6 +40,7 @@ export function CompanyProfileScreen() {
           <Text style={styles.muted}>{user?.email}</Text>
           <AppButton
             label="Editează profilul meu"
+            loading={editing === 'owner'}
             multiline
             variant="ghost"
             icon="person-outline"
@@ -67,6 +68,7 @@ export function CompanyProfileScreen() {
               ) : null}
               <AppButton
                 label="Editează firma și datele fiscale"
+                loading={editing === 'company'}
                 variant="outline"
                 icon="create-outline"
                 onPress={() => setEditing('company')}
@@ -88,6 +90,7 @@ export function CompanyProfileScreen() {
                   </Text>
                   <AppButton
                     label="Completează datele fiscale"
+                    loading={editing === 'company'}
                     multiline
                     onPress={() => setEditing('company')}
                   />

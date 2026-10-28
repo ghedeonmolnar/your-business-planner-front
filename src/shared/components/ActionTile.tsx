@@ -7,11 +7,12 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { Text } from 'react-native-paper';
+import { ActivityIndicator, Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { IconBadge, IconBadgeTone } from '@/shared/components/IconBadge';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
+import { useButtonAction, ButtonAction } from '@/shared/hooks/useButtonAction';
 
 export type ActionTileProps = {
   label: string;
@@ -19,7 +20,7 @@ export type ActionTileProps = {
   icon: IconName;
   tone?: IconBadgeTone;
   variant?: 'card' | 'row' | 'soft' | 'danger';
-  onPress: () => void;
+  onPress: ButtonAction;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
@@ -40,6 +41,8 @@ export function ActionTile({
   labelStyle,
   descriptionStyle,
 }: ActionTileProps) {
+  const action = useButtonAction(onPress, disabled);
+  const blocked = Boolean(disabled || action.pending);
   const color =
     variant === 'danger'
       ? theme.colors.onErrorContainer
@@ -52,20 +55,22 @@ export function ActionTile({
       accessibilityLabel={label}
       accessibilityHint={description}
       accessibilityRole="button"
-      accessibilityState={{ disabled: Boolean(disabled) }}
+      accessibilityState={{ disabled: blocked, busy: action.pending }}
       android_ripple={{ color: theme.colors.menu.primarySoft }}
-      disabled={disabled}
-      onPress={onPress}
+      disabled={blocked}
+      onPress={action.press}
       style={({ pressed }) => [
         styles.base,
         variant === 'card' ? styles.card : styles.row,
         variant === 'soft' ? styles.soft : undefined,
         variant === 'danger' ? styles.danger : undefined,
-        pressed || disabled ? styles.faded : undefined,
+        pressed || blocked ? styles.faded : undefined,
         style,
       ]}
     >
-      {variant === 'card' ? (
+      {action.pending ? (
+        <ActivityIndicator color={color} size="small" />
+      ) : variant === 'card' ? (
         <IconBadge icon={icon} tone={tone} />
       ) : (
         <Ionicons

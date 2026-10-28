@@ -49,7 +49,7 @@ export function useMoreActions() {
         if (generation !== getSessionGeneration()) {
           return;
         }
-        signOut().catch(error =>
+        return signOut().catch(error =>
           showError(error, 'Nu am putut închide sesiunea.'),
         );
       },
@@ -64,7 +64,7 @@ export function useMoreActions() {
     requestSignOut,
     writeEmail: () => {
       if (email) {
-        void openExternal(
+        return openExternal(
           () => Linking.openURL(`mailto:${encodeURIComponent(email)}`),
           'Nu am putut deschide aplicația de email.',
         );
@@ -72,14 +72,14 @@ export function useMoreActions() {
     },
     callSupport: () => {
       if (phone) {
-        void openExternal(
+        return openExternal(
           () => Linking.openURL(`tel:${phone}`),
           'Nu am putut deschide aplicația de telefon.',
         );
       }
     },
     openSettings: () => {
-      void openExternal(
+      return openExternal(
         () => Linking.openSettings(),
         'Nu am putut deschide setările aplicației.',
       );

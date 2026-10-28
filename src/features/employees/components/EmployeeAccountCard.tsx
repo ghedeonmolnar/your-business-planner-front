@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -70,9 +71,12 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
         : `Blochezi contul ${profile.account.email}? Sesiunile active vor fi închise.`,
       confirmLabel: isBlocked ? 'Deblochează' : 'Blochează',
       onConfirm: () => {
+        const actionGeneration = getSessionGeneration();
+
         const action = isBlocked ? unblock : block;
-        action.mutate(undefined, {
-          onError: error => showError(error, 'Nu am putut schimba accesul.'),
+        return action.mutateAsync(undefined).catch(error => {
+          if (actionGeneration !== getSessionGeneration()) return;
+          return showError(error, 'Nu am putut schimba accesul.');
         });
       },
     });
@@ -101,6 +105,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
         <View style={styles.action}>
           {hasAccount ? (
             <AppButton
+              loading={block.isPending || unblock.isPending}
               disabled={
                 !profile.is_active || block.isPending || unblock.isPending
               }
@@ -117,6 +122,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
           ) : (
             <AppButton
               disabled={!profile.is_active || invite.isPending}
+              loading={formVisible || invite.isPending}
               label={
                 profile.account.status === 'not_invited'
                   ? 'Trimite invitație'
@@ -132,6 +138,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
         footer={
           <AppButton
             disabled={invite.isPending}
+            loading={invite.isPending}
             fullWidth
             label={invite.isPending ? 'Se trimite...' : 'Trimite codul'}
             onPress={submitInvite}
@@ -141,6 +148,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
         onClose={() => setFormVisible(false)}
         title="Invită angajatul"
         visible={formVisible}
+        busy={invite.isPending}
       >
         <ControlledTextField
           autoCapitalize="none"

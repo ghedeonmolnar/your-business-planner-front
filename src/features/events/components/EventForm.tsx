@@ -179,6 +179,7 @@ export function EventForm({
         isEdit ? 'Editează eveniment' : 'Eveniment nou'
       } · Pas ${currentStep}/3`}
       visible={visible}
+      busy={saving}
     >
       <StepIndicator currentStep={currentStep} />
 

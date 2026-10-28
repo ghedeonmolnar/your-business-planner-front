@@ -16,6 +16,11 @@ const monthDays = (month: string): CalendarDay[] =>
     active_occupied_halls: 0,
   }));
 
+const monthStatistics = (month: string, bookings: number) => ({
+  ...getMonthStatistics(month, monthDays(month)),
+  bookings,
+});
+
 test('continuarea în ziua următoare crește ocuparea fără să dubleze numărul rezervărilor', () => {
   const days = monthDays('2027-01');
   days[0] = {
@@ -89,20 +94,87 @@ test('datele lipsă și lipsa sălilor nu produc zile libere inventate', () => {
   expect(occupancyLabel(getMonthStatistics('2026-11', days))).toBe('Fără săli');
 });
 
-test('comparația cu zero și scăderea procentuală au etichete finite', () => {
-  const previous = getMonthStatistics('2026-11', monthDays('2026-11'));
-  const currentDays = monthDays('2026-12');
-  currentDays[0] = { ...currentDays[0], confirmed: 1, free: 1 };
-  const current = getMonthStatistics('2026-12', currentDays);
-  expect(bookingComparison(current, previous)).toBe(
-    '1 rezervare în plus față de Noiembrie',
-  );
-  expect(bookingComparison(previous, current)).toBe(
-    'Cu 100% mai puțin decât în Decembrie',
-  );
-  expect(bookingComparison(previous, getMonthStatistics('2026-10', []))).toBe(
-    'Rezervări în această lună',
-  );
+test('prioritizează creșterea față de luna precedentă și precizează anul', () => {
+  expect(
+    bookingComparison(
+      monthStatistics('2027-01', 120),
+      monthStatistics('2026-12', 100),
+      monthStatistics('2026-01', 60),
+    ),
+  ).toBe('+20% față de Decembrie 2026');
+});
+
+test('arată creșterea anuală când totalul lunar a scăzut sau a rămas egal', () => {
+  const current = monthStatistics('2027-11', 60);
+  const lastYear = monthStatistics('2026-11', 40);
+  expect(
+    bookingComparison(current, monthStatistics('2027-10', 100), lastYear),
+  ).toBe('+50% față de Noiembrie 2026');
+  expect(
+    bookingComparison(current, monthStatistics('2027-10', 60), lastYear),
+  ).toBe('+50% față de Noiembrie 2026');
+});
+
+test('folosește un text neutru când nu există creștere sau istoric', () => {
+  const current = monthStatistics('2027-11', 60);
+  const previous = monthStatistics('2027-10', 100);
+  for (const lastYear of [
+    undefined,
+    monthStatistics('2026-11', 60),
+    monthStatistics('2026-11', 80),
+    monthStatistics('2026-11', 0),
+    getMonthStatistics('2026-11', []),
+    monthStatistics('2026-10', 20),
+    monthStatistics('2025-11', 20),
+  ]) {
+    expect(bookingComparison(current, previous, lastYear)).toBe(
+      'Rezervări în această lună',
+    );
+  }
+});
+
+test('nu compară date incomplete sau alte luni decât perioadele cerute', () => {
+  expect(
+    bookingComparison(
+      getMonthStatistics('2027-11', []),
+      monthStatistics('2027-10', 0),
+      monthStatistics('2026-11', 10),
+    ),
+  ).toBe('Rezervări în această lună');
+  expect(
+    bookingComparison(
+      monthStatistics('2027-11', 60),
+      monthStatistics('2027-09', 10),
+    ),
+  ).toBe('Rezervări în această lună');
+  expect(
+    bookingComparison(
+      monthStatistics('2027-11', 60),
+      getMonthStatistics('2027-10', []),
+      monthStatistics('2026-11', 40),
+    ),
+  ).toBe('+50% față de Noiembrie 2026');
+});
+
+test('exprimă în rezervări creșterile de la zero sau cele rotunjite sub un procent', () => {
+  expect(
+    bookingComparison(
+      monthStatistics('2026-12', 1),
+      monthStatistics('2026-11', 0),
+    ),
+  ).toBe('1 rezervare în plus față de Noiembrie 2026');
+  expect(
+    bookingComparison(
+      monthStatistics('2026-12', 2),
+      monthStatistics('2026-11', 0),
+    ),
+  ).toBe('2 rezervări în plus față de Noiembrie 2026');
+  expect(
+    bookingComparison(
+      monthStatistics('2026-12', 1001),
+      monthStatistics('2026-11', 1000),
+    ),
+  ).toBe('1 rezervare în plus față de Noiembrie 2026');
 });
 
 test('ocuparea istorică nu inventează capacitate când nu există săli active', () => {

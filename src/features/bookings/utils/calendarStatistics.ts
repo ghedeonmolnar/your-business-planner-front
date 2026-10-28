@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import { CalendarDay } from '@/features/bookings/types';
-import { formatMonthName } from '@/shared/utils/formatDate';
+import { formatMonthLabel } from '@/shared/utils/formatDate';
 
 const SATURDAY = 6;
 const SUNDAY = 0;
@@ -70,16 +70,33 @@ export function occupancyLabel(statistics: MonthStatistics) {
 export function bookingComparison(
   current: MonthStatistics,
   previous: MonthStatistics,
+  sameMonthLastYear?: MonthStatistics,
 ) {
-  if (!current.complete || !previous.complete)
-    return 'Rezervări în această lună';
-  const difference = current.bookings - previous.bookings;
-  const previousName = formatMonthName(previous.month);
-  if (!difference) return `La fel ca în ${previousName}`;
-  if (!previous.bookings)
-    return `${difference} ${difference === 1 ? 'rezervare' : 'rezervări'} în plus față de ${previousName}`;
-  const percentage = Math.round(
-    (Math.abs(difference) / previous.bookings) * 100,
-  );
-  return `Cu ${percentage}% mai ${difference > 0 ? 'mult' : 'puțin'} decât în ${previousName}`;
+  const neutral = 'Rezervări în această lună';
+  if (!current.complete) return neutral;
+  const month = dayjs(`${current.month}-01`);
+  const monthlyGrowth =
+    previous.complete &&
+    previous.month === month.subtract(1, 'month').format('YYYY-MM') &&
+    current.bookings > previous.bookings;
+  const annualGrowth =
+    sameMonthLastYear?.complete &&
+    sameMonthLastYear.month === month.subtract(1, 'year').format('YYYY-MM') &&
+    sameMonthLastYear.bookings > 0 &&
+    current.bookings > sameMonthLastYear.bookings;
+  const comparison = monthlyGrowth
+    ? previous
+    : annualGrowth
+      ? sameMonthLastYear
+      : undefined;
+  if (!comparison) return neutral;
+  const difference = current.bookings - comparison.bookings;
+  const percentage =
+    comparison.bookings > 0
+      ? Math.round((difference / comparison.bookings) * 100)
+      : 0;
+  const period = formatMonthLabel(comparison.month);
+  return percentage > 0
+    ? `+${percentage}% față de ${period}`
+    : `${difference} ${difference === 1 ? 'rezervare' : 'rezervări'} în plus față de ${period}`;
 }

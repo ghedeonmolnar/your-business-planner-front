@@ -21,6 +21,7 @@ import { apiErrorCode } from '@/shared/api/apiError';
 import { bookingAvailabilityField } from '@/features/bookings/utils/bookingCreationFailure';
 
 const AGENDA_REFRESH_INTERVAL_MS = 30_000;
+const CALENDAR_CACHE_RETENTION_MS = 30 * 60_000;
 
 export const useBookings = (filters: BookingFilters = {}, enabled = true) => {
   const { user } = useAuth();
@@ -61,9 +62,10 @@ export const useCalendar = (filters: BookingFilters, enabled = true) => {
     enabled:
       enabled &&
       Boolean(user?.subscription?.active && user.role !== 'employee'),
-    staleTime: 30_000,
-    refetchInterval: enabled ? AGENDA_REFRESH_INTERVAL_MS : false,
-    refetchOnMount: 'always',
+    staleTime: Infinity,
+    gcTime: CALENDAR_CACHE_RETENTION_MS,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 export const useSaveBooking = () => {
@@ -117,9 +119,10 @@ export const useHallDay = (date: string, hallId?: string, enabled = true) => {
     enabled:
       enabled &&
       Boolean(user?.subscription?.active && user.role !== 'employee'),
-    staleTime: 30_000,
-    refetchInterval: enabled ? AGENDA_REFRESH_INTERVAL_MS : false,
-    refetchOnMount: 'always',
+    staleTime: Infinity,
+    gcTime: CALENDAR_CACHE_RETENTION_MS,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
   const changed = apiErrorCode(query.error) === 'CALENDAR_DAY_LIST_CHANGED';
   useEffect(() => {

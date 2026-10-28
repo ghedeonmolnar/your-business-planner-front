@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import { SegmentedButtons } from 'react-native-paper';
+import { TouchableRipple } from 'react-native-paper';
 import { AppSegmentedControl } from '@/shared/components/AppSegmentedControl';
 import { FormInteractionContext } from '@/shared/components/FormInteractionContext';
 import { AppThemeProvider } from '@/shared/theme/AppThemeProvider';
@@ -26,17 +26,22 @@ test('selecția respectă blocarea formularului și opțiunile indisponibile', a
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(render(true));
   });
-  const field = () => renderer.root.findByType(SegmentedButtons);
-  expect(field().props.value).toBe('0');
-  await ReactTestRenderer.act(async () => field().props.onValueChange('1'));
+  const segment = (label: string) =>
+    renderer.root
+      .findAllByType(TouchableRipple)
+      .find(button => button.props.accessibilityLabel === label)!;
+  expect(segment('Toate').props.accessibilityState.selected).toBe(true);
+  expect(segment('Viitoare').props.disabled).toBe(true);
+  await ReactTestRenderer.act(async () => segment('Viitoare').props.onPress());
   expect(onChange).not.toHaveBeenCalled();
   await ReactTestRenderer.act(async () => renderer.update(render(false)));
   await ReactTestRenderer.act(async () => {
-    field().props.onValueChange('2');
-    field().props.onValueChange('99');
+    segment('Trecute').props.onPress();
   });
   expect(onChange).not.toHaveBeenCalled();
-  await ReactTestRenderer.act(async () => field().props.onValueChange('1'));
+  expect(segment('Trecute').props.disabled).toBe(true);
+  expect(segment('Viitoare').props.disabled).toBe(false);
+  await ReactTestRenderer.act(async () => segment('Viitoare').props.onPress());
   expect(onChange).toHaveBeenCalledWith(1);
   await ReactTestRenderer.act(async () => renderer.unmount());
 });

@@ -37,7 +37,11 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
   return (
     <View style={styles.content}>
-      <AppButton label="Atașează document" onPress={() => setEditing('new')} />
+      <AppButton
+        label="Atașează document"
+        loading={editing === 'new'}
+        onPress={() => setEditing('new')}
+      />
       <QueryState
         loading={query.isLoading}
         hasData={items.length > 0}
@@ -55,6 +59,7 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
             />
             <AppButton
               label="Editează"
+              loading={editing !== 'new' && editing?.id === document.id}
               variant="outline"
               onPress={() => setEditing(document)}
             />
@@ -67,7 +72,8 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
                   title: 'Ștergi documentul?',
                   message: document.title,
                   confirmLabel: 'Șterge',
-                  onConfirm: () => remove.mutate(document.id, { onError }),
+                  onConfirm: () =>
+                    remove.mutateAsync(document.id).catch(onError),
                 })
               }
             />

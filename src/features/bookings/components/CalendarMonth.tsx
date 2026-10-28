@@ -86,8 +86,10 @@ export function CalendarMonth({
                   style={[
                     styles.day,
                     occupied ? styles.occupied : undefined,
+                    fullyBooked ? styles.full : undefined,
                     isToday ? styles.today : undefined,
                     isSelected ? styles.selected : undefined,
+                    fullyBooked && isSelected ? styles.selectedFull : undefined,
                   ]}
                 >
                   <Text
@@ -100,6 +102,7 @@ export function CalendarMonth({
                         ? styles.otherMonth
                         : undefined,
                       isSelected ? styles.selectedText : undefined,
+                      fullyBooked ? styles.fullText : undefined,
                     ]}
                   >
                     {date.date()}
@@ -156,6 +159,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.menu.primarySoft,
   },
   occupiedText: { color: theme.colors.menu.primary },
+  full: {
+    backgroundColor: theme.colors.menu.success,
+    borderColor: theme.colors.menu.success,
+  },
+  fullText: { color: theme.colors.menu.surface },
+  selectedFull: { backgroundColor: theme.colors.menu.success },
   otherMonth: { color: theme.colors.menu.muted, fontFamily: theme.fonts.body },
   today: { borderColor: theme.colors.menu.primary },
   selected: {

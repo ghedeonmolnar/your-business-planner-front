@@ -71,17 +71,14 @@ export const useEmployeeAdmin = () => {
       cancelLabel: 'Nu',
       confirmLabel: 'Da',
       onConfirm: () => {
-        forceDeleteEmployee.mutate(
-          { id: employee.id, version: employee.version },
-          {
-            onError: mutationError => {
-              showError(
-                mutationError,
-                'Nu am putut șterge definitiv angajatul.',
-              );
-            },
-          },
-        );
+        const actionGeneration = getSessionGeneration();
+
+        return forceDeleteEmployee
+          .mutateAsync({ id: employee.id, version: employee.version })
+          .catch(mutationError => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            showError(mutationError, 'Nu am putut șterge definitiv angajatul.');
+          });
       },
     });
   };
@@ -97,14 +94,14 @@ export const useEmployeeAdmin = () => {
       message: `Angajatul ${employee.name} va fi trecut în inactiv. Apasă din nou pe coș pentru ștergerea definitivă.`,
       confirmLabel: 'Dezactivează',
       onConfirm: () => {
-        deleteEmployee.mutate(
-          { id: employee.id, version: employee.version },
-          {
-            onError: mutationError => {
-              showError(mutationError, 'Nu am putut șterge angajatul.');
-            },
-          },
-        );
+        const actionGeneration = getSessionGeneration();
+
+        return deleteEmployee
+          .mutateAsync({ id: employee.id, version: employee.version })
+          .catch(mutationError => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            showError(mutationError, 'Nu am putut șterge angajatul.');
+          });
       },
     });
   };

@@ -153,6 +153,7 @@ export function PaymentForm({
                   : 'Salvează'
             }
             onPress={showOvertime ? overtimeForm.submit : handleSubmit(submit)}
+            loading={saving}
             size="large"
           />
         </>
@@ -167,6 +168,7 @@ export function PaymentForm({
             : 'Plată nouă'
       }
       visible={visible}
+      busy={saving}
     >
       {showOvertime ? (
         <PaymentOvertimeForm employees={employees} form={overtimeForm} />

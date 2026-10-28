@@ -42,6 +42,7 @@ export function CalendarMonthList({
               : summary.free === 0
                 ? 'Complet rezervat · 0 săli libere'
                 : `Parțial rezervat · ${summary.free} săli libere`;
+        const fullyBooked = hasHalls && occupied > 0 && summary?.free === 0;
         return (
           <Pressable
             key={date}
@@ -53,10 +54,25 @@ export function CalendarMonthList({
             style={[
               styles.row,
               date === selected ? styles.selected : undefined,
+              fullyBooked ? styles.full : undefined,
             ]}
           >
-            <Text style={calendarStyles.text}>{formatLongDate(date)}</Text>
-            <Text style={calendarStyles.muted}>{status}</Text>
+            <Text
+              style={[
+                calendarStyles.text,
+                fullyBooked ? styles.fullText : undefined,
+              ]}
+            >
+              {formatLongDate(date)}
+            </Text>
+            <Text
+              style={[
+                calendarStyles.muted,
+                fullyBooked ? styles.fullText : undefined,
+              ]}
+            >
+              {status}
+            </Text>
           </Pressable>
         );
       })}
@@ -77,4 +93,6 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.menu.primarySoft,
     borderColor: theme.colors.menu.primary,
   },
+  full: { backgroundColor: theme.colors.menu.success },
+  fullText: { color: theme.colors.menu.surface },
 });

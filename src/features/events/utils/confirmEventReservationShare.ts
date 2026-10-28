@@ -17,7 +17,7 @@ export const confirmEventReservationShare = (
     confirmLabel: 'Da, trimite',
     cancelLabel: 'Nu',
     onConfirm: () => {
-      openWhatsAppShare(
+      return openWhatsAppShare(
         eventContactPhone(event),
         buildEventReservationMessage(event, mascotNamesById),
       );
