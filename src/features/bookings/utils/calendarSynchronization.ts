@@ -106,7 +106,9 @@ const startSynchronization = (
       return;
     }
     void refresh();
-    interval = setInterval(() => void refresh(), REVISION_REFRESH_INTERVAL_MS);
+    interval = setInterval(() => {
+      void refresh();
+    }, REVISION_REFRESH_INTERVAL_MS);
     stopSocket = startCalendarSocket({
       companyId,
       authorize: (socketId, channelName, signal) =>
@@ -125,7 +127,9 @@ const startSynchronization = (
       onChanged: () => {
         if (!current()) return;
         clearTimeout(debounce);
-        debounce = setTimeout(() => void refresh(true), CHANGE_DEBOUNCE_MS);
+        debounce = setTimeout(() => {
+          void refresh(true);
+        }, CHANGE_DEBOUNCE_MS);
       },
       onReady: () => {
         if (current()) void refresh(true);

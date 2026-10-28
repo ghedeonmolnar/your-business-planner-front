@@ -48,9 +48,9 @@ export function ControlledDateField<T extends FieldValues>({
           maximumDate={maximumDate}
           minimumDate={minimumDate}
           onBlur={onBlur}
-          onChange={value => {
-            onSelectionChange?.(value);
-            onChange(value);
+          onChange={selectedDate => {
+            onSelectionChange?.(selectedDate);
+            onChange(selectedDate);
           }}
           placeholder={placeholder}
           value={value}
