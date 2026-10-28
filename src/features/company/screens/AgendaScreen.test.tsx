@@ -6,6 +6,7 @@ import { renderedText } from '@/shared/test/renderedText';
 import { AgendaScreen } from '@/features/company/screens/AgendaScreen';
 import { AgendaBookingCard } from '@/features/company/components/AgendaBookingCard';
 import { AgendaMonthHeader } from '@/features/company/components/AgendaMonthHeader';
+import { MetaPill } from '@/shared/components/MetaPill';
 import {
   plannerAccount,
   plannerBooking,
@@ -64,13 +65,22 @@ const upcomingBookings = [
     ...plannerBooking,
     id: 'event-2',
     client_name: 'Maria Popescu',
-    date: '2027-11-14',
   },
   {
     ...plannerBooking,
     id: 'event-3',
     client_name: 'Andrei Ionescu',
+    date: '2027-11-14',
+    starts_at: '2027-11-14T16:00:00Z',
+    ends_at: '2027-11-15T02:00:00Z',
+  },
+  {
+    ...plannerBooking,
+    id: 'event-4',
+    client_name: 'Ioana Popescu',
     date: '2027-12-04',
+    starts_at: '2027-12-04T16:00:00Z',
+    ends_at: '2027-12-05T02:00:00Z',
   },
 ];
 
@@ -83,7 +93,7 @@ const press = async (
   });
 };
 
-test('agenda evidențiază o singură rezervare, restrânge lunile și deschide destinațiile', async () => {
+test('agenda evidențiază prima zi cu o singură etichetă de grup, restrânge lunile și deschide destinațiile', async () => {
   mockNavigate.mockClear();
   globalThis.fetch = jest.fn(url =>
     Promise.resolve(
@@ -100,18 +110,27 @@ test('agenda evidențiază o singură rezervare, restrânge lunile și deschide 
   const featured = renderer.root
     .findAllByType(AgendaBookingCard)
     .filter(card => card.props.featured);
-  expect(featured).toHaveLength(1);
-  expect(featured[0].props.booking.id).toBe(plannerBooking.id);
+  expect(featured.map(card => card.props.booking.id)).toEqual([
+    plannerBooking.id,
+    'event-2',
+  ]);
+  expect(
+    renderer.root
+      .findAllByType(MetaPill)
+      .filter(pill => pill.props.label === 'Urmează'),
+  ).toHaveLength(1);
+  expect(
+    featured.every(card =>
+      card
+        .findAllByType(MetaPill)
+        .every(pill => pill.props.label !== 'Urmează'),
+    ),
+  ).toBe(true);
   expect(
     renderer.root
       .findByType(SectionList)
-      .props.sections[0].data.map((booking: { id: string }) => booking.id),
-  ).toEqual(['event-2']);
-  expect(
-    renderer.root
-      .findAllByType(AgendaBookingCard)
-      .every(card => !card.props.showFinance),
-  ).toBe(true);
+      .props.sections[1].data.map((booking: { id: string }) => booking.id),
+  ).toEqual(['event-3']);
   expect(
     jest
       .mocked(globalThis.fetch)
@@ -119,7 +138,7 @@ test('agenda evidențiază o singură rezervare, restrânge lunile și deschide 
   ).toBe(false);
 
   await press(renderer, 'Noiembrie 2027, 1 eveniment');
-  expect(renderer.root.findByType(SectionList).props.sections[0].data).toEqual(
+  expect(renderer.root.findByType(SectionList).props.sections[1].data).toEqual(
     [],
   );
   expect(renderer.root.findAllByType(AgendaMonthHeader)[0].props.expanded).toBe(
@@ -127,7 +146,7 @@ test('agenda evidențiază o singură rezervare, restrânge lunile și deschide 
   );
   await press(renderer, 'Noiembrie 2027, 1 eveniment');
   expect(
-    renderer.root.findByType(SectionList).props.sections[0].data,
+    renderer.root.findByType(SectionList).props.sections[1].data,
   ).toHaveLength(1);
 
   await press(renderer, 'Vezi calendarul');

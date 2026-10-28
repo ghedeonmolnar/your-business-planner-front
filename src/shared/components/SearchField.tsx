@@ -15,6 +15,7 @@ export function SearchField({
   inputStyle,
   disabled = false,
   loading = false,
+  autoFocus = false,
   testID,
 }: {
   value: string;
@@ -25,6 +26,7 @@ export function SearchField({
   inputStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
   loading?: boolean;
+  autoFocus?: boolean;
   testID?: string;
 }) {
   const busy = useFormBusy();
@@ -35,6 +37,7 @@ export function SearchField({
       accessibilityLabel={label}
       accessibilityState={{ disabled: blocked, busy: loading }}
       autoCapitalize="none"
+      autoFocus={autoFocus}
       clearAccessibilityLabel="Golește căutarea"
       clearIcon={({ color, size }) => (
         <Ionicons name="close" color={color} size={size} />

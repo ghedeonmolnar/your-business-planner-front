@@ -47,22 +47,26 @@ export function HallDetailsScreen({
         : 'Sala va putea fi selectată pentru rezervări noi.',
       confirmLabel: hall.is_active ? 'Dezactivează' : 'Reactivează',
       onConfirm: () => {
+        const actionGeneration = getSessionGeneration();
+
         if (submitting.current || sessionGeneration !== getSessionGeneration())
           return;
         submitting.current = true;
-        mutations.status.mutate(
-          { id: hall.id, active: !hall.is_active, version: hall.version },
-          {
-            onError: error => {
-              if (sessionGeneration !== getSessionGeneration()) return;
-              showError(error, 'Nu am putut schimba starea sălii.');
-              query.refetch();
+        return mutations.status
+          .mutateAsync(
+            { id: hall.id, active: !hall.is_active, version: hall.version },
+            {
+              onSettled: () => {
+                submitting.current = false;
+              },
             },
-            onSettled: () => {
-              submitting.current = false;
-            },
-          },
-        );
+          )
+          .catch(error => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            if (sessionGeneration !== getSessionGeneration()) return;
+            showError(error, 'Nu am putut schimba starea sălii.');
+            query.refetch();
+          });
       },
     });
   };
@@ -73,26 +77,30 @@ export function HallDetailsScreen({
       message: `Sala „${hall.name}” va fi eliminată din listă. Operațiunea este permisă numai dacă nu există rezervări asociate.`,
       confirmLabel: 'Șterge sala',
       onConfirm: () => {
+        const actionGeneration = getSessionGeneration();
+
         if (submitting.current || sessionGeneration !== getSessionGeneration())
           return;
         submitting.current = true;
-        mutations.remove.mutate(
-          { id: hall.id, version: hall.version },
-          {
-            onSuccess: () => {
-              if (sessionGeneration === getSessionGeneration())
-                navigation.goBack();
+        return mutations.remove
+          .mutateAsync(
+            { id: hall.id, version: hall.version },
+            {
+              onSuccess: () => {
+                if (sessionGeneration === getSessionGeneration())
+                  navigation.goBack();
+              },
+              onSettled: () => {
+                submitting.current = false;
+              },
             },
-            onError: error => {
-              if (sessionGeneration !== getSessionGeneration()) return;
-              showError(error, 'Nu am putut șterge sala.');
-              query.refetch();
-            },
-            onSettled: () => {
-              submitting.current = false;
-            },
-          },
-        );
+          )
+          .catch(error => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            if (sessionGeneration !== getSessionGeneration()) return;
+            showError(error, 'Nu am putut șterge sala.');
+            query.refetch();
+          });
       },
     });
   };

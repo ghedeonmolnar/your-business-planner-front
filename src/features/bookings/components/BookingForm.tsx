@@ -13,21 +13,18 @@ function BookingRecoveryGate(props: BookingFormProps) {
   const { user } = useAuth();
   const owner = JSON.stringify([user?.company?.id, user?.id]);
   const recovery = useBookingCreationRecovery(owner, Boolean(props.booking));
-  if (recovery.loading || recovery.error)
+  if (recovery.loading) return <LoadingState />;
+  if (recovery.error)
     return (
       <FormModalFrame
         visible
         title="Recuperarea rezervării"
         onClose={props.onClose}
       >
-        {recovery.loading ? (
-          <LoadingState />
-        ) : (
-          <ErrorBanner
-            message="Nu am putut citi operațiunea salvată. Reîncearcă înainte de a crea o rezervare nouă."
-            onRetry={recovery.retry}
-          />
-        )}
+        <ErrorBanner
+          message="Nu am putut citi operațiunea salvată. Reîncearcă înainte de a crea o rezervare nouă."
+          onRetry={recovery.retry}
+        />
       </FormModalFrame>
     );
   return <BookingFormEditor {...props} recoveredAttempt={recovery.attempt} />;

@@ -13,6 +13,7 @@ const documents = [
   'docs/RECUPERARE_SI_DEPLOY.md',
   'docs/INVENTAR_LEGACY_2026-10-27.md',
   'docs/IMPLEMENTARE_PLAN_CALITATE_2026-10-27.md',
+  'docs/DEMO_PREZENTARE.md',
 ];
 const digest = file =>
   crypto

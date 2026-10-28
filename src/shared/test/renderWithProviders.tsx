@@ -23,7 +23,7 @@ export const jsonResponse = (status: number, payload: unknown): Response =>
 
 export const paginatedResponse = (
   items: unknown[],
-  metadata: { snapshot?: string } = {},
+  metadata: { snapshot?: string; revision?: string } = {},
 ) =>
   jsonResponse(200, {
     data: items,

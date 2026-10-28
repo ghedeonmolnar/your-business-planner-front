@@ -17,9 +17,18 @@ type AppDialogProps = {
   dialog: AppDialogContent | null;
   onCancel: () => void;
   onConfirm: () => void;
+  busy?: boolean;
 };
 
-export function AppDialog({ dialog, onCancel, onConfirm }: AppDialogProps) {
+export function AppDialog({
+  dialog,
+  onCancel,
+  onConfirm,
+  busy = false,
+}: AppDialogProps) {
+  const cancel = () => {
+    if (!busy) onCancel();
+  };
   const content = dialog;
   const actionLabels = content
     ? [content.confirmLabel, content.cancelLabel].filter(
@@ -30,7 +39,7 @@ export function AppDialog({ dialog, onCancel, onConfirm }: AppDialogProps) {
   return (
     <Modal
       animationType="fade"
-      onRequestClose={onCancel}
+      onRequestClose={cancel}
       statusBarTranslucent
       transparent
       visible={dialog !== null}
@@ -38,7 +47,8 @@ export function AppDialog({ dialog, onCancel, onConfirm }: AppDialogProps) {
       <View style={styles.overlay}>
         <Pressable
           accessible={false}
-          onPress={onCancel}
+          onPress={cancel}
+          disabled={busy}
           style={styles.backdrop}
         />
         {content ? (
@@ -55,6 +65,7 @@ export function AppDialog({ dialog, onCancel, onConfirm }: AppDialogProps) {
               <AppButton
                 label={content.confirmLabel}
                 onPress={onConfirm}
+                loading={busy}
                 size="large"
                 sizingLabels={actionLabels}
                 style={styles.action}
@@ -63,6 +74,7 @@ export function AppDialog({ dialog, onCancel, onConfirm }: AppDialogProps) {
                 <AppButton
                   label={content.cancelLabel}
                   onPress={onCancel}
+                  disabled={busy}
                   size="large"
                   sizingLabels={actionLabels}
                   style={styles.action}

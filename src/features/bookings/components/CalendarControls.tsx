@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { CalendarSummary } from '@/features/bookings/types';
 import { AppSegmentedControl } from '@/shared/components/AppSegmentedControl';
@@ -20,7 +21,6 @@ type CalendarControlsProps = {
   onPeriod: (period: CalendarPeriod) => void;
   onMove: (direction: number) => void;
   onHall: (hallId: string) => void;
-  onToday: () => void;
   onSelectMonth: (month: string) => void;
 };
 
@@ -32,7 +32,6 @@ export function CalendarControls({
   onPeriod,
   onMove,
   onHall,
-  onToday,
   onSelectMonth,
 }: CalendarControlsProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -42,12 +41,28 @@ export function CalendarControls({
         title="Calendar săli"
         subtitle={`Vezi disponibilitatea sălilor și rezervările pe ${period === 'month' ? 'zile' : 'luni'}.`}
         size="page"
+        titleStyle={styles.heading}
         action={
-          <IconButton
-            accessibilityLabel="Revino la ziua de azi"
-            icon="calendar-outline"
-            onPress={onToday}
-          />
+          <View style={styles.hallFilter}>
+            <SearchableSelect
+              testID="calendar-hall-select"
+              label="Sală"
+              allowClear={false}
+              single
+              options={[
+                { id: '', name: 'Toate sălile' },
+                ...halls.map(hall => ({
+                  id: hall.id,
+                  name: hall.name + (hall.is_active ? '' : ' · Arhivată'),
+                })),
+              ]}
+              selectedValues={[hallId]}
+              onChange={values => onHall(values[0] ?? '')}
+              placeholder="Toate sălile"
+              searchPlaceholder="Caută sala"
+              noItemsText="Adaugă prima sală din Mai multe → Săli."
+            />
+          </View>
         }
       />
       <AppSegmentedControl
@@ -61,18 +76,25 @@ export function CalendarControls({
           { label: 'Anual', icon: 'stats-chart-outline' },
         ]}
         selectedIndex={period === 'month' ? 0 : 1}
-        onChangeIndex={index => onPeriod(index === 0 ? 'month' : 'year')}
+        onChangeIndex={index => {
+          setPickerOpen(false);
+          onPeriod(index === 0 ? 'month' : 'year');
+        }}
       />
       <View style={styles.period}>
         <IconButton
           accessibilityLabel="Perioada anterioară"
           icon="chevron-back"
-          onPress={() => onMove(-1)}
+          onPress={() => {
+            setPickerOpen(false);
+            onMove(-1);
+          }}
         />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Alege luna și anul"
-          onPress={() => setPickerOpen(true)}
+          accessibilityState={{ expanded: pickerOpen }}
+          onPress={() => setPickerOpen(open => !open)}
           style={styles.periodTitle}
         >
           <Text
@@ -84,46 +106,37 @@ export function CalendarControls({
               ? selected.slice(0, 4)
               : formatMonthLabel(selected.slice(0, 7))}
           </Text>
+          <Ionicons
+            accessible={false}
+            name={pickerOpen ? 'chevron-up' : 'chevron-down'}
+            color={theme.colors.menu.primary}
+            size={theme.typography.sectionTitle}
+          />
         </Pressable>
         <IconButton
           accessibilityLabel="Perioada următoare"
           icon="chevron-forward"
-          onPress={() => onMove(1)}
+          onPress={() => {
+            setPickerOpen(false);
+            onMove(1);
+          }}
         />
       </View>
       {pickerOpen ? (
         <CalendarPeriodPicker
+          key={selected.slice(0, 7)}
           selected={selected}
           onSelect={onSelectMonth}
           onClose={() => setPickerOpen(false)}
         />
       ) : null}
-      <View>
-        <SearchableSelect
-          testID="calendar-hall-select"
-          label="Sală"
-          allowClear={false}
-          single
-          options={[
-            { id: '', name: 'Toate sălile' },
-            ...halls.map(hall => ({
-              id: hall.id,
-              name: hall.name + (hall.is_active ? '' : ' · Arhivată'),
-            })),
-          ]}
-          selectedValues={[hallId]}
-          onChange={values => onHall(values[0] ?? '')}
-          placeholder="Toate sălile"
-          searchPlaceholder="Caută sala"
-          noItemsText="Adaugă prima sală din Mai multe → Săli."
-          icon="business-outline"
-        />
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  heading: { fontSize: theme.typography.title },
+  hallFilter: { width: '45%', minWidth: theme.spacing.xxl * 4 },
   segments: {
     borderColor: theme.colors.menu.primarySoft,
     borderWidth: 1,
@@ -141,8 +154,11 @@ const styles = StyleSheet.create({
   period: { alignItems: 'center', flexDirection: 'row', gap: theme.spacing.sm },
   periodTitle: {
     flex: 1,
+    alignItems: 'center',
+    flexDirection: 'row',
+    gap: theme.spacing.xs,
     justifyContent: 'center',
     minHeight: theme.controls.fieldHeight,
   },
-  periodText: { textAlign: 'center' },
+  periodText: { flexShrink: 1, textAlign: 'center' },
 });

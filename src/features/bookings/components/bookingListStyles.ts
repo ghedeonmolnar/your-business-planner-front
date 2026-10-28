@@ -16,7 +16,8 @@ export const bookingListStyles = StyleSheet.create({
     fontFamily: theme.fonts.body,
     fontSize: theme.typography.bodySmall,
   },
-  row: { flexDirection: 'row', gap: theme.spacing.md, alignItems: 'center' },
+  row: { flexDirection: 'row', gap: theme.spacing.md, alignItems: 'stretch' },
+  filterField: { marginBottom: 0 },
   grow: { flex: 1 },
   column: { flexDirection: 'column', alignItems: 'stretch' },
   monthCount: {

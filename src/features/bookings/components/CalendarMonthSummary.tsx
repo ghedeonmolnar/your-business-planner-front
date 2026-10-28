@@ -16,10 +16,12 @@ import { IconName } from '@/shared/types/icon';
 export function CalendarMonthSummary({
   statistics,
   previous,
+  sameMonthLastYear,
   onOpen,
 }: {
   statistics: MonthStatistics;
   previous: MonthStatistics;
+  sameMonthLastYear?: MonthStatistics;
   onOpen: () => void;
 }) {
   const singleColumn = useSingleColumnLayout();
@@ -32,7 +34,7 @@ export function CalendarMonthSummary({
     {
       label: 'Rezervări totale',
       value: statistics.complete ? String(statistics.bookings) : '—',
-      caption: bookingComparison(statistics, previous),
+      caption: bookingComparison(statistics, previous, sameMonthLastYear),
       icon: 'calendar-outline',
     },
     {
@@ -47,24 +49,16 @@ export function CalendarMonthSummary({
           : 'Nicio sală disponibilă',
       icon: 'calendar-clear-outline',
     },
-    {
-      label: 'Zile complet libere',
-      value:
-        statistics.complete && statistics.hasHalls
-          ? String(statistics.freeDays)
-          : '—',
-      caption: `Din ${statistics.totalDays} de zile`,
-      icon: 'sunny-outline',
-    },
   ];
   return (
     <View style={calendarStyles.section}>
       <ContentSection title={formatMonthLabel(statistics.month)} />
-      <View style={styles.grid}>
+      <View style={[styles.metrics, singleColumn ? styles.column : undefined]}>
         {items.map(item => (
           <MetricCard
             key={item.label}
             {...item}
+            layout="vertical"
             style={singleColumn ? styles.full : styles.metric}
           />
         ))}
@@ -75,7 +69,12 @@ export function CalendarMonthSummary({
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
-  metric: { flex: 1, flexBasis: '30%' },
+  metrics: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+    gap: theme.spacing.sm,
+  },
+  column: { flexDirection: 'column' },
+  metric: { flex: 1, minWidth: 0, paddingHorizontal: theme.spacing.sm },
   full: { width: '100%' },
 });

@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import React, { useMemo, useState } from 'react';
 import { FlatList } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -136,10 +137,11 @@ export function EventsScreen() {
       message: `Ștergi evenimentul "${event.location ?? 'Locație necompletată'}" din ${formatLongDate(event.date)}?`,
       confirmLabel: 'Șterge',
       onConfirm: () => {
-        deleteEvent.mutate(event.id, {
-          onError: mutationError => {
-            showError(mutationError, 'Nu am putut șterge evenimentul.');
-          },
+        const actionGeneration = getSessionGeneration();
+
+        return deleteEvent.mutateAsync(event.id).catch(mutationError => {
+          if (actionGeneration !== getSessionGeneration()) return;
+          showError(mutationError, 'Nu am putut șterge evenimentul.');
         });
       },
     });

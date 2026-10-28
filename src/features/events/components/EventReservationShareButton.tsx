@@ -61,7 +61,7 @@ export function EventReservationShareButton({ event }: { event: Event }) {
           return;
         }
 
-        openWhatsAppShare(
+        return openWhatsAppShare(
           eventContactPhone(event),
           buildEventReservationMessage(event, emptyMascotNames),
         );

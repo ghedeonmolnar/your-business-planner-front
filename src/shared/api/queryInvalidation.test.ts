@@ -4,8 +4,38 @@ import {
   invalidateEventFinancials,
   invalidatePlannerBooking,
   invalidatePlannerDirectory,
+  reconcilePlannerCalendar,
 } from '@/shared/api/queryInvalidation';
 import { queryKeys } from '@/shared/api/queryKeys';
+
+test('revizia neschimbată păstrează cache-ul, iar schimbarea invalidează numai calendarul companiei', () => {
+  const client = new QueryClient();
+  const calendar = queryKeys.planner.calendar('company-1', {
+    date_from: '2026-01-01',
+    date_to: '2026-12-31',
+  });
+  const day = queryKeys.planner.directory('company-1', 'hall-day', {
+    date: '2026-11-07',
+  });
+  const otherCalendar = queryKeys.planner.calendar('company-2', {});
+  const bookings = queryKeys.planner.bookings('company-1', {});
+  const revision = queryKeys.planner.calendarRevision('company-1');
+  client.setQueryData(calendar, { revision: 'first', days: [] });
+  client.setQueryData(day, { pages: [{ revision: 'first', items: [] }] });
+  client.setQueryData(otherCalendar, { revision: 'first', days: [] });
+  client.setQueryData(bookings, { pages: [] });
+  client.setQueryData(revision, { revision: 'first' });
+  reconcilePlannerCalendar(client, 'company-1', 'first');
+  expect(client.getQueryState(calendar)?.isInvalidated).toBe(false);
+  expect(client.getQueryState(day)?.isInvalidated).toBe(false);
+  reconcilePlannerCalendar(client, 'company-1', 'second');
+  expect(client.getQueryState(calendar)?.isInvalidated).toBe(true);
+  expect(client.getQueryState(day)?.isInvalidated).toBe(true);
+  for (const key of [otherCalendar, bookings, revision]) {
+    expect(client.getQueryState(key)?.isInvalidated).toBe(false);
+  }
+  client.clear();
+});
 
 test('editarea clientului reinnoieste preview-ul salii numai in compania curenta', () => {
   const client = new QueryClient();

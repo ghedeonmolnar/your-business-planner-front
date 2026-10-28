@@ -12,6 +12,7 @@ import {
   disabledButtonBackground,
 } from '@/shared/components/buttonPresentation';
 import { useFormBusy } from '@/shared/components/FormInteractionContext';
+import { useButtonAction, ButtonAction } from '@/shared/hooks/useButtonAction';
 
 export type {
   AppButtonSize,
@@ -32,7 +33,7 @@ export type AppButtonProps = {
   loading?: boolean;
   loadingLabel?: string;
   multiline?: boolean;
-  onPress: () => void;
+  onPress: ButtonAction;
   shape?: 'pill' | 'rounded';
   size?: AppButtonSize;
   sizingLabels?: string[];
@@ -67,17 +68,20 @@ export function AppButton({
   const isIcon = size === 'icon';
   const presentation = buttonPresentation[variant];
   const formBusy = useFormBusy();
-  const blocked = Boolean(disabled || loading || formBusy);
+  const action = useButtonAction(
+    onPress,
+    Boolean(disabled || loading || formBusy),
+  );
+  const busy = loading || action.pending;
+  const blocked = Boolean(disabled || busy || formBusy);
   const buttonColor = blocked
     ? disabledButtonBackground(variant)
     : (backgroundColor ?? presentation.backgroundColor);
   const textColor = blocked
     ? theme.colors.onSurfaceDisabled
     : (color ?? presentation.color);
-  const displayLabel = loading && loadingLabel ? loadingLabel : label;
-  const handlePress = () => {
-    if (!blocked) onPress();
-  };
+  const displayLabel = busy && loadingLabel ? loadingLabel : label;
+  const handlePress = action.press;
   const buttonStyle = [
     {
       borderRadius: shape === 'pill' ? theme.radius.pill : theme.radius.lg,
@@ -106,10 +110,10 @@ export function AppButton({
       <IconButton
         testID={testID}
         accessibilityLabel={accessibilityLabel ?? label}
-        accessibilityState={{ disabled: blocked, busy: loading }}
+        accessibilityState={{ disabled: blocked, busy }}
         containerColor={buttonColor}
         disabled={blocked}
-        loading={loading}
+        loading={busy}
         icon={renderIcon}
         iconColor={textColor}
         mode={presentation.iconMode}
@@ -128,7 +132,7 @@ export function AppButton({
         backgroundColor={buttonColor}
         color={textColor}
         disabled={blocked}
-        loading={loading}
+        loading={busy}
         icon={icon || iconElement ? renderIcon : undefined}
         iconPosition={iconPosition}
         label={displayLabel}
@@ -144,16 +148,16 @@ export function AppButton({
     <Button
       testID={testID}
       accessibilityLabel={accessibilityLabel ?? label}
-      accessibilityState={{ disabled: blocked, busy: loading }}
+      accessibilityState={{ disabled: blocked, busy }}
       buttonColor={buttonColor}
       compact={size === 'small'}
       contentStyle={[
         styles.content,
         size === 'large' ? styles.largeContent : undefined,
-        iconPosition === 'right' ? styles.reversed : undefined,
+        iconPosition === 'right' && !busy ? styles.reversed : undefined,
       ]}
       disabled={blocked}
-      loading={loading}
+      loading={busy}
       icon={icon || iconElement ? renderIcon : undefined}
       labelStyle={labelStyle}
       mode={presentation.mode}

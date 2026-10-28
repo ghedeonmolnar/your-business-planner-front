@@ -103,6 +103,7 @@ export function HallPhotosField({
         icon="images-outline"
         variant="outline"
         onPress={pick}
+        loading={picking}
         disabled={busy || picking || photos.length >= MAX_HALL_PHOTOS}
       />
       {photos.length ? (

@@ -127,6 +127,7 @@ export const formatCompanyTime = (value?: string | null) => {
 export const formatCompanyTimeRange = (
   start?: string | null,
   end?: string | null,
+  showDayOffset = true,
 ) => {
   if (!start || !end) {
     return null;
@@ -138,6 +139,8 @@ export const formatCompanyTimeRange = (
   }
   const extraDays = to.startOf('day').diff(from.startOf('day'), 'day');
   const suffix =
-    extraDays > 0 ? ` (+${extraDays} ${extraDays === 1 ? 'zi' : 'zile'})` : '';
+    showDayOffset && extraDays > 0
+      ? ` (+${extraDays} ${extraDays === 1 ? 'zi' : 'zile'})`
+      : '';
   return `${formatCompanyTime(start)} – ${formatCompanyTime(end)}${suffix}`;
 };

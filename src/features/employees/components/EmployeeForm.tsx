@@ -79,6 +79,7 @@ export function EmployeeForm({
       footer={
         <AppButton
           disabled={saving || conflict}
+          loading={saving}
           fullWidth
           label={saving ? 'Se salvează...' : 'Salvează'}
           onPress={handleSubmit(onSubmit)}
@@ -89,6 +90,7 @@ export function EmployeeForm({
       onClose={onCancel}
       title={initialEmployee ? 'Editează angajat' : 'Angajat nou'}
       visible={visible}
+      busy={saving}
     >
       {conflict && onReload ? (
         <VersionConflictNotice onReload={onReload} />

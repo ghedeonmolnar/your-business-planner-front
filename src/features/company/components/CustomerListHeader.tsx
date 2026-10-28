@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { CustomerSort } from '@/features/company/types';
-import { AppButton } from '@/shared/components/AppButton';
+import { IconButton } from '@/shared/components/IconButton';
 import { ContentSection } from '@/shared/components/ContentSection';
 import { ListResultsHeader } from '@/shared/components/ListResultsHeader';
 import { SearchField } from '@/shared/components/SearchField';
@@ -11,11 +11,12 @@ import { theme } from '@/shared/theme/theme';
 
 type CustomerListHeaderProps = {
   search: string;
+  searchOpen: boolean;
   sort: CustomerSort;
   total?: number;
   onSearch: (value: string) => void;
   onSort: (value: CustomerSort) => void;
-  onAdd: () => void;
+  onToggleSearch: () => void;
   children: ReactNode;
 };
 
@@ -27,11 +28,12 @@ const sortOptions: { id: CustomerSort; name: string }[] = [
 
 export function CustomerListHeader({
   search,
+  searchOpen,
   sort,
   total,
   onSearch,
   onSort,
-  onAdd,
+  onToggleSearch,
   children,
 }: CustomerListHeaderProps) {
   return (
@@ -41,20 +43,25 @@ export function CustomerListHeader({
         subtitle="Gestionează clienții și istoricul rezervărilor."
         size="page"
         action={
-          <AppButton
-            label="Adaugă client"
-            icon="add"
-            size="small"
-            onPress={onAdd}
+          <IconButton
+            accessibilityLabel={
+              searchOpen ? 'Închide căutarea' : 'Caută în clienți'
+            }
+            icon={searchOpen ? 'close' : 'search-outline'}
+            variant="ghost"
+            onPress={onToggleSearch}
           />
         }
       />
-      <SearchField
-        value={search}
-        onChange={onSearch}
-        label="Caută în clienți"
-        placeholder="Caută după nume sau telefon"
-      />
+      {searchOpen ? (
+        <SearchField
+          autoFocus
+          value={search}
+          onChange={onSearch}
+          label="Caută în clienți"
+          placeholder="Nume sau telefon"
+        />
+      ) : null}
       {children}
       <ListResultsHeader
         label={

@@ -1,7 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { CalendarPeriod } from '@/features/bookings/hooks/useCalendarNavigation';
 import { theme } from '@/shared/theme/theme';
 
 type LegendItem = {
@@ -10,28 +9,13 @@ type LegendItem = {
   outline?: boolean;
 };
 
-export function CalendarLegend({ period }: { period: CalendarPeriod }) {
-  const items: LegendItem[] =
-    period === 'month'
-      ? [
-          { label: 'Azi', color: theme.colors.menu.surface, outline: true },
-          { label: 'Selectat', color: theme.colors.menu.primary },
-          {
-            label: 'Rezervat',
-            color: theme.colors.menu.primarySoft,
-          },
-          { label: 'Liber', color: theme.colors.menu.border },
-        ]
-      : [
-          { label: 'Liber', color: theme.colors.menu.border },
-          { label: 'Moderat', color: theme.colors.menu.primarySoft },
-          { label: 'Aglomerat', color: theme.colors.menu.primary },
-          {
-            label: 'Selectat',
-            color: theme.colors.menu.surface,
-            outline: true,
-          },
-        ];
+export function CalendarLegend() {
+  const items: LegendItem[] = [
+    { label: 'Azi', color: theme.colors.menu.surface, outline: true },
+    { label: 'Selectat', color: theme.colors.menu.primary },
+    { label: 'Rezervat', color: theme.colors.menu.primarySoft },
+    { label: 'Complet', color: theme.colors.menu.success },
+  ];
   return (
     <View style={styles.legend}>
       {items.map(item => (
@@ -55,7 +39,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: theme.spacing.sm,
-    backgroundColor: theme.colors.menu.background,
+    backgroundColor: theme.colors.menu.surface,
     borderColor: theme.colors.menu.border,
     borderWidth: 1,
     borderRadius: theme.radius.md,

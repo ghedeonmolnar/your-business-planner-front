@@ -52,7 +52,7 @@ export function DashboardScreen() {
       confirmLabel: 'Da',
       cancelLabel: 'Nu',
       onConfirm: () => {
-        signOut().catch(signOutError => {
+        return signOut().catch(signOutError => {
           showError(signOutError, 'Nu am putut închide sesiunea.', {
             source: 'sign-out',
           });

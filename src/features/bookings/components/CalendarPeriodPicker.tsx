@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { FormModalFrame } from '@/shared/components/FormModalFrame';
-import { SearchableSelect } from '@/shared/components/ControlledSelectField';
+import { BackHandler, StyleSheet, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
+import { CalendarPeriodSelect } from '@/features/bookings/components/CalendarPeriodSelect';
 import { AppButton } from '@/shared/components/AppButton';
+import { theme } from '@/shared/theme/theme';
 import { formatMonthName } from '@/shared/utils/formatDate';
 
 const YEARS_ON_EACH_SIDE = 50;
@@ -17,59 +19,84 @@ export function CalendarPeriodPicker({
   onSelect: (month: string) => void;
   onClose: () => void;
 }) {
-  const [year, setYear] = useState(dayjs(selected).year());
+  const focused = useIsFocused();
+  const selectedYear = dayjs(selected).year();
+  const [year, setYear] = useState(selected.slice(0, 4));
   const [month, setMonth] = useState(selected.slice(5, 7));
+  const [expandedField, setExpandedField] = useState<'year' | 'month' | null>(
+    null,
+  );
   const years = Array.from(
     { length: YEARS_ON_EACH_SIDE * 2 + 1 },
-    (_, index) => year - YEARS_ON_EACH_SIDE + index,
+    (_, index) => selectedYear - YEARS_ON_EACH_SIDE + index,
   ).filter(value => value >= 1 && value <= 9999);
+
+  useEffect(() => {
+    if (!focused) return;
+    const subscription = BackHandler.addEventListener(
+      'hardwareBackPress',
+      () => {
+        if (expandedField) setExpandedField(null);
+        else onClose();
+        return true;
+      },
+    );
+    return () => subscription.remove();
+  }, [expandedField, focused, onClose]);
+
   return (
-    <FormModalFrame
-      visible
-      title="Alege luna și anul"
-      onClose={onClose}
-      fitContent
-      footer={
-        <AppButton
-          label="Afișează perioada"
-          onPress={() => {
-            onSelect(`${year}-${month}`);
-            onClose();
-          }}
-        />
-      }
-    >
-      <SearchableSelect
+    <View testID="calendar-period-dropdown" style={styles.dropdown}>
+      <CalendarPeriodSelect
         testID="calendar-period-year"
         label="An"
-        allowClear={false}
-        single
-        selectedValues={[year]}
-        options={years.map(value => ({ id: value, name: String(value) }))}
-        onChange={values => {
-          if (values[0] !== undefined) setYear(values[0]);
+        expanded={expandedField === 'year'}
+        onToggle={() =>
+          setExpandedField(expandedField === 'year' ? null : 'year')
+        }
+        selectedValue={year}
+        options={years.map(value => ({
+          id: String(value),
+          name: String(value),
+        }))}
+        onSelect={value => {
+          setYear(value);
+          setExpandedField(null);
         }}
-        placeholder="Alege anul"
-        searchPlaceholder="Caută anul"
-        noItemsText="Anul nu este în intervalul afișat."
       />
-      <SearchableSelect
+      <CalendarPeriodSelect
         testID="calendar-period-month"
         label="Lună"
-        allowClear={false}
-        single
-        selectedValues={[month]}
+        expanded={expandedField === 'month'}
+        onToggle={() =>
+          setExpandedField(expandedField === 'month' ? null : 'month')
+        }
+        selectedValue={month}
         options={Array.from({ length: MONTHS_PER_YEAR }, (_, index) => {
           const value = String(index + 1).padStart(2, '0');
           return { id: value, name: formatMonthName(`${year}-${value}`) };
         })}
-        onChange={values => {
-          if (values[0]) setMonth(values[0]);
+        onSelect={value => {
+          setMonth(value);
+          setExpandedField(null);
         }}
-        placeholder="Alege luna"
-        searchPlaceholder="Caută luna"
-        noItemsText="Nu există luni pentru căutarea introdusă."
       />
-    </FormModalFrame>
+      <AppButton
+        label="Afișează perioada"
+        onPress={() => {
+          onSelect(`${year}-${month}`);
+          onClose();
+        }}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  dropdown: {
+    backgroundColor: theme.colors.menu.surface,
+    borderColor: theme.colors.menu.border,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    padding: theme.spacing.md,
+  },
+});

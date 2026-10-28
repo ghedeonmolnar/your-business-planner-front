@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
-import dayjs from 'dayjs';
 import { useIsFocused } from '@react-navigation/native';
-import { useCalendar } from '@/features/bookings/hooks/useBookings';
+import { useCalendarData } from '@/features/bookings/hooks/useCalendarData';
+import { useCalendarSync } from '@/features/bookings/hooks/useCalendarSync';
 import { useCalendarNavigation } from '@/features/bookings/hooks/useCalendarNavigation';
 import { CalendarControls } from '@/features/bookings/components/CalendarControls';
 import { CalendarLegend } from '@/features/bookings/components/CalendarLegend';
@@ -12,7 +12,6 @@ import { CalendarMonthSummary } from '@/features/bookings/components/CalendarMon
 import { CalendarDayHalls } from '@/features/bookings/components/CalendarDayHalls';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
 import { QueryState } from '@/shared/components/QueryState';
-import { getMonthStatistics } from '@/features/bookings/utils/calendarStatistics';
 import { Screen } from '@/shared/components/Screen';
 import { theme } from '@/shared/theme/theme';
 import { DirectoryItem } from '@/features/company/types';
@@ -30,26 +29,24 @@ export function CalendarScreen({
   const [reservationHall, setReservationHall] =
     useState<DirectoryItem | null>();
   const refresh = useCalendarRefresh();
-  const filters = {
-    date_from: calendarView.from,
-    date_to: calendarView.to,
-    hall_id: hallId || undefined,
-  };
-  const calendar = useCalendar(filters, focused);
+  const {
+    calendar,
+    days,
+    statistics,
+    previousStatistics,
+    sameMonthLastYear,
+    adjacentError,
+    retryAdjacent,
+  } = useCalendarData({
+    selected: calendarView.selected,
+    period: calendarView.period,
+    from: calendarView.from,
+    to: calendarView.to,
+    hallId,
+    active: focused,
+  });
+  const synchronization = useCalendarSync(focused);
   const selectedMonth = calendarView.selected.slice(0, 7);
-  const previousMonth = dayjs(calendarView.selected).subtract(1, 'month');
-  const needsPreviousYear =
-    calendarView.period === 'year' &&
-    previousMonth.year() !== dayjs(calendarView.selected).year();
-  const previousCalendar = useCalendar(
-    {
-      date_from: previousMonth.startOf('month').format('YYYY-MM-DD'),
-      date_to: previousMonth.endOf('month').format('YYYY-MM-DD'),
-      hall_id: hallId || undefined,
-    },
-    needsPreviousYear && focused,
-  );
-  const days = calendar.data?.days ?? [];
 
   return (
     <Screen style={styles.screen}>
@@ -77,20 +74,30 @@ export function CalendarScreen({
           onPeriod={calendarView.setPeriod}
           onMove={calendarView.move}
           onHall={setHallId}
-          onToday={calendarView.today}
           onSelectMonth={calendarView.selectMonth}
         />
-        <CalendarLegend period={calendarView.period} />
+        {calendarView.period === 'month' ? <CalendarLegend /> : null}
         <QueryState
           loading={calendar.isLoading}
           error={calendar.error}
           retry={() => calendar.refetch()}
         />
+        <QueryState
+          loading={false}
+          error={synchronization.error}
+          fallbackMessage="Nu am putut verifica actualizările calendarului."
+          retry={() => synchronization.refetch()}
+        />
+        <QueryState
+          loading={false}
+          error={adjacentError}
+          retry={retryAdjacent}
+        />
         <CalendarDataFreshness
           label="Sumar calendar"
           updatedAt={calendar.dataUpdatedAt}
           fetching={calendar.isFetching}
-          stale={calendar.isError || calendar.isStale}
+          stale={calendar.isError || synchronization.isError}
         />
         {calendar.data ? (
           calendarView.period === 'month' ? (
@@ -119,29 +126,10 @@ export function CalendarScreen({
                 days={days}
                 onSelect={calendarView.selectMonth}
               />
-              {needsPreviousYear ? (
-                <>
-                  <QueryState
-                    loading={previousCalendar.isLoading}
-                    error={previousCalendar.error}
-                    retry={() => previousCalendar.refetch()}
-                  />
-                  <CalendarDataFreshness
-                    label="Sumar luna precedentă"
-                    updatedAt={previousCalendar.dataUpdatedAt}
-                    fetching={previousCalendar.isFetching}
-                    stale={previousCalendar.isError || previousCalendar.isStale}
-                  />
-                </>
-              ) : null}
               <CalendarMonthSummary
-                statistics={getMonthStatistics(selectedMonth, days)}
-                previous={getMonthStatistics(
-                  previousMonth.format('YYYY-MM'),
-                  needsPreviousYear
-                    ? (previousCalendar.data?.days ?? [])
-                    : days,
-                )}
+                statistics={statistics}
+                previous={previousStatistics}
+                sameMonthLastYear={sameMonthLastYear}
                 onOpen={() => calendarView.setPeriod('month')}
               />
             </>

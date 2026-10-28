@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import React, { useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
@@ -60,7 +61,7 @@ export function BookingDetailsScreen({
       confirmLabel: 'Deschide WhatsApp',
       cancelLabel: 'Renunță',
       onConfirm: () => {
-        openWhatsAppShare(booking.client_phone, message);
+        return openWhatsAppShare(booking.client_phone, message);
       },
     });
   };
@@ -79,17 +80,23 @@ export function BookingDetailsScreen({
       confirmLabel: 'Anulează rezervarea',
       cancelLabel: 'Păstrează rezervarea',
       onConfirm: () => {
+        const actionGeneration = getSessionGeneration();
+
         if (cancelling.current) return;
         cancelling.current = true;
-        cancel.mutate(
-          { id: booking.id, version: booking.version },
-          {
-            onError: error => showError(error, 'Nu am putut anula rezervarea.'),
-            onSettled: () => {
-              cancelling.current = false;
+        return cancel
+          .mutateAsync(
+            { id: booking.id, version: booking.version },
+            {
+              onSettled: () => {
+                cancelling.current = false;
+              },
             },
-          },
-        );
+          )
+          .catch(error => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            return showError(error, 'Nu am putut anula rezervarea.');
+          });
       },
     });
   };

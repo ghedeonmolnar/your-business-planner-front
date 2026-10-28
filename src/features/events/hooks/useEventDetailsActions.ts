@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { useState } from 'react';
 import { Linking } from 'react-native';
 import {
@@ -110,13 +111,15 @@ export const useEventDetailsActions = (eventId: string) => {
       title: 'Confirmare',
       message: 'Ștergi această înregistrare?',
       confirmLabel: 'Șterge',
-      onConfirm: () =>
-        deletePayment.mutate(
-          { id: payment.id, eventId },
-          {
-            onError: error => showError(error, 'Nu am putut șterge plata.'),
-          },
-        ),
+      onConfirm: () => {
+        const actionGeneration = getSessionGeneration();
+        return deletePayment
+          .mutateAsync({ id: payment.id, eventId })
+          .catch(error => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            return showError(error, 'Nu am putut șterge plata.');
+          });
+      },
     });
   };
 
@@ -151,14 +154,15 @@ export const useEventDetailsActions = (eventId: string) => {
       title: 'Confirmare',
       message: `Ștergi documentul "${document.title}"?`,
       confirmLabel: 'Șterge',
-      onConfirm: () =>
-        deleteDocument.mutate(
-          { id: document.id, eventId },
-          {
-            onError: error =>
-              showError(error, 'Nu am putut șterge documentul.'),
-          },
-        ),
+      onConfirm: () => {
+        const actionGeneration = getSessionGeneration();
+        return deleteDocument
+          .mutateAsync({ id: document.id, eventId })
+          .catch(error => {
+            if (actionGeneration !== getSessionGeneration()) return;
+            return showError(error, 'Nu am putut șterge documentul.');
+          });
+      },
     });
   };
 

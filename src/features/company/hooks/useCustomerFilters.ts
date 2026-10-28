@@ -15,6 +15,7 @@ const EMPTY_RANGE: CustomerDateRange = { date_from: '', date_to: '' };
 
 export function useCustomerFilters() {
   const [search, setSearch] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
   const [sort, setSort] = useState<CustomerSort>('name_asc');
   const [range, setRange] = useState<CustomerDateRange | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -46,6 +47,11 @@ export function useCustomerFilters() {
   return {
     search,
     setSearch,
+    searchOpen,
+    toggleSearch: () => {
+      setSearchOpen(!searchOpen);
+      if (searchOpen) setSearch('');
+    },
     sort,
     setSort,
     range,
@@ -57,6 +63,7 @@ export function useCustomerFilters() {
     resetAll: () => {
       resetDates();
       setSearch('');
+      setSearchOpen(false);
       setSort('name_asc');
     },
     queryFilters: { search: debouncedSearch, sort, ...range },

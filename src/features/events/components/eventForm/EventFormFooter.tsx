@@ -51,6 +51,7 @@ export function EventFormFooter({
         <AppButton
           disabled={saving}
           label={label}
+          loading={saving}
           onPress={onContinue}
           style={styles.button}
         />

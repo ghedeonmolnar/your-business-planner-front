@@ -32,7 +32,6 @@ test('textul mic din agenda evidentiata pastreaza contrastul minim', async () =>
         <AgendaBookingCard
           booking={plannerBooking}
           featured
-          showFinance
           onOpen={jest.fn()}
         />
       </AppThemeProvider>,
@@ -50,7 +49,7 @@ test('textul mic din agenda evidentiata pastreaza contrastul minim', async () =>
   await ReactTestRenderer.act(async () => renderer.unmount());
 });
 
-test('cardurile păstrează distincte valoarea contractului și suma încasată', async () => {
+test('lista rezervărilor păstrează valoarea contractului, iar agenda ascunde încasările', async () => {
   let renderer: ReactTestRenderer.ReactTestRenderer;
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(
@@ -61,11 +60,7 @@ test('cardurile păstrează distincte valoarea contractului și suma încasată'
             eventType="Nuntă"
             onOpen={jest.fn()}
           />
-          <AgendaBookingCard
-            booking={plannerBooking}
-            showFinance
-            onOpen={jest.fn()}
-          />
+          <AgendaBookingCard booking={plannerBooking} onOpen={jest.fn()} />
         </>
       </AppThemeProvider>,
     );
@@ -81,30 +76,6 @@ test('cardurile păstrează distincte valoarea contractului și suma încasată'
   expect(contract?.props.value).toBe(
     formatExactMoney(plannerBooking.total_amount),
   );
-  expect(received?.props.value).toBe(
-    formatExactMoney(plannerBooking.paid_amount),
-  );
-  expect(contract?.props.value).not.toBe(received?.props.value);
-  await ReactTestRenderer.act(async () => renderer.unmount());
-});
-
-test('agenda nu afișează încasările când prezentarea financiară este dezactivată', async () => {
-  let renderer: ReactTestRenderer.ReactTestRenderer;
-  await ReactTestRenderer.act(async () => {
-    renderer = ReactTestRenderer.create(
-      <AppThemeProvider>
-        <AgendaBookingCard
-          booking={plannerBooking}
-          showFinance={false}
-          onOpen={jest.fn()}
-        />
-      </AppThemeProvider>,
-    );
-  });
-  expect(
-    renderer!.root
-      .findAllByType(InfoRow)
-      .some(row => row.props.label === 'Încasat'),
-  ).toBe(false);
+  expect(received).toBeUndefined();
   await ReactTestRenderer.act(async () => renderer.unmount());
 });

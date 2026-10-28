@@ -30,7 +30,7 @@ export function CalendarHallRow({
         : hall.status === 'completed'
           ? 'Finalizată'
           : 'Rezervat';
-  const schedule = formatCompanyTimeRange(hall.starts_at, hall.ends_at);
+  const schedule = formatCompanyTimeRange(hall.starts_at, hall.ends_at, false);
   const description =
     hall.status === 'inactive'
       ? 'Indisponibilă pentru rezervări noi'
@@ -52,10 +52,11 @@ export function CalendarHallRow({
       accessibilityHint={`${description}, ${status}${schedule ? `, ${schedule}` : ''}`}
       style={({ pressed }) => [
         styles.row,
+        free ? styles.free : undefined,
         pressed ? styles.pressed : undefined,
       ]}
     >
-      <IconBadge icon="business-outline" />
+      <IconBadge icon="business-outline" tone={free ? 'finance' : 'primary'} />
       <View style={[styles.body, singleColumn ? styles.column : undefined]}>
         <View
           style={[
@@ -64,21 +65,19 @@ export function CalendarHallRow({
           ]}
         >
           <Text style={styles.name}>{hall.name}</Text>
-          <Text style={styles.description}>{description}</Text>
+          {!free ? <Text style={styles.description}>{description}</Text> : null}
         </View>
-        <View style={styles.schedule}>
-          {!free && !inactive ? (
+        {!free && !inactive ? (
+          <View style={styles.schedule}>
             <Ionicons
               accessible={false}
               name="time-outline"
               size={theme.typography.body}
               color={theme.colors.menu.muted}
             />
-          ) : null}
-          <Text style={styles.time}>
-            {free || inactive ? '—' : schedule || 'Program necompletat'}
-          </Text>
-        </View>
+            <Text style={styles.time}>{schedule || 'Program necompletat'}</Text>
+          </View>
+        ) : null}
         <MetaPill
           label={status}
           tone={
@@ -109,6 +108,10 @@ const styles = StyleSheet.create({
     minHeight: theme.controls.fieldHeight,
   },
   pressed: { backgroundColor: theme.colors.menu.selected },
+  free: {
+    backgroundColor: theme.colors.menu.successSoft,
+    borderColor: theme.colors.menu.successSoft,
+  },
   body: {
     flex: 1,
     minWidth: 0,

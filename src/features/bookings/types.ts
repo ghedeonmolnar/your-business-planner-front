@@ -107,6 +107,7 @@ export type CalendarDay = {
   historical_occupied_halls?: number;
 };
 export type CalendarSummary = {
+  revision?: string;
   halls: { id: string; name: string; is_active: boolean }[];
   days: CalendarDay[];
 };

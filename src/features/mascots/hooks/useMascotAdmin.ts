@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { useState } from 'react';
 import {
   useCreateMascot,
@@ -58,10 +59,11 @@ export const useMascotAdmin = () => {
       cancelLabel: 'Nu',
       confirmLabel: 'Da',
       onConfirm: () => {
-        forceDeleteMascot.mutate(mascot.id, {
-          onError: mutationError => {
-            showError(mutationError, 'Nu am putut șterge definitiv mascota.');
-          },
+        const actionGeneration = getSessionGeneration();
+
+        return forceDeleteMascot.mutateAsync(mascot.id).catch(mutationError => {
+          if (actionGeneration !== getSessionGeneration()) return;
+          showError(mutationError, 'Nu am putut șterge definitiv mascota.');
         });
       },
     });
@@ -78,10 +80,11 @@ export const useMascotAdmin = () => {
       message: `Mascota ${mascot.name} va fi trecută în inactiv. Apasă din nou pe coș pentru ștergerea definitivă.`,
       confirmLabel: 'Dezactivează',
       onConfirm: () => {
-        deleteMascot.mutate(mascot.id, {
-          onError: mutationError => {
-            showError(mutationError, 'Nu am putut șterge mascota.');
-          },
+        const actionGeneration = getSessionGeneration();
+
+        return deleteMascot.mutateAsync(mascot.id).catch(mutationError => {
+          if (actionGeneration !== getSessionGeneration()) return;
+          showError(mutationError, 'Nu am putut șterge mascota.');
         });
       },
     });

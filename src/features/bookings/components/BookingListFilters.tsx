@@ -31,16 +31,17 @@ export function BookingListFilters({
   const singleColumn = useSingleColumnLayout();
   return (
     <View style={styles.section}>
-      <SearchField
-        label="Caută rezervări"
-        placeholder={
-          manager
-            ? 'Caută după nume, telefon sau observații…'
-            : 'Caută după numele clientului…'
-        }
-        value={filters.search}
-        onChange={filters.setSearch}
-      />
+      {filters.searchOpen ? (
+        <SearchField
+          autoFocus
+          label="Caută rezervări"
+          placeholder={
+            manager ? 'Nume, telefon sau observații' : 'Numele clientului'
+          }
+          value={filters.search}
+          onChange={filters.setSearch}
+        />
+      ) : null}
       <AppSegmentedControl
         segments={[
           { label: 'Toate' },
@@ -52,8 +53,8 @@ export function BookingListFilters({
       />
       <View style={[styles.row, singleColumn && styles.column]}>
         <FormInput
-          label="Starea rezervării"
-          style={singleColumn ? undefined : styles.grow}
+          label="Stare"
+          style={[styles.filterField, !singleColumn && styles.grow]}
         >
           <SearchableSelect
             label="Starea rezervării"
@@ -73,12 +74,11 @@ export function BookingListFilters({
         </FormInput>
         {manager ? (
           <FormInput
-            label="Sală de evenimente"
-            style={singleColumn ? undefined : styles.grow}
+            label="Sală"
+            style={[styles.filterField, !singleColumn && styles.grow]}
           >
             <SearchableSelect
               label="Sală de evenimente"
-              icon="business-outline"
               optionsState={hallsState}
               multiline
               single
@@ -103,19 +103,23 @@ export function BookingListFilters({
       </View>
       <View style={[styles.row, singleColumn && styles.column]}>
         {manager ? (
-          <AppButton
-            label={`Filtre avansate${filters.advancedCount ? ` · ${filters.advancedCount}` : ''}`}
-            accessibilityLabel="Filtre avansate"
-            icon="filter-outline"
-            variant="soft"
-            multiline
-            onPress={filters.openAdvanced}
-            style={singleColumn ? undefined : styles.grow}
-          />
+          <FormInput
+            label="Filtre"
+            style={[styles.filterField, !singleColumn && styles.grow]}
+          >
+            <AppButton
+              label={`Avansate${filters.advancedCount ? ` · ${filters.advancedCount}` : ''}`}
+              accessibilityLabel="Filtre avansate"
+              icon="filter-outline"
+              variant="soft"
+              multiline
+              onPress={filters.openAdvanced}
+            />
+          </FormInput>
         ) : null}
         <FormInput
-          label="Sortează după"
-          style={singleColumn ? undefined : styles.grow}
+          label="Ordine după dată"
+          style={[styles.filterField, !singleColumn && styles.grow]}
         >
           <SearchableSelect<BookingSort>
             label="Sortează rezervările"
@@ -124,8 +128,16 @@ export function BookingListFilters({
             allowClear={false}
             selectedValues={[filters.sort]}
             options={[
-              { id: 'date_asc', name: 'Data evenimentului — crescător' },
-              { id: 'date_desc', name: 'Data evenimentului — descrescător' },
+              {
+                id: 'date_asc',
+                name: 'Crescător',
+                description: 'De la prima dată la ultima dată a evenimentului.',
+              },
+              {
+                id: 'date_desc',
+                name: 'Descrescător',
+                description: 'De la ultima dată la prima dată a evenimentului.',
+              },
             ]}
             onChange={values => filters.setSort(values[0] ?? 'date_asc')}
             placeholder="Sortează după"

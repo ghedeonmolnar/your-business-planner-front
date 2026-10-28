@@ -131,6 +131,8 @@ test('intervalul inversat afișează validare și nu trimite cererea filtrată',
 
 test('căutarea și sortarea rămân în cerere împreună cu intervalul', async () => {
   const { renderer, unmount } = await renderWithProviders(<CustomersScreen />);
+  expect(renderer.root.findAllByType(SearchField)).toHaveLength(0);
+  await press(renderer, 'Caută în clienți');
   await ReactTestRenderer.act(async () => {
     renderer.root.findByType(SearchField).props.onChange('Ana');
   });
@@ -155,6 +157,17 @@ test('căutarea și sortarea rămân în cerere împreună cu intervalul', async
       ),
     ).toBe(true),
   );
+  await press(renderer, 'Închide căutarea');
+  expect(renderer.root.findAllByType(SearchField)).toHaveLength(0);
+  await waitForUi(() => {
+    const latestRequest = requests()
+      .filter(path => path.includes('/clients?'))
+      .at(-1);
+    expect(latestRequest).not.toContain('search=Ana');
+    expect(latestRequest).toContain('sort=bookings_desc');
+    expect(latestRequest).toContain('date_from=2026-11-01');
+    expect(latestRequest).toContain('date_to=2026-11-30');
+  });
   await unmount();
 });
 

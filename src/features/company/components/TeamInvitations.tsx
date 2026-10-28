@@ -1,3 +1,4 @@
+import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import React from 'react';
 import { View } from 'react-native';
@@ -65,11 +66,13 @@ export function TeamInvitations() {
                   title: 'Revoci invitația?',
                   message: item.email,
                   confirmLabel: 'Revocă invitația',
-                  onConfirm: () =>
-                    revoke.mutate(item.id, {
-                      onError: error =>
-                        showError(error, 'Nu am putut revoca invitația.'),
-                    }),
+                  onConfirm: () => {
+                    const actionGeneration = getSessionGeneration();
+                    return revoke.mutateAsync(item.id).catch(error => {
+                      if (actionGeneration !== getSessionGeneration()) return;
+                      return showError(error, 'Nu am putut revoca invitația.');
+                    });
+                  },
                 })
               }
             />
