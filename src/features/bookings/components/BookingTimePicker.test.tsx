@@ -21,7 +21,7 @@ const confirm = (renderer: ReactTestRenderer.ReactTestRenderer) =>
     .findAllByType(AppButton)
     .find(
       node =>
-        node.props.label.startsWith('Folosește') ||
+        node.props.label?.startsWith('Folosește') ||
         node.props.label === 'Confirmă ora',
     )!;
 

@@ -2,6 +2,7 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { BookingsScreen } from '@/features/bookings/screens/BookingsScreen';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
+import { BookingTimePicker } from '@/features/bookings/components/BookingTimePicker';
 import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
 import { DatePickerField } from '@/shared/components/DatePickerField';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
@@ -75,6 +76,24 @@ const select = async (
   });
 };
 
+const chooseTime = async (
+  renderer: ReactTestRenderer.ReactTestRenderer,
+  label: string,
+  value: string,
+) => {
+  await ReactTestRenderer.act(async () => {
+    renderer.root
+      .findAllByProps({ accessibilityLabel: label })
+      .find(node => typeof node.props.onPress === 'function')!
+      .props.onPress();
+  });
+  await ReactTestRenderer.act(async () => {
+    const picker = renderer.root.findByType(BookingTimePicker);
+    picker.props.onChange(value);
+    picker.props.onClose();
+  });
+};
+
 beforeEach(() => {
   globalThis.fetch = jest.fn((url, init) => {
     const path = String(url);
@@ -122,89 +141,95 @@ beforeEach(() => {
 
 test('creates an overnight reservation through all five steps with the API mocked', async () => {
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
-  await press(renderer, 'Rezervare nouă');
-  await select(renderer, 'Sală', 'hall-1');
-  await select(renderer, 'Stare rezervare', 'confirmed');
-  await ReactTestRenderer.act(async () => {
-    const date = renderer.root
-      .findByType(BookingForm)
-      .findAllByType(DatePickerField)
-      .find(field => field.props.label === 'Data evenimentului');
-    if (!date) {
-      throw new Error('Lipsește selectorul datei.');
-    }
-    date.props.onChange('2027-11-13');
-  });
-  await select(renderer, 'Ora de început', '2027-11-13 18:00');
-  await select(renderer, 'Ora de sfârșit', '2027-11-14 04:00');
-  await press(renderer, 'Continuă');
-  await select(renderer, 'Client', 'client-1');
-  await press(renderer, 'Continuă');
-  await fill(renderer, 'Invitați minimi', '200');
-  await fill(renderer, 'Preț meniu / persoană (lei)', '350');
-  await press(renderer, 'Continuă');
-  await press(renderer, 'Continuă');
-  await press(renderer, 'Salvează rezervarea');
-  const request = jest
-    .mocked(globalThis.fetch)
-    .mock.calls.find(
-      ([url, init]) =>
-        String(url).endsWith('/events') && init?.method === 'POST',
-    );
-  expect(request).toBeDefined();
-  const payload = JSON.parse(String(request?.[1]?.body));
-  expect(payload).toMatchObject({
-    hall_id: 'hall-1',
-    client_id: 'client-1',
-    minimum_guests: 200,
-    menu_price: '350',
-    starts_at: '2027-11-13T16:00:00.000Z',
-    ends_at: '2027-11-14T02:00:00.000Z',
-  });
-  expect(payload).not.toHaveProperty('company_id');
-  expect(renderer.root.findAllByType(BookingForm)).toHaveLength(0);
-  await unmount();
+  try {
+    await press(renderer, 'Rezervare nouă');
+    await select(renderer, 'Sală', 'hall-1');
+    await select(renderer, 'Stare rezervare', 'confirmed');
+    await ReactTestRenderer.act(async () => {
+      const date = renderer.root
+        .findByType(BookingForm)
+        .findAllByType(DatePickerField)
+        .find(field => field.props.label === 'Data evenimentului');
+      if (!date) {
+        throw new Error('Lipsește selectorul datei.');
+      }
+      date.props.onChange('2027-11-13');
+    });
+    await chooseTime(renderer, 'Ora de început', '2027-11-13 18:00');
+    await chooseTime(renderer, 'Ora de sfârșit', '2027-11-14 04:00');
+    await press(renderer, 'Continuă');
+    await select(renderer, 'Client', 'client-1');
+    await press(renderer, 'Continuă');
+    await fill(renderer, 'Invitați minimi', '200');
+    await fill(renderer, 'Preț meniu / persoană (lei)', '350');
+    await press(renderer, 'Continuă');
+    await press(renderer, 'Continuă');
+    await press(renderer, 'Salvează rezervarea');
+    const request = jest
+      .mocked(globalThis.fetch)
+      .mock.calls.find(
+        ([url, init]) =>
+          String(url).endsWith('/events') && init?.method === 'POST',
+      );
+    expect(request).toBeDefined();
+    const payload = JSON.parse(String(request?.[1]?.body));
+    expect(payload).toMatchObject({
+      hall_id: 'hall-1',
+      client_id: 'client-1',
+      minimum_guests: 200,
+      menu_price: '350',
+      starts_at: '2027-11-13T16:00:00.000Z',
+      ends_at: '2027-11-14T02:00:00.000Z',
+    });
+    expect(payload).not.toHaveProperty('company_id');
+    expect(renderer.root.findAllByType(BookingForm)).toHaveLength(0);
+  } finally {
+    await unmount();
+  }
 });
 
 test('oprește o rezervare nouă la clientul fără telefon și oferă completarea lui', async () => {
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
-  await press(renderer, 'Rezervare nouă');
-  const form = renderer.root.findByType(BookingForm);
-  await ReactTestRenderer.act(async () => {
-    const fields = form.findAllByType(SearchableSelect);
-    fields
-      .find(field => field.props.label === 'Sală')
-      ?.props.onChange(['hall-1']);
-  });
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findAllByType(DatePickerField)
-      .find(field => field.props.label === 'Data evenimentului')
-      ?.props.onChange('2027-11-13');
-  });
-  await press(renderer, 'Continuă');
-  await select(renderer, 'Client', 'client-1');
-  const selected = renderer.root
-    .findByType(BookingForm)
-    .findByType(BookingClientFields);
-  await ReactTestRenderer.act(async () => {
-    selected.props.onSelected({
-      id: 'client-1',
-      name: 'Client test',
-      phone: null,
+  try {
+    await press(renderer, 'Rezervare nouă');
+    const form = renderer.root.findByType(BookingForm);
+    await ReactTestRenderer.act(async () => {
+      const fields = form.findAllByType(SearchableSelect);
+      fields
+        .find(field => field.props.label === 'Sală')
+        ?.props.onChange(['hall-1']);
     });
-  });
-  await press(renderer, 'Continuă');
-  expect(renderedText(renderer)).toContain(
-    'Completează telefonul clientului înainte de rezervare.',
-  );
-  expect(
-    renderer.root.findByProps({ accessibilityLabel: 'Completează telefonul' }),
-  ).toBeDefined();
-  expect(
-    jest
-      .mocked(globalThis.fetch)
-      .mock.calls.some(([, init]) => init?.method === 'POST'),
-  ).toBe(false);
-  await unmount();
+    await ReactTestRenderer.act(async () => {
+      renderer.root
+        .findAllByType(DatePickerField)
+        .find(field => field.props.label === 'Data evenimentului')
+        ?.props.onChange('2027-11-13');
+    });
+    await press(renderer, 'Continuă');
+    await select(renderer, 'Client', 'client-1');
+    const selected = renderer.root
+      .findByType(BookingForm)
+      .findByType(BookingClientFields);
+    await ReactTestRenderer.act(async () => {
+      selected.props.onSelected({
+        id: 'client-1',
+        name: 'Client test',
+        phone: null,
+      });
+    });
+    await press(renderer, 'Continuă');
+    expect(renderedText(renderer)).toContain(
+      'Completează telefonul clientului înainte de rezervare.',
+    );
+    expect(
+      renderer.root.findByProps({ accessibilityLabel: 'Completează telefonul' }),
+    ).toBeDefined();
+    expect(
+      jest
+        .mocked(globalThis.fetch)
+        .mock.calls.some(([, init]) => init?.method === 'POST'),
+    ).toBe(false);
+  } finally {
+    await unmount();
+  }
 });

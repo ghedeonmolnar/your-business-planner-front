@@ -139,44 +139,54 @@ test('o modificare locală și o revizie schimbată de coleg reîncarcă doar di
 });
 
 test('cache-ul permite alegerea fără conexiune și blochează lunile necunoscute', async () => {
-  const first = await mount();
-  await openCalendar(first.renderer);
-  await waitForUi(() =>
-    expect(calendar(first.renderer).props.disabledByDefault).toBe(false),
-  );
-  await first.unmount();
-  onlineManager.setOnline(false);
-  const second = await mount();
+  const { renderer, unmount } = await mount();
   try {
-    await openCalendar(second.renderer);
+    await openCalendar(renderer);
     await waitForUi(() =>
-      expect(calendar(second.renderer).props.disabledByDefault).toBe(false),
+      expect(calendar(renderer).props.disabledByDefault).toBe(false),
     );
+    await ReactTestRenderer.act(async () =>
+      calendar(renderer).props.onDayPress({ dateString: '2027-11-15' }),
+    );
+    await ReactTestRenderer.act(async () => onlineManager.setOnline(false));
+    await openCalendar(renderer);
     expect(
-      second.renderer.root.findByType(DatePickerField).props.availability
-        .unverified,
+      renderer.root.findByType(DatePickerField).props.availability.unverified,
     ).toBe(true);
     await ReactTestRenderer.act(async () =>
-      calendar(second.renderer).props.onMonthChange({
+      calendar(renderer).props.onDayPress({ dateString: '2027-11-16' }),
+    );
+    expect(renderer.root.findByType(DatePickerField).props.value).toBe(
+      '2027-11-16',
+    );
+    await openCalendar(renderer);
+    await ReactTestRenderer.act(async () =>
+      calendar(renderer).props.onMonthChange({
         dateString: '2028-05-01',
       }),
     );
-    expect(calendar(second.renderer).props.disabledByDefault).toBe(true);
+    expect(calendar(renderer).props.disabledByDefault).toBe(true);
+    await ReactTestRenderer.act(async () =>
+      calendar(renderer).props.onDayPress({ dateString: '2028-05-16' }),
+    );
+    expect(renderer.root.findByType(DatePickerField).props.value).toBe(
+      '2027-11-16',
+    );
     expect(calendarRequests()).toHaveLength(1);
     await ReactTestRenderer.act(async () =>
-      calendar(second.renderer).props.onMonthChange({
+      calendar(renderer).props.onMonthChange({
         dateString: '2027-11-01',
       }),
     );
     await ReactTestRenderer.act(async () => onlineManager.setOnline(true));
     await waitForUi(() =>
       expect(
-        second.renderer.root.findByType(DatePickerField).props.availability
+        renderer.root.findByType(DatePickerField).props.availability
           .unverified,
       ).toBe(false),
     );
     expect(calendarRequests()).toHaveLength(1);
   } finally {
-    await second.unmount();
+    await unmount();
   }
 });

@@ -76,13 +76,13 @@ test('schimbarea sălii resetează data și programul și reface disponibilitate
     });
     expect(field(renderer).props.value).toBe('');
     expect(renderer.root.findAllByType(Calendar)).toHaveLength(0);
-    for (const name of ['starts_at', 'ends_at']) {
+    for (const label of ['Ora de început', 'Ora de sfârșit']) {
       expect(
         renderer.root
-          .findAllByType(SearchableSelect)
-          .find(input => input.props.testID === `select:${name}`)?.props
-          .selectedValues,
-      ).toEqual([]);
+          .findAllByProps({ accessibilityLabel: label })
+          .find(input => typeof input.props.onPress === 'function')?.props
+          .accessibilityValue.text,
+      ).toBe('Ora necompletată');
     }
     await openCalendar(renderer);
     await waitForUi(() =>
