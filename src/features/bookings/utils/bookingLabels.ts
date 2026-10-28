@@ -1,7 +1,7 @@
 import { BookingStatus } from '@/features/bookings/types';
 
 export const bookingStatusLabels: Record<BookingStatus, string> = {
-  tentative: 'Provizorie',
+  tentative: 'În așteptarea avansului',
   confirmed: 'Confirmată',
   completed: 'Finalizată',
   cancelled: 'Anulată',

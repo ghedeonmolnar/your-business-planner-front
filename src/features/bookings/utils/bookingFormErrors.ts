@@ -4,7 +4,7 @@ import { ApiError, responseErrorCode } from '@/shared/api/apiError';
 import { bookingAvailabilityField } from '@/features/bookings/utils/bookingCreationFailure';
 
 const stepFields: FieldPath<BookingFormValues>[][] = [
-  ['hall_id', 'date', 'type', 'status', 'starts_at', 'ends_at', 'expires_at'],
+  ['hall_id', 'date', 'type', 'status', 'starts_at', 'ends_at'],
   ['client_id'],
   [
     'minimum_guests',
@@ -89,10 +89,16 @@ export const applyBookingApiErrors = (
     return null;
   }
   const fields = Object.keys(errors).filter(knownBookingField);
+  const dateErrors = 'date' in errors ? errors.date : undefined;
   fields.forEach(field =>
     form.setError(field, {
       type: 'server',
-      message: 'Verifică valoarea: nu mai este validă sau disponibilă.',
+      message:
+        field === 'date' &&
+        Array.isArray(dateErrors) &&
+        dateErrors.includes('BOOKING_DATE_IN_PAST')
+          ? 'Alege ziua de azi sau o dată viitoare.'
+          : 'Verifică valoarea: nu mai este validă sau disponibilă.',
     }),
   );
   const index = bookingStepFields(staffEnabled).findIndex(step =>

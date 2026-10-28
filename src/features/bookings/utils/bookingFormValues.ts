@@ -21,7 +21,7 @@ export const bookingFormDefaults = (
       : (booking?.status ?? 'tentative'),
   starts_at: formatCompanyInput(booking?.starts_at),
   ends_at: formatCompanyInput(booking?.ends_at),
-  expires_at: formatCompanyInput(booking?.expires_at),
+  expires_at: '',
   minimum_guests: String(
     booking ? (booking.minimum_guests ?? 0) : (defaultMinimumGuests ?? 0),
   ),
@@ -57,10 +57,7 @@ export const bookingPayload = (
   version: original?.version,
   starts_at: retainedTimestamp(values.starts_at, original?.starts_at),
   ends_at: retainedTimestamp(values.ends_at, original?.ends_at),
-  expires_at:
-    values.status === 'tentative'
-      ? retainedTimestamp(values.expires_at, original?.expires_at)
-      : null,
+  expires_at: null,
   minimum_guests: Number(values.minimum_guests),
   final_guests: values.final_guests ? Number(values.final_guests) : null,
   menu_price: values.menu_price.replace(',', '.'),

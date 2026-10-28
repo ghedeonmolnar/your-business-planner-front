@@ -90,7 +90,7 @@ test('refolosește sumarul anual și ziua din cache, verificând separat revizia
     expect(summaryRequests()).toHaveLength(summaries);
     expect(dayRequests()).toHaveLength(days + 1);
     await ReactTestRenderer.act(async () => {
-      await queryClient.refetchQueries({
+      await queryClient.fetchQuery({
         queryKey: queryKeys.planner.calendarRevision('company-1'),
       });
     });
@@ -98,7 +98,7 @@ test('refolosește sumarul anual și ziua din cache, verificând separat revizia
     expect(dayRequests()).toHaveLength(days + 1);
     revision = 'c'.repeat(64);
     await ReactTestRenderer.act(async () => {
-      await queryClient.refetchQueries({
+      await queryClient.fetchQuery({
         queryKey: queryKeys.planner.calendarRevision('company-1'),
       });
     });

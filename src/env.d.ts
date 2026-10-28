@@ -3,4 +3,6 @@ declare module '@env' {
   export const APP_BUILD: string | undefined;
   export const MONITORING_ENABLED: string | undefined;
   export const MOBILE_POLICY_ENABLED: string | undefined;
+  export const CALENDAR_WEBSOCKET_URL: string | undefined;
+  export const CALENDAR_REVERB_APP_KEY: string | undefined;
 }

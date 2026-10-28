@@ -55,6 +55,10 @@ export const bookingSchema = z.object({
   outgoing_payments_count: z.number().int().nonnegative().optional(),
 });
 export const calendarSummarySchema = z.object({
+  availability_revision: z
+    .string()
+    .regex(/^[a-f0-9]{64}$/)
+    .optional(),
   revision: z
     .string()
     .regex(/^[a-f0-9]{64}$/)

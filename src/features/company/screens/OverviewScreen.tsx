@@ -52,7 +52,7 @@ export function OverviewScreen() {
           <Card style={styles.card}>
             {[
               { label: 'Rezervări confirmate', value: data.confirmed_count },
-              { label: 'Provizorii active', value: data.tentative_count },
+              { label: 'Cereri fără avans', value: data.tentative_count },
               {
                 label: 'Ocupare săli active',
                 value: `${(data.occupancy_basis_points / 100).toLocaleString('ro-RO')}%`,

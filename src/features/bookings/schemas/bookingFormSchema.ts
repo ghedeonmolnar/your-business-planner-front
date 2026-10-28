@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { toCompanyTimestamp } from '@/shared/utils/formatDate';
+import { companyNow, toCompanyTimestamp } from '@/shared/utils/formatDate';
 import {
   MAX_BOOKING_GUESTS,
   MAX_BOOKING_AMOUNT,
@@ -82,23 +82,18 @@ export const bookingFormSchema = z
       .max(MAX_BOOKING_NOTES_LENGTH, 'Folosește cel mult 20.000 de caractere.'),
   })
   .superRefine((value, context) => {
+    if (Boolean(value.starts_at) !== Boolean(value.ends_at)) {
+      context.addIssue({
+        code: 'custom',
+        path: [value.starts_at ? 'ends_at' : 'starts_at'],
+        message: 'Completează ambele ore sau lasă programul necompletat.',
+      });
+    }
     if (value.starts_at && value.starts_at.slice(0, 10) !== value.date) {
       context.addIssue({
         code: 'custom',
         path: ['starts_at'],
         message: 'Începutul trebuie să fie în data evenimentului.',
-      });
-    }
-    const expiry = toCompanyTimestamp(value.expires_at);
-    if (
-      value.status === 'tentative' &&
-      expiry &&
-      Date.parse(expiry) <= Date.now()
-    ) {
-      context.addIssue({
-        code: 'custom',
-        path: ['expires_at'],
-        message: 'Alege un termen în viitor.',
       });
     }
     const employeeIds = new Set<string>();
@@ -124,13 +119,6 @@ export const bookingFormSchema = z
         });
       }
     });
-    if (value.status === 'tentative' && !value.expires_at) {
-      context.addIssue({
-        code: 'custom',
-        path: ['expires_at'],
-        message: 'Completează termenul rezervării.',
-      });
-    }
     if (['confirmed', 'completed'].includes(value.status)) {
       for (const field of ['starts_at', 'ends_at'] as const) {
         if (!value[field]) {
@@ -169,4 +157,12 @@ export const bookingFormSchema = z
       });
     }
   });
+export const bookingCreationFormSchema = bookingFormSchema.refine(
+  value => value.date >= companyNow().format('YYYY-MM-DD'),
+  {
+    path: ['date'],
+    message: 'Alege ziua de azi sau o dată viitoare.',
+  },
+);
+
 export type BookingFormValues = z.infer<typeof bookingFormSchema>;

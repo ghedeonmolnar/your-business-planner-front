@@ -44,7 +44,7 @@ export function AgendaSummary() {
               icon: 'calendar-outline' as const,
             },
             {
-              label: 'Provizorii',
+              label: 'Fără avans',
               value: query.data.tentative_count,
               icon: 'document-text-outline' as const,
             },

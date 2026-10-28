@@ -13,6 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { getMeApi } from '@/features/auth/api/authApi';
 import { useCompanyAccess } from '@/features/auth/hooks/useCompanyAccess';
 import { useAccountRefresh } from '@/features/auth/hooks/useAccountRefresh';
+import { useCalendarCacheBoundary } from '@/features/auth/hooks/useCalendarCacheBoundary';
 import { useSubscriptionBoundary } from '@/features/auth/hooks/useSubscriptionBoundary';
 import { SubscriptionVerificationModal } from '@/features/auth/components/SubscriptionVerificationModal';
 import { AuthUser, SignOutOptions } from '@/features/auth/types';
@@ -26,6 +27,7 @@ import {
 import { reportError } from '@/shared/monitoring/reportError';
 import { getAuthToken, setAuthToken } from '@/shared/storage/authTokenStorage';
 import { clearPaymentOperations } from '@/features/bookings/utils/paymentOperationJournal';
+import { clearCalendarAvailability } from '@/shared/storage/calendarAvailabilityStorage';
 
 type AuthContextValue = {
   isAuthenticated: boolean;
@@ -53,6 +55,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const pendingSignOut = useRef<Promise<void> | null>(null);
   const pendingTokenWrite = useRef<Promise<void> | null>(null);
   const isAuthenticated = user !== null;
+  useCalendarCacheBoundary(
+    user,
+    queryClient,
+    isBootstrapping || bootstrapError,
+  );
 
   useCompanyAccess(user, setUser, queryClient);
   const checkingSubscription = useSubscriptionBoundary(
@@ -133,6 +140,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         if (!token) {
           await clearPaymentOperations();
+          await clearCalendarAvailability();
           clearPendingEventNavigation();
           try {
             await clearEventReminders();

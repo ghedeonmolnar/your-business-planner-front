@@ -82,6 +82,7 @@ export type BookingFilters = {
   date_from?: string;
   date_to?: string;
   hall_id?: string;
+  exclude_event_id?: string;
   client_id?: string;
   status?: string;
 };
@@ -108,6 +109,7 @@ export type CalendarDay = {
 };
 export type CalendarSummary = {
   revision?: string;
+  availability_revision?: string;
   halls: { id: string; name: string; is_active: boolean }[];
   days: CalendarDay[];
 };

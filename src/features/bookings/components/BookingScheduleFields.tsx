@@ -1,33 +1,42 @@
 import React from 'react';
 import { Text } from 'react-native-paper';
-import { Control } from 'react-hook-form';
+import { UseFormReturn } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { DirectoryItem } from '@/features/company/types';
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
-import { ControlledTextField } from '@/shared/components/ControlledTextField';
+import { BookingTimeFields } from '@/features/bookings/components/BookingTimeFields';
+import { bookingScheduleInputs } from '@/features/bookings/utils/bookingSchedule';
 import {
   ControlledSelectField,
   SelectOptionsState,
 } from '@/shared/components/ControlledSelectField';
 import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
+import { useBookingDateAvailability } from '@/features/bookings/hooks/useBookingDateAvailability';
+import { companyNow } from '@/shared/utils/formatDate';
 
 export function BookingScheduleFields({
-  control,
+  form,
   halls,
+  hallId,
+  bookingId,
   selectedHallId,
   retainedType,
   hallsState,
   onHallSelected,
 }: {
-  control: Control<BookingFormValues>;
+  form: UseFormReturn<BookingFormValues>;
   halls: DirectoryItem[];
+  hallId: string;
+  bookingId?: string;
   selectedHallId?: string;
   retainedType?: string;
   hallsState?: SelectOptionsState;
   onHallSelected?: (id: string) => void;
 }) {
   const catalogs = useCatalogs();
+  const { control } = form;
+  const availability = useBookingDateAvailability(hallId, bookingId);
   return (
     <>
       <ControlledSelectField
@@ -52,6 +61,23 @@ export function BookingScheduleFields({
         name="date"
         label="Data evenimentului"
         placeholder="Alege data"
+        minimumDate={
+          bookingId
+            ? undefined
+            : new Date(`${companyNow().format('YYYY-MM-DD')}T00:00:00`)
+        }
+        disabled={!hallId}
+        availability={availability}
+        onSelectionChange={date => {
+          const schedule = bookingScheduleInputs(
+            date,
+            form.getValues('starts_at'),
+            form.getValues('ends_at'),
+          );
+          form.setValue('starts_at', schedule.starts_at, { shouldDirty: true });
+          form.setValue('ends_at', schedule.ends_at, { shouldDirty: true });
+          form.clearErrors(['starts_at', 'ends_at']);
+        }}
       />
       <ControlledSelectField
         control={control}
@@ -89,28 +115,11 @@ export function BookingScheduleFields({
         placeholder="Alege starea"
         searchPlaceholder="Caută stare"
       />
-      <ControlledTextField
-        control={control}
-        name="starts_at"
-        label="Început — data și ora"
-        placeholder="2026-10-24 18:00"
-      />
       <Text>
-        La schimbarea orei de toamnă, pentru ora repetată adaugă +03:00 (prima
-        apariție) sau +02:00 (a doua apariție).
+        În așteptarea avansului, sala rămâne disponibilă. După încasarea
+        avansului, schimbă starea în Confirmată pentru a rezerva data.
       </Text>
-      <ControlledTextField
-        control={control}
-        name="ends_at"
-        label="Sfârșit — data și ora"
-        placeholder="2026-10-25 04:00"
-      />
-      <ControlledTextField
-        control={control}
-        name="expires_at"
-        label="Termen rezervare provizorie"
-        placeholder="2026-10-22 12:00"
-      />
+      <BookingTimeFields form={form} />
     </>
   );
 }

@@ -1,4 +1,7 @@
-import { bookingFormSchema } from '@/features/bookings/schemas/bookingFormSchema';
+import {
+  bookingCreationFormSchema,
+  bookingFormSchema,
+} from '@/features/bookings/schemas/bookingFormSchema';
 import { bookingFormDefaults } from '@/features/bookings/utils/bookingFormValues';
 
 const overnight = () => ({
@@ -38,7 +41,7 @@ test('rejects a start date that differs from the event date', () => {
   }
 });
 
-test('rejects expired tentative holds and duplicate or inverted staff intervals', () => {
+test('rejects duplicate or inverted staff intervals for a waiting request', () => {
   const result = bookingFormSchema.safeParse({
     ...overnight(),
     status: 'tentative',
@@ -49,11 +52,34 @@ test('rejects expired tentative holds and duplicate or inverted staff intervals'
   if (!result.success) {
     const fields = result.error.issues.map(issue => issue.path.join('.'));
     expect(fields).toEqual(
-      expect.arrayContaining([
-        'expires_at',
-        'staff.1.employee_id',
-        'staff.1.ends_at',
-      ]),
+      expect.arrayContaining(['staff.1.employee_id', 'staff.1.ends_at']),
     );
+  }
+});
+
+test('acceptă o cerere fără avans, fără termen și fără program', () => {
+  expect(
+    bookingFormSchema.safeParse({
+      ...bookingFormDefaults('2027-11-13', 'hall-1'),
+      client_id: 'client-1',
+    }).success,
+  ).toBe(true);
+});
+
+test('rezervările noi refuză trecutul după ziua României, iar istoricul rămâne editabil', () => {
+  jest.useFakeTimers().setSystemTime(new Date('2026-10-28T22:15:00Z'));
+  try {
+    const past = {
+      ...bookingFormDefaults('2026-10-28', 'hall-1'),
+      client_id: 'client-1',
+    };
+    expect(bookingCreationFormSchema.safeParse(past).success).toBe(false);
+    expect(
+      bookingCreationFormSchema.safeParse({ ...past, date: '2026-10-29' })
+        .success,
+    ).toBe(true);
+    expect(bookingFormSchema.safeParse(past).success).toBe(true);
+  } finally {
+    jest.useRealTimers();
   }
 });

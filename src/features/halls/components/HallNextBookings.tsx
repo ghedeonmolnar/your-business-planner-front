@@ -47,7 +47,7 @@ export function HallNextBookings({
       </View>
       <Text style={styles.subtitle}>
         {hall.future_bookings_count - hall.tentative_bookings_count} confirmate
-        · {hall.tentative_bookings_count} provizorii valabile. Sunt incluse
+        · {hall.tentative_bookings_count} în așteptarea avansului. Sunt incluse
         evenimentele în desfășurare.
       </Text>
       {hall.next_bookings.length ? (

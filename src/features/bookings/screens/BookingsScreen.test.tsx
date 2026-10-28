@@ -135,8 +135,8 @@ test('creates an overnight reservation through all five steps with the API mocke
     }
     date.props.onChange('2027-11-13');
   });
-  await fill(renderer, 'Început — data și ora', '2027-11-13 18:00');
-  await fill(renderer, 'Sfârșit — data și ora', '2027-11-14 04:00');
+  await select(renderer, 'Ora de început', '2027-11-13 18:00');
+  await select(renderer, 'Ora de sfârșit', '2027-11-14 04:00');
   await press(renderer, 'Continuă');
   await select(renderer, 'Client', 'client-1');
   await press(renderer, 'Continuă');
@@ -176,7 +176,12 @@ test('oprește o rezervare nouă la clientul fără telefon și oferă completar
       .find(field => field.props.label === 'Sală')
       ?.props.onChange(['hall-1']);
   });
-  await fill(renderer, 'Termen rezervare provizorie', '2099-11-12 12:00');
+  await ReactTestRenderer.act(async () => {
+    renderer.root
+      .findAllByType(DatePickerField)
+      .find(field => field.props.label === 'Data evenimentului')
+      ?.props.onChange('2027-11-13');
+  });
   await press(renderer, 'Continuă');
   await select(renderer, 'Client', 'client-1');
   const selected = renderer.root
