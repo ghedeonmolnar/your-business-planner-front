@@ -4,7 +4,7 @@ class Socket {
   static OPEN = 1;
   readyState = 1;
   onmessage: ((event: { data: string }) => void) | null = null;
-  onclose: ((event: { code: number }) => void) | null = null;
+  onclose: ((event: { code?: number }) => void) | null = null;
   send = jest.fn();
   close = jest.fn(() => {
     this.readyState = 3;
@@ -126,4 +126,18 @@ test('ignoră autorizarea care sosește după oprirea sesiunii', async () => {
   resolve({ auth: 'late-signature' });
   await Promise.resolve();
   expect(sockets[0].send).not.toHaveBeenCalled();
+});
+
+test.each([
+  [undefined, 2],
+  [1000, 2],
+  [4000, 1],
+  [4099, 1],
+  [4100, 2],
+])('tratează reconectarea după închiderea cu codul %s', (code, count) => {
+  const stop = startCalendarSocket(options(), configuration);
+  sockets[0].onclose?.({ code });
+  jest.advanceTimersByTime(1500);
+  expect(sockets).toHaveLength(count);
+  stop();
 });

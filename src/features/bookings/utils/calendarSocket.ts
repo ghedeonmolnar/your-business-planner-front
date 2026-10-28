@@ -139,7 +139,12 @@ export const startCalendarSocket = (
       socket = undefined;
       clearTimers();
       authorization?.abort();
-      if (event.code >= 4000 && event.code < 4100) return;
+      if (
+        typeof event.code === 'number' &&
+        event.code >= 4000 &&
+        event.code < 4100
+      )
+        return;
       const delay = Math.min(1000 * 2 ** attempt++, MAXIMUM_RECONNECT_DELAY_MS);
       reconnectTimer = setTimeout(connect, delay + Math.random() * 500);
     };
