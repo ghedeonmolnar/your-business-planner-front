@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import { Resolver, UseFormReturn } from 'react-hook-form';
+import { Resolver, ResolverResult, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAppForm } from '@/shared/hooks/useAppForm';
@@ -208,7 +208,9 @@ test('o validare întârziată este urmată de reevaluarea ultimei valori', asyn
   let form: UseFormReturn<{ name: string }> | undefined;
   let release: (() => void) | undefined;
   const calls: string[] = [];
-  const resolver: Resolver<{ name: string }> = async values => {
+  const resolver: Resolver<{ name: string }> = async (
+    values,
+  ): Promise<ResolverResult<{ name: string }>> => {
     const name = values.name;
     calls.push(name);
     if (name === 'lent')
