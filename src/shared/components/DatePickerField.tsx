@@ -10,7 +10,10 @@ import {
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
-import { DateCalendarPanel } from '@/shared/components/DateCalendarPanel';
+import {
+  DateCalendarAvailability,
+  DateCalendarPanel,
+} from '@/shared/components/DateCalendarPanel';
 import { FormInput, formInputStyles } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
 import { useFormBusy } from '@/shared/components/FormInteractionContext';
@@ -30,6 +33,10 @@ export type DatePickerFieldProps = {
   style?: StyleProp<ViewStyle>;
   fieldStyle?: StyleProp<ViewStyle>;
   disabled?: boolean;
+  availability?: DateCalendarAvailability & {
+    onOpen: (date: string) => void;
+    onClose: () => void;
+  };
 };
 
 export function DatePickerField({
@@ -45,6 +52,7 @@ export function DatePickerField({
   style,
   fieldStyle,
   disabled = false,
+  availability,
 }: DatePickerFieldProps) {
   const busy = useFormBusy();
   const blocked = disabled || busy;
@@ -60,16 +68,31 @@ export function DatePickerField({
   const openCalendar = () => {
     if (blocked) return;
     Keyboard.dismiss();
+    const requestedDate = selectedDate || dateToIsoDate(new Date());
+    const firstDate = minimumDate ? dateToIsoDate(minimumDate) : undefined;
+    const lastDate = maximumDate ? dateToIsoDate(maximumDate) : undefined;
+    const allowedDate =
+      firstDate && requestedDate < firstDate ? firstDate : requestedDate;
+    availability?.onOpen(
+      lastDate && allowedDate > lastDate ? lastDate : allowedDate,
+    );
     setCalendarOpen(true);
   };
 
   const closeCalendar = () => {
     setCalendarOpen(false);
+    availability?.onClose();
     onBlur?.();
   };
 
   const selectDate = (dateString: string) => {
-    if (blocked) return;
+    if (
+      blocked ||
+      availability?.loading ||
+      availability?.error ||
+      availability?.disabledDates.includes(dateString)
+    )
+      return;
     onChange(dateString);
     closeCalendar();
   };
@@ -131,6 +154,7 @@ export function DatePickerField({
               onClose={closeCalendar}
               onSelect={selectDate}
               selectedDate={selectedDate}
+              availability={availability}
             />
           ) : null}
         </View>

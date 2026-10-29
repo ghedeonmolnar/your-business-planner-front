@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Booking } from '@/features/bookings/types';
 import {
   bookingFormSchema,
+  bookingCreationFormSchema,
   BookingFormValues,
 } from '@/features/bookings/schemas/bookingFormSchema';
 import { bookingFormDefaults } from '@/features/bookings/utils/bookingFormValues';
@@ -30,6 +31,7 @@ import { FormActions } from '@/shared/components/FormActions';
 import { bookingStepFields } from '@/features/bookings/utils/bookingFormErrors';
 import { BookingConflictReview } from '@/features/bookings/components/BookingConflictReview';
 import { buildContactUrl } from '@/shared/utils/contactLinks';
+import { companyNow } from '@/shared/utils/formatDate';
 
 const allSteps = [
   'Sală și program',
@@ -59,14 +61,22 @@ export function BookingFormEditor({
   const staffEnabled = hasCompanyFeature(user, 'staff');
   const owner = JSON.stringify([user?.company?.id, user?.id]);
   const [initialAttempt] = useState(recoveredAttempt);
+  const today = companyNow().format('YYYY-MM-DD');
   const steps = staffEnabled
     ? allSteps
     : allSteps.filter(title => title !== 'Personal');
   const form = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingFormSchema),
+    resolver: zodResolver(
+      booking ? bookingFormSchema : bookingCreationFormSchema,
+    ),
     defaultValues:
       initialAttempt?.values ??
-      bookingFormDefaults(date, hallId, booking, selectedHall?.minimum_guests),
+      bookingFormDefaults(
+        !booking && date < today ? today : date,
+        hallId,
+        booking,
+        selectedHall?.minimum_guests,
+      ),
   });
   const [stepIndex, setStep] = useState(initialAttempt ? steps.length - 1 : 0);
   const step = Math.min(stepIndex, steps.length - 1);
@@ -180,8 +190,11 @@ export function BookingFormEditor({
       {step === 0 ? (
         <>
           <BookingScheduleFields
-            control={form.control}
+            key={values.hall_id}
+            form={form}
             halls={hallItems}
+            hallId={values.hall_id}
+            bookingId={booking?.id}
             hallsState={{
               loading: halls.isLoading,
               error: halls.error,
@@ -196,6 +209,11 @@ export function BookingFormEditor({
             selectedHallId={booking?.hall_id}
             retainedType={booking?.type}
             onHallSelected={id => {
+              if (id === form.getValues('hall_id')) return;
+              for (const field of ['date', 'starts_at', 'ends_at'] as const) {
+                form.setValue(field, '', { shouldDirty: true });
+              }
+              form.clearErrors(['date', 'starts_at', 'ends_at']);
               if (!booking && !form.getFieldState('minimum_guests').isDirty) {
                 form.setValue(
                   'minimum_guests',

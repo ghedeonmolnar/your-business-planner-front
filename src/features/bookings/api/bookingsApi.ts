@@ -77,7 +77,13 @@ export const getCalendarApi = (filters: BookingFilters, signal?: AbortSignal) =>
 export const getCalendarRevisionApi = (signal?: AbortSignal) =>
   apiRequest('/calendar/revision', {
     signal,
-    schema: z.object({ revision: z.string().regex(/^[a-f0-9]{64}$/) }),
+    schema: z.object({
+      revision: z.string().regex(/^[a-f0-9]{64}$/),
+      availability_revision: z
+        .string()
+        .regex(/^[a-f0-9]{64}$/)
+        .optional(),
+    }),
   });
 
 export const hallDaySchema = z.object({

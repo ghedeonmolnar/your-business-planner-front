@@ -26,7 +26,7 @@ export function CalendarHallRow({
     : hall.status === 'inactive'
       ? 'Inactivă'
       : hall.status === 'tentative'
-        ? 'Provizorie'
+        ? 'În așteptarea avansului'
         : hall.status === 'completed'
           ? 'Finalizată'
           : 'Rezervat';

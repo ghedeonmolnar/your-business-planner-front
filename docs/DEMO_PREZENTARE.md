@@ -22,7 +22,7 @@ Distribuția lunară este aceeași în ambii ani și include toate stările reze
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | Rezervări/an | 65 | 60 | 75 | 90 | 120 | 125 | 140 | 140 | 135 | 100 | 65 | 85 |
 
-La import existau 884 rezervări finalizate, 1.089 confirmate, 81 provizorii active, 222 anulate și 124 expirate. Calendarul include 225 de evenimente peste miezul nopții, dintre care 40 trec între luni și 2 între ani. În fiecare dintre cele 24 de luni există zile cu 0, 1, 2, 3, 4 și 5 săli ocupate, inclusiv continuările nocturne. Provizoriile își păstrează expirarea normală; aceste totaluri descriu momentul importului.
+La import existau 884 rezervări finalizate, 1.089 confirmate, 81 provizorii active, 222 anulate și 124 expirate. Calendarul include 225 de evenimente peste miezul nopții, dintre care 40 trec între luni și 2 între ani. În fiecare dintre cele 24 de luni există zile cu 0, 1, 2, 3, 4 și 5 săli ocupate, inclusiv continuările nocturne. Aceste totaluri descriu momentul importului. Fluxul actual numește cererile tentative În așteptarea avansului: ele nu expiră automat și nu blochează sala; numai confirmarea explicită rezervă data.
 
 Numele și textele adăugate sunt fictive. Telefoanele noi folosesc intervalele internaționale rezervate pentru ficțiune [publicate de Ofcom](https://www.ofcom.org.uk/phones-and-broadband/phone-numbers/numbers-for-drama), pentru a evita folosirea numerelor unor persoane reale. Notele contactelor precizează acest lucru. Datele demonstrative nu se folosesc pentru apeluri sau mesaje.
 
@@ -77,7 +77,7 @@ Filtrul sălii este în antet. Zilele complet ocupate sunt verzi, inclusiv când
 
 Arată clientul, invitații, meniul, personalul și remunerațiile, apoi extinde **Plăți și cheltuieli** și **Documente**. Deschide unul dintre PDF-uri; fișierul trebuie descărcat prin mecanismul privat existent. Documentele sunt exemple generice, marcate fără valoare contractuală sau fiscală.
 
-Pentru serviciile suplimentare, deschide **Raluca Diaconu — Sala Imperial**, în aceeași zi: total 105.220,00 RON, rest 79.915,00 RON. Pentru detalii încă necompletate, exemplul inițial este **Elena Diaconu — Sala Magnolia — 31 octombrie 2026**: provizorie, fără program și meniu, total zero. Această provizorie expiră natural; după expirare se prezintă ca exemplu istoric, iar o provizorie încă activă se alege din lista filtrată.
+Pentru serviciile suplimentare, deschide **Raluca Diaconu — Sala Imperial**, în aceeași zi: total 105.220,00 RON, rest 79.915,00 RON. Pentru detalii încă necompletate, exemplul inițial este **Elena Diaconu — Sala Magnolia — 31 octombrie 2026**: provizorie, fără program și meniu, total zero. Dacă starea a fost deja salvată ca Expirată, exemplul rămâne istoric. Cererile în așteptarea avansului din fluxul actual rămân fără termen și fără să ocupe sala.
 
 ### 3. Financiar — minutele 6–9
 

@@ -1,5 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/api/queryKeys';
+import { invalidateCalendarAvailability } from '@/shared/api/calendarAvailabilityInvalidation';
 
 type QueryKey = readonly unknown[];
 type CalendarRevisionData = {
@@ -11,7 +12,13 @@ export const reconcilePlannerCalendar = (
   client: QueryClient,
   companyId: string,
   revision: string,
+  availabilityRevision?: string,
 ) => {
+  invalidateCalendarAvailability(
+    client,
+    companyId,
+    availabilityRevision ?? revision,
+  );
   const cached = [
     ...client.getQueriesData<CalendarRevisionData>({
       queryKey: queryKeys.planner.calendars(companyId),
@@ -39,6 +46,7 @@ export const invalidatePlannerBooking = (
   companyId: string,
   bookingId: string,
 ) => {
+  invalidateCalendarAvailability(client, companyId);
   invalidateAll(client, [
     queryKeys.planner.bookingLists(companyId),
     queryKeys.planner.booking(companyId, bookingId),
@@ -64,6 +72,10 @@ export const refreshPlannerCalendar = (
     }),
     client.refetchQueries({
       queryKey: queryKeys.planner.directories(companyId, 'hall-day'),
+      type: 'active',
+    }),
+    client.refetchQueries({
+      queryKey: queryKeys.planner.dateAvailabilities(companyId),
       type: 'active',
     }),
   ]);
@@ -123,6 +135,7 @@ export const invalidatePlannerDirectory = (
     queryKeys.planner.reminderWindows(companyId),
   ]);
   if (kind === 'halls') {
+    invalidateCalendarAvailability(client, companyId);
     invalidateAll(client, [
       queryKeys.planner.hallLists(companyId),
       queryKeys.planner.hallDetails(companyId),

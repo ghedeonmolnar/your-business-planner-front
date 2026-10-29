@@ -5,6 +5,7 @@ import { setCompanyAccessHandler } from '@/shared/api/sessionExpiry';
 import { clearPendingEventNavigation } from '@/shared/navigation/navigationRef';
 import { clearEventReminders } from '@/features/events/notifications/clearEventReminders';
 import { reportError } from '@/shared/monitoring/reportError';
+import { setCalendarAvailabilityOwner } from '@/shared/storage/calendarAvailabilityStorage';
 
 export const useCompanyAccess = (
   user: AuthUser | null,
@@ -34,6 +35,9 @@ export const useCompanyAccess = (
       return;
     }
     clearPendingEventNavigation();
+    void setCalendarAvailabilityOwner('').catch(error =>
+      reportError(error, { source: 'clear-inactive-calendar-cache' }),
+    );
     queryClient
       .cancelQueries()
       .then(() => queryClient.clear())

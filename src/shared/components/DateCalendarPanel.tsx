@@ -1,13 +1,27 @@
 import React, { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Surface, Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { Calendar, CalendarProps, DateData } from 'react-native-calendars';
+import dayjs from 'dayjs';
 import { calendarDayStyles } from '@/shared/components/calendarDayStyles';
 import { CalendarYearPicker } from '@/shared/components/CalendarYearPicker';
 import { IconButton } from '@/shared/components/IconButton';
 import { theme } from '@/shared/theme/theme';
 import { dateToIsoDate } from '@/shared/utils/dateInput';
+import { formatLongDate } from '@/shared/utils/formatDate';
+import { ErrorBanner } from '@/shared/components/ErrorBanner';
+import { LoadingState } from '@/shared/components/LoadingState';
+import { dateCalendarPanelStyles as styles } from '@/shared/components/dateCalendarPanelStyles';
+
+export type DateCalendarAvailability = {
+  disabledDates: string[];
+  loading: boolean;
+  error?: unknown;
+  unverified?: boolean;
+  onRetry: () => unknown;
+  onMonthChange: (date: string) => void;
+};
 
 type DateCalendarPanelProps = {
   displayValue: string;
@@ -16,6 +30,7 @@ type DateCalendarPanelProps = {
   onClose: () => void;
   onSelect: (date: string) => void;
   selectedDate: string;
+  availability?: DateCalendarAvailability;
 };
 
 const clampIsoDate = (
@@ -43,6 +58,7 @@ export function DateCalendarPanel({
   onClose,
   onSelect,
   selectedDate,
+  availability,
 }: DateCalendarPanelProps) {
   const [visibleDate, setVisibleDate] = useState(() =>
     clampIsoDate(
@@ -57,9 +73,47 @@ export function DateCalendarPanel({
       ? { minimum: yearOf(minimumDate), maximum: yearOf(maximumDate) }
       : null;
   const visibleYear = yearOf(visibleDate);
+  const selectionBlocked =
+    availability?.loading || Boolean(availability?.error);
+  const markedDates: CalendarProps['markedDates'] = {};
+  const visibleMonth = dayjs(visibleDate).startOf('month');
+  const previousMonthBlocked = Boolean(
+    minimumDate && visibleDate.slice(0, 7) <= minimumDate.slice(0, 7),
+  );
+  const nextMonthBlocked = Boolean(
+    maximumDate && visibleDate.slice(0, 7) >= maximumDate.slice(0, 7),
+  );
+  const disabledDates = selectionBlocked
+    ? Array.from({ length: visibleMonth.daysInMonth() }, (_, day) =>
+        visibleMonth.add(day, 'day').format('YYYY-MM-DD'),
+      )
+    : (availability?.disabledDates ?? []);
+  for (const date of disabledDates) {
+    markedDates[date] = {
+      disabled: true,
+      disableTouchEvent: true,
+      accessibilityLabel: `${formatLongDate(date)}, ${
+        selectionBlocked
+          ? 'disponibilitate neconfirmată'
+          : 'rezervată, indisponibilă'
+      }`,
+    };
+  }
+  if (selectedDate && !selectionBlocked && !markedDates[selectedDate]) {
+    markedDates[selectedDate] = {
+      selected: true,
+      selectedColor: theme.colors.primary,
+    };
+  }
+
+  const changeVisibleDate = (date: string) => {
+    const allowedDate = clampIsoDate(date, minimumDate, maximumDate);
+    setVisibleDate(allowedDate);
+    availability?.onMonthChange(allowedDate);
+  };
 
   const pickYear = (year: number) => {
-    setVisibleDate(
+    changeVisibleDate(
       clampIsoDate(
         `${year}-${visibleDate.slice(5, 7)}-01`,
         minimumDate,
@@ -82,6 +136,18 @@ export function DateCalendarPanel({
           onPress={onClose}
         />
       </View>
+      {availability?.loading ? <LoadingState /> : null}
+      {availability?.unverified ? (
+        <Text accessibilityRole="alert" style={styles.notice}>
+          Disponibilitatea nu a fost actualizată. O vom verifica la salvare.
+        </Text>
+      ) : null}
+      {availability?.error && !availability.loading ? (
+        <ErrorBanner
+          message="Nu am putut verifica disponibilitatea sălii."
+          onRetry={availability.onRetry}
+        />
+      ) : null}
       {yearRange ? (
         <Pressable
           accessibilityLabel="Alege anul"
@@ -110,25 +176,43 @@ export function DateCalendarPanel({
         <Calendar
           current={visibleDate}
           disableAllTouchEventsForDisabledDays
+          disabledByDefault={selectionBlocked}
+          disableArrowLeft={previousMonthBlocked}
+          disableArrowRight={nextMonthBlocked}
           enableSwipeMonths
           firstDay={1}
           hideExtraDays
-          markedDates={
-            selectedDate
-              ? {
-                  [selectedDate]: {
-                    selected: true,
-                    selectedColor: theme.colors.primary,
-                  },
-                }
-              : undefined
-          }
+          markedDates={markedDates}
           maxDate={maximumDate}
           minDate={minimumDate}
-          onDayPress={(day: DateData) => onSelect(day.dateString)}
-          onMonthChange={(month: DateData) => setVisibleDate(month.dateString)}
+          onPressArrowLeft={subtractMonth => {
+            if (!previousMonthBlocked) subtractMonth();
+          }}
+          onPressArrowRight={addMonth => {
+            if (!nextMonthBlocked) addMonth();
+          }}
+          onDayPress={(day: DateData) => {
+            if (
+              selectionBlocked ||
+              markedDates[day.dateString]?.disabled ||
+              (minimumDate && day.dateString < minimumDate) ||
+              (maximumDate && day.dateString > maximumDate)
+            )
+              return;
+            onSelect(day.dateString);
+          }}
+          onMonthChange={(month: DateData) =>
+            changeVisibleDate(month.dateString)
+          }
           renderArrow={direction => (
-            <View style={styles.arrow}>
+            <View
+              style={[
+                styles.arrow,
+                (direction === 'left' ? previousMonthBlocked : nextMonthBlocked)
+                  ? styles.disabledArrow
+                  : undefined,
+              ]}
+            >
               <Ionicons
                 color={theme.colors.surface}
                 name={direction === 'left' ? 'chevron-back' : 'chevron-forward'}
@@ -157,56 +241,3 @@ export function DateCalendarPanel({
     </Surface>
   );
 }
-
-const styles = StyleSheet.create({
-  panel: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.primary,
-    borderRadius: theme.radius.lg,
-    borderWidth: 1,
-    maxWidth: 440,
-    overflow: 'hidden',
-    padding: theme.spacing.md,
-    width: '100%',
-    ...theme.shadow,
-  },
-  header: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingBottom: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.xs,
-  },
-  eyebrow: {
-    color: theme.colors.muted,
-    fontFamily: theme.fonts.bodyMedium,
-    fontSize: theme.typography.label,
-  },
-  title: {
-    color: theme.colors.text,
-    fontFamily: theme.fonts.heading,
-    fontSize: theme.typography.subtitle,
-    marginTop: 2,
-  },
-  yearToggle: {
-    alignItems: 'center',
-    alignSelf: 'flex-start',
-    flexDirection: 'row',
-    gap: theme.spacing.xs,
-    minHeight: 44,
-    paddingHorizontal: theme.spacing.xs,
-  },
-  yearToggleText: {
-    color: theme.colors.primary,
-    fontFamily: theme.fonts.bodySemibold,
-    fontSize: theme.typography.body,
-  },
-  arrow: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.sm,
-    height: 38,
-    justifyContent: 'center',
-    width: 38,
-  },
-});

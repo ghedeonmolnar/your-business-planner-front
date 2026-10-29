@@ -78,7 +78,7 @@ export function CalendarMonth({
                 testID={`calendar-day:${iso}`}
                 accessibilityRole="button"
                 accessibilityState={{ selected: isSelected }}
-                accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${occupancyLabel}${summary ? `${hasHalls ? `, ${summary.free} săli libere` : ', nicio sală activă în acest filtru'}, ${summary.confirmed} confirmate, ${summary.tentative} provizorii` : ', date indisponibile'}`}
+                accessibilityLabel={`${formatLongDate(iso)}${isToday ? ', azi' : ''}${occupancyLabel}${summary ? `${hasHalls ? `, ${summary.free} săli libere` : ', nicio sală activă în acest filtru'}, ${summary.confirmed} confirmate, ${summary.tentative} în așteptarea avansului` : ', date indisponibile'}`}
                 onPress={() => onSelect(iso)}
                 style={styles.cell}
               >

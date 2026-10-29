@@ -98,5 +98,18 @@ test('mapează câmpul 422 din envelope fără a afișa textul tehnic al serveru
   expect(form.getFieldState('client_id').error?.message).toBe(
     'Completează telefonul clientului înainte de rezervare.',
   );
+  await ReactTestRenderer.act(async () => {
+    step = applyBookingApiErrors(
+      new ApiError('Validare', 422, {
+        response: { errors: { date: ['BOOKING_DATE_IN_PAST'] } },
+      }),
+      form,
+      true,
+    );
+  });
+  expect(step).toBe(0);
+  expect(form.getFieldState('date').error?.message).toBe(
+    'Alege ziua de azi sau o dată viitoare.',
+  );
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });

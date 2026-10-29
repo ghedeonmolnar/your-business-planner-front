@@ -31,12 +31,6 @@ export function BookingEventSection({
         label="Sfârșit"
         value={formatCompanyDateTime(booking.ends_at)}
       />
-      {booking.expires_at ? (
-        <BookingDetailField
-          label="Termen provizoriu"
-          value={formatCompanyDateTime(booking.expires_at)}
-        />
-      ) : null}
       {canManage ? (
         <>
           <BookingDetailField

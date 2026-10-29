@@ -16,6 +16,8 @@ type ControlledDateFieldProps<T extends FieldValues> = {
   style?: DatePickerFieldProps['style'];
   fieldStyle?: DatePickerFieldProps['fieldStyle'];
   disabled?: boolean;
+  availability?: DatePickerFieldProps['availability'];
+  onSelectionChange?: (value: string) => void;
 };
 
 export function ControlledDateField<T extends FieldValues>({
@@ -29,6 +31,8 @@ export function ControlledDateField<T extends FieldValues>({
   style,
   fieldStyle,
   disabled,
+  availability,
+  onSelectionChange,
 }: ControlledDateFieldProps<T>) {
   return (
     <Controller
@@ -44,13 +48,17 @@ export function ControlledDateField<T extends FieldValues>({
           maximumDate={maximumDate}
           minimumDate={minimumDate}
           onBlur={onBlur}
-          onChange={onChange}
+          onChange={selectedDate => {
+            onSelectionChange?.(selectedDate);
+            onChange(selectedDate);
+          }}
           placeholder={placeholder}
           value={value}
           displayFormat={displayFormat}
           style={style}
           fieldStyle={fieldStyle}
           disabled={disabled}
+          availability={availability}
         />
       )}
     />
