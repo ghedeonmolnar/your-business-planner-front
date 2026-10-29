@@ -198,6 +198,7 @@ test('alegerea unei săli corectează imediat eroarea pasului și câmpurile obl
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
   const hallGroup = () =>
     renderer.root
+      .findByType(BookingForm)
       .findAllByType(FormInput)
       .find(group => group.props.label === 'Sală');
   try {

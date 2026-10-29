@@ -46,7 +46,9 @@ test('alege ora și minutul separat, acceptă minute exacte și confirmă într-
     await ReactTestRenderer.act(async () =>
       renderer.root
         .findAllByType(TextInput)
-        .find(input => input.props.label === 'Minut')!
+        .find(
+          input => input.props.accessibilityLabel === 'Minut, între 00 și 59',
+        )!
         .props.onChangeText('17'),
     );
     expect(confirm(renderer).props.disabled).toBe(false);
@@ -74,7 +76,9 @@ test('închiderea nu schimbă ora existentă și o valoare invalidă nu se poate
     await ReactTestRenderer.act(async () =>
       renderer.root
         .findAllByType(TextInput)
-        .find(input => input.props.label === 'Oră')!
+        .find(
+          input => input.props.accessibilityLabel === 'Oră, între 00 și 23',
+        )!
         .props.onChangeText('29'),
     );
     expect(confirm(renderer).props.disabled).toBe(true);

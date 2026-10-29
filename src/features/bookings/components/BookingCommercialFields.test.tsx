@@ -118,6 +118,14 @@ test('minimul este informativ, iar prețurile sosite ulterior nu suprascriu nego
       child_menu_price: '120.00',
       date: '',
     });
+    await ReactTestRenderer.act(async () => {
+      controls.form?.setValue('child_menu_price', '110.00', { shouldDirty: true });
+      controls.setHalls?.([
+        firstHall,
+        { ...secondHall, child_menu_price: '130.00' },
+      ]);
+    });
+    expect(controls.form?.getValues('child_menu_price')).toBe('110.00');
   } finally {
     await unmount();
   }
@@ -166,8 +174,8 @@ test('serviciile sunt carduri distincte, iar eliminarea unuia păstrează restul
       controls.form?.setValue('extra_services.1.name', 'Photo booth');
       controls.form?.setValue('extra_services.1.amount', '500.25');
     });
-    expect(renderedText(renderer)).toContain('Serviciu suplimentar 1');
-    expect(renderedText(renderer)).toContain('Serviciu suplimentar 2');
+    expect(renderedText(renderer)).toMatch(/Serviciu suplimentar\s+1/);
+    expect(renderedText(renderer)).toMatch(/Serviciu suplimentar\s+2/);
     await ReactTestRenderer.act(async () =>
       renderer.root
         .findAllByType(IconButton)
