@@ -6,21 +6,14 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { AgendaSummary } from '@/features/company/components/AgendaSummary';
 import { MoreInfoModal } from '@/features/company/components/MoreInfoModal';
 import { useMoreActions } from '@/features/company/hooks/useMoreActions';
-import { AppButton } from '@/shared/components/AppButton';
 import { IconButton } from '@/shared/components/IconButton';
 import { theme } from '@/shared/theme/theme';
 
 type AgendaHeaderProps = {
-  onCreate: () => void;
   onOpenCalendar: () => void;
-  creating?: boolean;
 };
 
-export function AgendaHeader({
-  onCreate,
-  onOpenCalendar,
-  creating = false,
-}: AgendaHeaderProps) {
+export function AgendaHeader({ onOpenCalendar }: AgendaHeaderProps) {
   const { user } = useAuth();
   const actions = useMoreActions();
   const canManage = user?.role !== 'employee';
@@ -41,18 +34,6 @@ export function AgendaHeader({
             onPress={() => actions.setPanel('notifications')}
           />
         </View>
-        <Text style={styles.description}>
-          Evenimentele care urmează și încasările tale, într-un singur loc.
-        </Text>
-        {canManage ? (
-          <AppButton
-            icon="add"
-            label="Rezervare nouă"
-            loading={creating}
-            size="large"
-            onPress={onCreate}
-          />
-        ) : null}
         {canManage ? <AgendaSummary /> : null}
         <View style={styles.sectionRow}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>
@@ -117,11 +98,6 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.display,
   },
   notifications: { borderRadius: theme.radius.pill },
-  description: {
-    color: theme.colors.menu.muted,
-    fontFamily: theme.fonts.body,
-    fontSize: theme.typography.bodySmall,
-  },
   sectionRow: {
     alignItems: 'center',
     flexDirection: 'row',
