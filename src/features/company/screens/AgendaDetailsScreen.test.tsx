@@ -29,7 +29,7 @@ test('problemele păstrează ordinea serverului, se paginează și deschid rezer
       return Promise.resolve(
         jsonResponse(200, { ...plannerAccount, features: ['finance'] }),
       );
-    const secondPage = String(url).includes('page=2');
+    const secondPage = /[?&]page=2(?:&|$)/.test(String(url));
     return Promise.resolve(
       jsonResponse(200, {
         data: [
