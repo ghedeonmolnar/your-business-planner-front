@@ -97,6 +97,7 @@ export function ClientsScreen() {
 
   const confirmDelete = (client: Client) => {
     confirmAction({
+      destructive: true,
       title: 'Confirmare',
       message: `Ștergi clientul "${client.name}"?`,
       confirmLabel: 'Șterge',

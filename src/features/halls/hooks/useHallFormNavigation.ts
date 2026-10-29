@@ -31,6 +31,7 @@ export function useHallFormNavigation({
       return;
     }
     confirmAction({
+      destructive: true,
       title: 'Renunți la modificări?',
       message: 'Modificările nesalvate se vor pierde.',
       confirmLabel: 'Renunță',

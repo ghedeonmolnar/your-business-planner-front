@@ -65,6 +65,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
   const changeBlocked = () => {
     const isBlocked = profile.account.status === 'blocked';
     confirmAction({
+      destructive: !isBlocked,
       title: isBlocked ? 'Deblocare cont' : 'Blocare cont',
       message: isBlocked
         ? `Deblochezi contul ${profile.account.email}?`

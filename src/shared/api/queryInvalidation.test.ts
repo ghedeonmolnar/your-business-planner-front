@@ -8,6 +8,27 @@ import {
 } from '@/shared/api/queryInvalidation';
 import { queryKeys } from '@/shared/api/queryKeys';
 
+test('avansul salvat cu rezervarea reîncarcă numai registrul financiar al evenimentului afectat', () => {
+  const client = new QueryClient();
+  const payments = queryKeys.planner.finance(
+    'company-1',
+    'event-1',
+    'payments',
+  );
+  const otherPayments = queryKeys.planner.finance(
+    'company-1',
+    'event-2',
+    'payments',
+  );
+  [payments, otherPayments].forEach(key =>
+    client.setQueryData(key, { pages: [] }),
+  );
+  invalidatePlannerBooking(client, 'company-1', 'event-1', true);
+  expect(client.getQueryState(payments)?.isInvalidated).toBe(true);
+  expect(client.getQueryState(otherPayments)?.isInvalidated).toBe(false);
+  client.clear();
+});
+
 test('revizia neschimbată păstrează cache-ul, iar schimbarea invalidează numai calendarul companiei', () => {
   const client = new QueryClient();
   const calendar = queryKeys.planner.calendar('company-1', {

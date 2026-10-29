@@ -1,15 +1,11 @@
 import { useAuth } from '@/features/auth/AuthProvider';
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React, { useState } from 'react';
-import { Text } from 'react-native-paper';
 import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Booking } from '@/features/bookings/types';
-import {
-  bookingFormSchema,
-  bookingCreationFormSchema,
-  BookingFormValues,
-} from '@/features/bookings/schemas/bookingFormSchema';
+import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
+import { bookingEditorSchema } from '@/features/bookings/schemas/bookingEditorSchema';
 import { bookingFormDefaults } from '@/features/bookings/utils/bookingFormValues';
 import { BookingReviewFields } from '@/features/bookings/components/BookingReviewFields';
 import { BookingScheduleFields } from '@/features/bookings/components/BookingScheduleFields';
@@ -24,7 +20,6 @@ import {
 } from '@/features/bookings/components/BookingCreationNotice';
 import { BookingCreationAttempt } from '@/features/bookings/utils/bookingCreationRecovery';
 import { useDirectory } from '@/features/company/hooks/useCompany';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
 import { DirectoryItem } from '@/features/company/types';
 import { includeDirectorySelections } from '@/features/company/utils/includeDirectorySelections';
@@ -60,7 +55,8 @@ export function BookingFormEditor({
   const [booking, setBooking] = useState(initialBooking);
   const [conflict, setConflict] = useState(false);
   const { user } = useAuth();
-  const staffEnabled = hasCompanyFeature(user, 'staff');
+  const staffEnabled = Boolean(booking) && hasCompanyFeature(user, 'staff');
+  const financeEnabled = hasCompanyFeature(user, 'finance');
   const owner = JSON.stringify([user?.company?.id, user?.id]);
   const [initialAttempt] = useState(recoveredAttempt);
   const today = companyNow().format('YYYY-MM-DD');
@@ -68,9 +64,7 @@ export function BookingFormEditor({
     ? allSteps
     : allSteps.filter(title => title !== 'Personal');
   const form = useAppForm<BookingFormValues>({
-    resolver: zodResolver(
-      booking ? bookingFormSchema : bookingCreationFormSchema,
-    ),
+    resolver: zodResolver(bookingEditorSchema(booking, financeEnabled)),
     defaultValues:
       initialAttempt?.values ??
       bookingFormDefaults(
@@ -120,6 +114,7 @@ export function BookingFormEditor({
     owner,
     initialAttempt,
     staffEnabled,
+    financeEnabled,
     validatePhone: validateClientPhone,
     onClose,
     onErrorStep: setStep,
@@ -135,10 +130,10 @@ export function BookingFormEditor({
   return (
     <FormModalFrame
       visible
-      fitContent={step === 1}
       busy={save.isPending}
       readOnly={!booking && save.uncertain}
       title={steps[step]}
+      progress={{ current: step + 1, total: steps.length }}
       onClose={onClose}
       hasUnsavedChanges={form.formState.isDirty}
       footer={
@@ -189,10 +184,6 @@ export function BookingFormEditor({
           }}
         />
       ) : null}
-      <Text style={styles.muted}>
-        Pasul {step + 1} din {steps.length}
-        {step === 0 ? ' · Orele sunt în fusul României.' : ''}
-      </Text>
       {step === 0 ? (
         <BookingScheduleFields
           key={values.hall_id}
@@ -223,13 +214,21 @@ export function BookingFormEditor({
           lookup={clientLookup}
         />
       ) : null}
-      {step === 2 ? <BookingCommercialFields form={form} /> : null}
+      {step === 2 ? (
+        <BookingCommercialFields
+          form={form}
+          editing={Boolean(booking)}
+          booking={booking}
+          financeEnabled={financeEnabled}
+        />
+      ) : null}
       {step === 3 && staffEnabled ? (
         <BookingStaffStep form={form} booking={booking} />
       ) : null}
       {step === steps.length - 1 ? (
         <BookingReviewFields
           form={form}
+          booking={booking}
           hallName={hallItems.find(item => item.id === values.hall_id)?.name}
           clientName={
             clientLookup.data?.client?.name ||

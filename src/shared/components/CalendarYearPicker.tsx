@@ -26,6 +26,7 @@ export function CalendarYearPicker({
 
   return (
     <ScrollView
+      nestedScrollEnabled
       contentContainerStyle={styles.grid}
       ref={scrollRef}
       style={styles.list}

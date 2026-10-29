@@ -2,6 +2,12 @@ import React from 'react';
 import { useWindowDimensions, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Booking } from '@/features/bookings/types';
+import {
+  bookingCommercialAmounts,
+  bookingServiceAmountLabel,
+  serviceAppliesToAdultMenus,
+  serviceAppliesToChildMenus,
+} from '@/features/bookings/utils/bookingExtraServices';
 import { BookingDetailsSection } from '@/features/bookings/components/BookingDetailsSection';
 import {
   BookingDetailField,
@@ -20,6 +26,7 @@ export function BookingFinancialSection({
 }) {
   const { width, fontScale } = useWindowDimensions();
   const compact = width / fontScale < BOOKING_COMPACT_WIDTH;
+  const amounts = bookingCommercialAmounts(booking);
   const metrics = [
     {
       label: 'Minim contractual',
@@ -67,6 +74,23 @@ export function BookingFinancialSection({
         })}
       </View>
       <View style={styles.divider}>
+        {booking.extra_services?.some(service =>
+          serviceAppliesToAdultMenus(service.pricing_type),
+        ) ? (
+          <BookingDetailField
+            label="Preț meniu adulți cu servicii"
+            value={formatExactMoney(amounts.adultMenuPrice)}
+          />
+        ) : null}
+        {Number(booking.child_guests) > 0 &&
+        booking.extra_services?.some(service =>
+          serviceAppliesToChildMenus(service.pricing_type),
+        ) ? (
+          <BookingDetailField
+            label="Preț meniu copii cu servicii"
+            value={formatExactMoney(amounts.childMenuPrice)}
+          />
+        ) : null}
         <BookingDetailField
           label="Avans convenit"
           value={
@@ -93,7 +117,7 @@ export function BookingFinancialSection({
           <BookingDetailField
             key={`${index}-${service.name}`}
             label={service.name}
-            value={formatExactMoney(service.amount)}
+            value={bookingServiceAmountLabel(service)}
           />
         ))}
       </View>

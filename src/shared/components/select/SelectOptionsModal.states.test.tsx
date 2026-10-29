@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { SelectOptionsModal } from '@/shared/components/select/SelectOptionsModal';
 import { SelectOptionRow } from '@/shared/components/select/SelectOptionRow';
 import { SearchField } from '@/shared/components/SearchField';
@@ -18,18 +19,24 @@ test('încărcarea paginii următoare păstrează căutarea și selecția multip
   const onChange = jest.fn();
   const render = (more: boolean) => (
     <AppThemeProvider>
-      <SelectOptionsModal
-        visible
-        single={false}
-        allowClear
-        label="Persoane"
-        searchPlaceholder="Caută persoane"
-        noItemsText="Nu există persoane"
-        options={more ? [...options, { id: '8', name: 'Opțiunea 8' }] : options}
-        selectedValues={[]}
-        onChange={onChange}
-        onClose={jest.fn()}
-      />
+      <SafeAreaInsetsContext.Provider
+        value={{ top: 0, bottom: 0, left: 0, right: 0 }}
+      >
+        <SelectOptionsModal
+          visible
+          single={false}
+          allowClear
+          label="Persoane"
+          searchPlaceholder="Caută persoane"
+          noItemsText="Nu există persoane"
+          options={
+            more ? [...options, { id: '8', name: 'Opțiunea 8' }] : options
+          }
+          selectedValues={[]}
+          onChange={onChange}
+          onClose={jest.fn()}
+        />
+      </SafeAreaInsetsContext.Provider>
     </AppThemeProvider>
   );
   let renderer: ReactTestRenderer.ReactTestRenderer;
@@ -61,19 +68,23 @@ test('încărcarea și eroarea opțiunilor nu apar ca listă goală', async () =
   const retry = jest.fn();
   const render = (loading: boolean, error?: Error) => (
     <AppThemeProvider>
-      <SelectOptionsModal
-        visible
-        single
-        allowClear={false}
-        label="Săli"
-        searchPlaceholder="Caută sala"
-        noItemsText="Nu există săli"
-        options={[]}
-        selectedValues={[]}
-        onChange={jest.fn()}
-        onClose={jest.fn()}
-        optionsState={{ loading, error, onRetry: retry }}
-      />
+      <SafeAreaInsetsContext.Provider
+        value={{ top: 0, bottom: 0, left: 0, right: 0 }}
+      >
+        <SelectOptionsModal
+          visible
+          single
+          allowClear={false}
+          label="Săli"
+          searchPlaceholder="Caută sala"
+          noItemsText="Nu există săli"
+          options={[]}
+          selectedValues={[]}
+          onChange={jest.fn()}
+          onClose={jest.fn()}
+          optionsState={{ loading, error, onRetry: retry }}
+        />
+      </SafeAreaInsetsContext.Provider>
     </AppThemeProvider>
   );
   let renderer: ReactTestRenderer.ReactTestRenderer;

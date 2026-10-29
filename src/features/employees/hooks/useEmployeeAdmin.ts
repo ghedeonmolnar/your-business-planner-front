@@ -66,6 +66,7 @@ export const useEmployeeAdmin = () => {
 
   const confirmPermanentDelete = (employee: Employee) => {
     confirmAction({
+      destructive: true,
       title: 'Ștergere definitivă',
       message: `Sigur dorești să ștergi angajatul ${employee.name}?`,
       cancelLabel: 'Nu',
@@ -90,6 +91,7 @@ export const useEmployeeAdmin = () => {
     }
 
     confirmAction({
+      destructive: true,
       title: 'Dezactivare angajat',
       message: `Angajatul ${employee.name} va fi trecut în inactiv. Apasă din nou pe coș pentru ștergerea definitivă.`,
       confirmLabel: 'Dezactivează',

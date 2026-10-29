@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { AppButton } from '@/shared/components/AppButton';
 import { AppDialog } from '@/shared/components/AppDialog';
 import { confirmAction } from '@/shared/feedback/confirmAction';
@@ -22,7 +23,13 @@ const renderHosts = async (element: React.ReactElement) => {
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
 
   await ReactTestRenderer.act(async () => {
-    renderer = ReactTestRenderer.create(element);
+    renderer = ReactTestRenderer.create(
+      <SafeAreaInsetsContext.Provider
+        value={{ top: 0, bottom: 0, left: 0, right: 0 }}
+      >
+        {element}
+      </SafeAreaInsetsContext.Provider>,
+    );
   });
 
   if (!renderer) {
@@ -42,6 +49,36 @@ const dialogTitlesByHost = (renderer: ReactTestRenderer.ReactTestRenderer) =>
   renderer.root
     .findAllByType(AppDialog)
     .map(host => host.props.dialog?.title ?? null);
+
+test.each([true, false])(
+  'confirmarea periculoasă folosește buton roșu, iar renunțarea la confirmare rămâne outline: %s',
+  async destructive => {
+    const renderer = await renderHosts(<DialogHost />);
+    try {
+      await openDialog(() =>
+        confirmAction({
+          title: 'Confirmare',
+          message: 'Verifică acțiunea.',
+          confirmLabel: 'Continuă',
+          cancelLabel: 'Rămâi',
+          destructive,
+          onConfirm: jest.fn(),
+        }),
+      );
+      const buttons = renderer.root.findAllByType(AppButton);
+      expect(
+        buttons.find(button => button.props.label === 'Continuă')?.props
+          .variant,
+      ).toBe(destructive ? 'danger' : 'primary');
+      expect(
+        buttons.find(button => button.props.label === 'Rămâi')?.props.variant,
+      ).toBe('outline');
+    } finally {
+      clearDialogs();
+      await ReactTestRenderer.act(async () => renderer.unmount());
+    }
+  },
+);
 
 test('schimbarea sesiunii elimina datele private si dezactiveaza confirmarile vechi', async () => {
   const renderer = await renderHosts(<DialogHost />);
@@ -162,7 +199,13 @@ test('the dialog opens in the host of the modal shown on top', async () => {
   expect(dialogTitlesByHost(renderer)).toEqual([null, 'Eroare']);
 
   await ReactTestRenderer.act(async () => {
-    renderer.update(renderScreen(false));
+    renderer.update(
+      <SafeAreaInsetsContext.Provider
+        value={{ top: 0, bottom: 0, left: 0, right: 0 }}
+      >
+        {renderScreen(false)}
+      </SafeAreaInsetsContext.Provider>,
+    );
   });
 
   expect(dialogTitlesByHost(renderer)).toEqual(['Eroare']);

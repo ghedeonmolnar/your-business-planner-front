@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BOOKING_SERVICE_PRICING_TYPES } from '@/features/bookings/types';
 
 export const staffAssignmentSchema = z.object({
   id: z.string().optional(),
@@ -46,7 +47,13 @@ export const bookingSchema = z.object({
   agreed_advance: z.string().optional(),
   advance_due_at: z.string().nullable().optional(),
   extra_services: z
-    .array(z.object({ name: z.string(), amount: z.string() }))
+    .array(
+      z.object({
+        name: z.string(),
+        amount: z.string(),
+        pricing_type: z.enum(BOOKING_SERVICE_PRICING_TYPES).optional(),
+      }),
+    )
     .optional(),
   paid_amount: z.string().optional(),
   outgoing_amount: z.string().optional(),

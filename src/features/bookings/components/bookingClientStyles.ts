@@ -23,7 +23,7 @@ export const bookingClientStyles = StyleSheet.create({
   },
   result: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: theme.spacing.md,
     backgroundColor: theme.colors.menu.background,
     borderRadius: theme.radius.md,
@@ -32,7 +32,8 @@ export const bookingClientStyles = StyleSheet.create({
   },
   existing: { backgroundColor: theme.colors.menu.successSoft },
   existingDescription: { color: theme.colors.menu.text },
-  resultContent: { flex: 1, gap: theme.spacing.sm },
+  resultContent: { flex: 1, gap: theme.spacing.xs },
+  resultDescription: { lineHeight: theme.typography.subtitle },
   resultLabel: {
     color: theme.colors.menu.text,
     fontFamily: theme.fonts.bodySemibold,

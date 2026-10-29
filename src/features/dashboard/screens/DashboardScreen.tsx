@@ -47,6 +47,7 @@ export function DashboardScreen() {
 
   const confirmSignOut = () => {
     confirmAction({
+      destructive: true,
       title: 'Delogare',
       message: 'Sigur dorești să te deloghezi din aplicație?',
       confirmLabel: 'Da',

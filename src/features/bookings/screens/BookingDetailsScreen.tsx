@@ -75,6 +75,7 @@ export function BookingDetailsScreen({
       return;
     confirmAction({
       title: 'Anulezi rezervarea?',
+      destructive: true,
       message:
         'Sala se eliberează în calendar. Rezervarea și plățile rămân în istoric.',
       confirmLabel: 'Anulează rezervarea',

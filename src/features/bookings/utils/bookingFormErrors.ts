@@ -16,6 +16,9 @@ const stepFields: FieldPath<BookingFormValues>[][] = [
     'menu_name',
     'agreed_advance',
     'advance_due_at',
+    'advance_received_amount',
+    'advance_received_method',
+    'advance_received_at',
     'extra_services',
   ],
   ['staff'],
@@ -101,15 +104,23 @@ export const applyBookingApiErrors = (
   if (typeof errors !== 'object' || errors === null || Array.isArray(errors)) {
     return null;
   }
-  const fields = Object.keys(errors).filter(knownBookingField);
+  const receiptFields: Record<string, FieldPath<BookingFormValues>> = {
+    'advance_receipt.amount': 'advance_received_amount',
+    'advance_receipt.method': 'advance_received_method',
+    'advance_receipt.paid_at': 'advance_received_at',
+  };
+  const fields = Object.keys(errors)
+    .map(field => receiptFields[field] ?? field)
+    .filter(knownBookingField);
   const dateErrors = 'date' in errors ? errors.date : undefined;
   fields.forEach(field =>
     form.setError(field, {
       type: 'server',
       message:
-        field === 'date' &&
-        Array.isArray(dateErrors) &&
-        dateErrors.includes('BOOKING_DATE_IN_PAST')
+        field === 'advance_due_at' ||
+        (field === 'date' &&
+          Array.isArray(dateErrors) &&
+          dateErrors.includes('BOOKING_DATE_IN_PAST'))
           ? 'Alege ziua de azi sau o dată viitoare.'
           : 'Verifică valoarea: nu mai este validă sau disponibilă.',
     }),

@@ -1,4 +1,5 @@
 import ReactTestRenderer from 'react-test-renderer';
+import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import {
   renderForm,
   press,
@@ -9,10 +10,19 @@ import {
 test('sends the event rating with a full settlement', async () => {
   const onSubmit = jest.fn();
   const renderer = await renderForm(onSubmit);
+  expect(renderer.root.findByType(FormModalFrame).props.progress).toEqual({
+    current: 1,
+    total: 2,
+  });
 
   await press(renderer, 'Notă eveniment');
   await press(renderer, '4 stele');
-  await submit(renderer);
+  await press(renderer, 'Salvează');
+  expect(renderer.root.findByType(FormModalFrame).props.progress).toEqual({
+    current: 2,
+    total: 2,
+  });
+  await press(renderer, 'Salvează plata');
 
   expect(onSubmit).toHaveBeenCalledWith(
     expect.objectContaining({
@@ -58,6 +68,9 @@ test('keeps the rating out of a partial settlement', async () => {
   const renderer = await renderForm(onSubmit);
 
   await selectSettlement(renderer, 1);
+  expect(
+    renderer.root.findByType(FormModalFrame).props.progress,
+  ).toBeUndefined();
 
   expect(
     renderer.root.findAllByProps({ accessibilityLabel: 'Notă eveniment' }),

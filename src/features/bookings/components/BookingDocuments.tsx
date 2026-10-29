@@ -69,6 +69,7 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
               loading={remove.isPending}
               onPress={() =>
                 confirmAction({
+                  destructive: true,
                   title: 'Ștergi documentul?',
                   message: document.title,
                   confirmLabel: 'Șterge',

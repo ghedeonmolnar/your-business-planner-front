@@ -133,6 +133,7 @@ export function EventsScreen() {
 
   const confirmDelete = (event: Event) => {
     confirmAction({
+      destructive: true,
       title: 'Confirmare',
       message: `Ștergi evenimentul "${event.location ?? 'Locație necompletată'}" din ${formatLongDate(event.date)}?`,
       confirmLabel: 'Șterge',

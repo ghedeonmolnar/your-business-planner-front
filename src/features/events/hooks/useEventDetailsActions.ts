@@ -108,6 +108,7 @@ export const useEventDetailsActions = (eventId: string) => {
 
   const confirmDeletePayment = (payment: EventPayment) => {
     confirmAction({
+      destructive: true,
       title: 'Confirmare',
       message: 'Ștergi această înregistrare?',
       confirmLabel: 'Șterge',
@@ -151,6 +152,7 @@ export const useEventDetailsActions = (eventId: string) => {
 
   const confirmDeleteDocument = (document: EventDocument) => {
     confirmAction({
+      destructive: true,
       title: 'Confirmare',
       message: `Ștergi documentul "${document.title}"?`,
       confirmLabel: 'Șterge',

@@ -11,6 +11,19 @@ export type StaffAssignment = {
   ends_at: string;
   estimated_cost?: string;
 };
+export const BOOKING_SERVICE_PRICING_TYPES = [
+  'fixed',
+  'per_menu',
+  'per_child_menu',
+  'per_all_menus',
+] as const;
+export type BookingServicePricing =
+  (typeof BOOKING_SERVICE_PRICING_TYPES)[number];
+export type BookingExtraService = {
+  name: string;
+  amount: string;
+  pricing_type?: BookingServicePricing;
+};
 export type Booking = {
   id: string;
   version: number;
@@ -39,7 +52,7 @@ export type Booking = {
   total_amount?: string;
   agreed_advance?: string;
   advance_due_at?: string | null;
-  extra_services?: { name: string; amount: string }[];
+  extra_services?: BookingExtraService[];
   paid_amount?: string;
   outgoing_amount?: string;
   cash_profit_amount?: string;
@@ -71,7 +84,13 @@ export type BookingPayload = {
   menu_name: string | null;
   agreed_advance: string;
   advance_due_at: string | null;
-  extra_services: { name: string; amount: string }[];
+  advance_receipt?: {
+    operation_id: string;
+    amount: string;
+    method: 'cash' | 'card' | 'transfer';
+    paid_at: string;
+  };
+  extra_services: BookingExtraService[];
   staff?: StaffAssignment[];
   notes: string;
 };

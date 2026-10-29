@@ -10,6 +10,7 @@ import { AppButton } from '@/shared/components/AppButton';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { formatCompanyDateTime } from '@/shared/utils/formatDate';
 import { formatExactMoney } from '@/shared/utils/money';
+import { bookingServiceAmountLabel } from '@/features/bookings/utils/bookingExtraServices';
 
 export function BookingConflictReview({
   bookingId,
@@ -55,6 +56,14 @@ export function BookingConflictReview({
             </Text>
           ) : null}
           <Text style={plannerStyles.text}>
+            Valoare estimată: {formatExactMoney(booking.total_amount)}
+          </Text>
+          {booking.extra_services?.map((service, index) => (
+            <Text key={`${index}-${service.name}`} style={plannerStyles.text}>
+              {service.name}: {bookingServiceAmountLabel(service)}
+            </Text>
+          ))}
+          <Text style={plannerStyles.text}>
             {booking.notes || 'Fără observații'}
           </Text>
           <AppButton
@@ -62,6 +71,7 @@ export function BookingConflictReview({
             variant="outline"
             onPress={() =>
               confirmAction({
+                destructive: true,
                 title: 'Înlocuiești ciorna?',
                 message:
                   'Modificările tale nesalvate vor fi înlocuite cu versiunea salvată de echipă.',

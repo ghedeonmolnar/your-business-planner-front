@@ -23,6 +23,7 @@ export function EventMapSection({
   const point = event.map_location;
   const deletePoint = () =>
     confirmAction({
+      destructive: true,
       title: 'Ștergi locația de pe hartă?',
       message: 'Locația și adresa scrise în rezervare se păstrează.',
       confirmLabel: 'Șterge pinul',

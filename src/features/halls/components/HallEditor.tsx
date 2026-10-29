@@ -108,6 +108,7 @@ export function HallEditor({
   });
   const reload = () =>
     confirmAction({
+      destructive: true,
       title: 'Încarci versiunea salvată?',
       message: 'Ciorna ta va fi înlocuită cu datele curente ale sălii.',
       confirmLabel: 'Încarcă versiunea',

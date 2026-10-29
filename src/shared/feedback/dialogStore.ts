@@ -10,6 +10,7 @@ export type DialogRequest = {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
+  destructive?: boolean;
   onConfirm?: ButtonAction;
   sessionGeneration?: number;
 };

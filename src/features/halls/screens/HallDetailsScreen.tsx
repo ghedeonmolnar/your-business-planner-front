@@ -41,6 +41,7 @@ export function HallDetailsScreen({
   const changeStatus = () => {
     if (!hall || busy || submitting.current) return;
     confirmAction({
+      destructive: hall.is_active,
       title: hall.is_active ? 'Dezactivezi sala?' : 'Reactivezi sala?',
       message: hall.is_active
         ? 'Sala nu va mai putea fi selectată pentru rezervări noi. Rezervările existente și istoricul se păstrează.'
@@ -73,6 +74,7 @@ export function HallDetailsScreen({
   const remove = () => {
     if (!hall?.permissions.can_delete || busy || submitting.current) return;
     confirmAction({
+      destructive: true,
       title: 'Ștergi sala?',
       message: `Sala „${hall.name}” va fi eliminată din listă. Operațiunea este permisă numai dacă nu există rezervări asociate.`,
       confirmLabel: 'Șterge sala',

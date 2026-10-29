@@ -78,7 +78,7 @@ export function BookingTimePicker({
   return (
     <FormModalFrame
       visible
-      fitContent
+      size="time"
       title={label}
       closeLabel="Închide alegerea orei"
       onClose={onClose}

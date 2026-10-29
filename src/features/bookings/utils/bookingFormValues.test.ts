@@ -68,6 +68,33 @@ test('confirmarea și copiii sunt opționali, iar payloadul păstrează precizia
   expect(payload).not.toHaveProperty('child_menu_price');
 });
 
+test('avansul opțional și tipul serviciului se trimit fără a inventa o încasare', () => {
+  const values: BookingFormValues = {
+    ...bookingFormDefaults('2027-11-13', 'hall-1'),
+    client_id: 'client-1',
+    agreed_advance: '',
+    extra_services: [
+      { name: 'Candy bar', amount: '10,25', pricing_type: 'per_menu' },
+    ],
+  };
+  expect(bookingPayload(values)).toMatchObject({
+    agreed_advance: '0',
+    extra_services: [
+      { name: 'Candy bar', amount: '10.25', pricing_type: 'per_menu' },
+    ],
+  });
+  expect(
+    bookingPayload({
+      ...values,
+      agreed_advance: '1000',
+      advance_due_at: '2027-11-01',
+    }),
+  ).toMatchObject({ agreed_advance: '1000', advance_due_at: '2027-11-01' });
+  expect(
+    bookingPayload({ ...values, status: 'confirmed' }).agreed_advance,
+  ).toBe('0');
+});
+
 test('clientul nou cere numai telefonul, iar numele este opțional în payload', () => {
   const values = {
     ...bookingFormDefaults('2027-11-13', 'hall-1'),

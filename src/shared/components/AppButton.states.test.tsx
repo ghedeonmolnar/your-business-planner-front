@@ -8,6 +8,7 @@ import {
 import { AppButton, AppButtonVariant } from '@/shared/components/AppButton';
 import { MultilineButton } from '@/shared/components/MultilineButton';
 import { AppThemeProvider } from '@/shared/theme/AppThemeProvider';
+import { theme } from '@/shared/theme/theme';
 
 test.each(['normal', 'icon', 'multiline'] as const)(
   'butonul %s blochează apăsarea în timpul încărcării și se reactivează',
@@ -105,6 +106,15 @@ test.each([
       expect(multiline.props.color).toBe(text.props.textColor);
     };
     expectConsistentColors();
+    if (variant === 'danger') {
+      expect(renderer!.root.findByType(Button).props.buttonColor).toBe(
+        theme.colors.error,
+      );
+      expect(renderer!.root.findByType(Button).props.textColor).toBe(
+        theme.colors.onError,
+      );
+      expect(renderer!.root.findByType(Button).props.mode).toBe('contained');
+    }
     await ReactTestRenderer.act(async () => renderer.update(render(true)));
     expectConsistentColors();
     await ReactTestRenderer.act(async () => renderer.unmount());

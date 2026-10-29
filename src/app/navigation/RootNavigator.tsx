@@ -16,6 +16,8 @@ import { HallBookingsScreen } from '@/features/halls/screens/HallBookingsScreen'
 import { CustomerHistoryScreen } from '@/features/company/screens/CustomerHistoryScreen';
 import { TeamScreen } from '@/features/company/screens/TeamScreen';
 import { OverviewScreen } from '@/features/company/screens/OverviewScreen';
+import { AgendaDetailsScreen } from '@/features/company/screens/AgendaDetailsScreen';
+import { AgendaWeekendScreen } from '@/features/company/screens/AgendaWeekendScreen';
 import { CompanyProfileScreen } from '@/features/company/screens/CompanyProfileScreen';
 import { SubscriptionBlockedScreen } from '@/features/company/screens/SubscriptionBlockedScreen';
 import { EventRemindersSync } from '@/features/events/notifications/EventRemindersSync';
@@ -123,6 +125,14 @@ function ApplicationNavigation() {
             />
             {user?.role !== 'employee' ? (
               <>
+                <Stack.Screen
+                  name="AgendaDetails"
+                  component={AgendaDetailsScreen}
+                />
+                <Stack.Screen
+                  name="AgendaWeekend"
+                  component={AgendaWeekendScreen}
+                />
                 <Stack.Screen
                   name="CustomerHistory"
                   component={CustomerHistoryScreen}

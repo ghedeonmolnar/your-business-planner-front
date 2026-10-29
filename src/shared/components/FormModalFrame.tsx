@@ -4,37 +4,34 @@ import {
   Platform,
   ScrollView,
   TextInput,
-  useWindowDimensions,
   type LayoutChangeEvent,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   View,
 } from 'react-native';
 import { Surface, Text } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { IconButton } from '@/shared/components/IconButton';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { DialogHost } from '@/shared/feedback/DialogHost';
-import { useKeyboardOverlap } from '@/shared/hooks/useKeyboardOverlap';
+import { useDialogLayout } from '@/shared/hooks/useDialogLayout';
 import { theme } from '@/shared/theme/theme';
 import { FormInteractionContext } from '@/shared/components/FormInteractionContext';
 
 import { formModalStyles as styles } from '@/shared/components/formModalStyles';
 
-const MODAL_HEIGHT_RATIO = 0.9;
-
 type FormModalFrameProps = {
   visible: boolean;
   title: string;
+  progress?: { current: number; total: number };
   onClose: () => void;
   onDismiss?: () => void;
   children: React.ReactNode;
   footer?: React.ReactNode;
   hasUnsavedChanges?: boolean;
-  fitContent?: boolean;
   closeLabel?: string;
   busy?: boolean;
   readOnly?: boolean;
+  size?: 'form' | 'time';
 };
 
 type ScrollViewport = {
@@ -45,19 +42,21 @@ type ScrollViewport = {
 export function FormModalFrame({
   visible,
   title,
+  progress,
   onClose,
   onDismiss,
   children,
   footer,
   hasUnsavedChanges = false,
-  fitContent = false,
   busy = false,
   readOnly = false,
+  size = 'form',
   closeLabel = 'Închide formularul',
 }: FormModalFrameProps) {
-  const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
-  const keyboardOverlap = useKeyboardOverlap(visible);
+  const { modalTop, modalMaxHeight, overlayInsets } = useDialogLayout(
+    visible,
+    size,
+  );
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const scrollOffsetRef = useRef(0);
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -67,18 +66,6 @@ export function FormModalFrame({
     height: 0,
   });
 
-  const modalTop = insets.top + theme.spacing.lg;
-  const modalBottomGap =
-    keyboardOverlap > 0
-      ? keyboardOverlap + theme.spacing.sm
-      : Math.max(insets.bottom, theme.spacing.sm);
-  const modalMaxHeight = Math.max(
-    0,
-    Math.min(
-      Math.round(windowHeight * MODAL_HEIGHT_RATIO),
-      windowHeight - modalTop - modalBottomGap,
-    ),
-  );
   const scrollChrome =
     headerHeight > 0 &&
     modalMaxHeight < headerHeight + footerHeight + theme.controls.fieldHeight;
@@ -87,8 +74,21 @@ export function FormModalFrame({
       onLayout={event => setHeaderHeight(event.nativeEvent.layout.height)}
       style={[styles.header, scrollChrome ? styles.embedded : undefined]}
     >
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text
+        accessibilityRole="header"
+        accessibilityLabel={
+          progress
+            ? `${title}, pasul ${progress.current} din ${progress.total}`
+            : title
+        }
+        style={styles.title}
+      >
         {title}
+        {progress ? (
+          <Text style={styles.progress}>
+            {` ${progress.current}/${progress.total}`}
+          </Text>
+        ) : null}
       </Text>
       <IconButton
         accessibilityLabel={closeLabel}
@@ -157,6 +157,7 @@ export function FormModalFrame({
     }
 
     confirmAction({
+      destructive: true,
       title: 'Modificări nesalvate',
       message:
         'Dacă pleci acum, datele completate și modificările nesalvate se vor pierde.',
@@ -175,14 +176,16 @@ export function FormModalFrame({
       transparent
       visible={visible}
     >
-      <View style={[styles.overlay, { paddingTop: modalTop }]}>
+      <View
+        style={[
+          styles.overlay,
+          size === 'time' ? styles.centered : undefined,
+          overlayInsets,
+        ]}
+      >
         <Surface
           elevation={2}
-          style={[
-            styles.content,
-            fitContent ? styles.fitContent : undefined,
-            { maxHeight: modalMaxHeight },
-          ]}
+          style={[styles.content, { maxHeight: modalMaxHeight }]}
         >
           {scrollChrome ? null : header}
 
@@ -197,7 +200,7 @@ export function FormModalFrame({
             ref={scrollRef}
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
-            style={[styles.scroll, fitContent ? styles.fitContent : undefined]}
+            style={styles.scroll}
           >
             {scrollChrome ? header : null}
             <FormInteractionContext.Provider value={busy || readOnly}>

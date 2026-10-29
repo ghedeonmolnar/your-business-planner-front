@@ -6,7 +6,6 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { AgendaSummary } from '@/features/company/components/AgendaSummary';
 import { MoreInfoModal } from '@/features/company/components/MoreInfoModal';
 import { useMoreActions } from '@/features/company/hooks/useMoreActions';
-import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { AppButton } from '@/shared/components/AppButton';
 import { IconButton } from '@/shared/components/IconButton';
 import { theme } from '@/shared/theme/theme';
@@ -54,9 +53,7 @@ export function AgendaHeader({
             onPress={onCreate}
           />
         ) : null}
-        {canManage && hasCompanyFeature(user, 'finance') ? (
-          <AgendaSummary />
-        ) : null}
+        {canManage ? <AgendaSummary /> : null}
         <View style={styles.sectionRow}>
           <Text accessibilityRole="header" style={styles.sectionTitle}>
             Următoarele evenimente

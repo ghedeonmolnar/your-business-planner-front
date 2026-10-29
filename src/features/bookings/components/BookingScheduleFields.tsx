@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useWatch } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { DirectoryItem } from '@/features/company/types';
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
@@ -39,6 +39,7 @@ export function BookingScheduleFields({
 }) {
   const catalogs = useCatalogs();
   const { control } = form;
+  const status = useWatch({ control, name: 'status' });
   const availability = useBookingDateAvailability(hallId, bookingId);
   return (
     <>
@@ -117,23 +118,28 @@ export function BookingScheduleFields({
         label="Stare rezervare"
         single
         options={Object.entries(bookingStatusLabels)
-          .filter(([id]) => id !== 'expired')
+          .filter(
+            ([id]) =>
+              id !== 'expired' && (Boolean(bookingId) || id !== 'cancelled'),
+          )
           .map(([id, name]) => ({ id, name }))}
         placeholder="Alege starea"
         searchPlaceholder="Caută stare"
       />
-      <View accessible style={styles.statusHint}>
-        <Ionicons
-          accessible={false}
-          name="information-circle-outline"
-          color={theme.colors.menu.help}
-          size={theme.typography.bodyLarge}
-        />
-        <Text style={styles.statusHintText}>
-          În așteptarea avansului, sala rămâne disponibilă. După încasarea
-          avansului, schimbă starea în Confirmată pentru a rezerva data.
-        </Text>
-      </View>
+      {status === 'tentative' ? (
+        <View accessible style={styles.statusHint}>
+          <Ionicons
+            accessible={false}
+            name="information-circle-outline"
+            color={theme.colors.menu.help}
+            size={theme.typography.bodyLarge}
+          />
+          <Text style={styles.statusHintText}>
+            În așteptarea avansului, sala rămâne disponibilă. După încasarea
+            avansului, schimbă starea în Confirmată pentru a rezerva data.
+          </Text>
+        </View>
+      ) : null}
       <BookingTimeFields form={form} />
     </>
   );
@@ -142,13 +148,15 @@ export function BookingScheduleFields({
 const styles = StyleSheet.create({
   statusHint: {
     alignItems: 'flex-start',
+    backgroundColor: theme.colors.menu.invitationsSoft,
+    borderRadius: theme.radius.md,
     flexDirection: 'row',
     gap: theme.spacing.sm,
     marginBottom: theme.spacing.xl,
-    paddingHorizontal: theme.spacing.xs,
+    padding: theme.spacing.md,
   },
   statusHintText: {
-    color: theme.colors.menu.muted,
+    color: theme.colors.menu.text,
     flex: 1,
     fontFamily: theme.fonts.body,
     fontSize: theme.typography.label,

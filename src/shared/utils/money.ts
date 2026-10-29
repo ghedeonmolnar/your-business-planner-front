@@ -17,14 +17,14 @@ export const sumMoney = (values: readonly unknown[]) =>
 export const formatMoney = (value: unknown) =>
   `${Math.round(toAmount(value))} ${CURRENCY_LABEL}`;
 
-const formatAmount = (value: unknown) =>
+export const formatExactAmount = (value: unknown) =>
   toAmount(value).toLocaleString(LOCALE, {
     maximumFractionDigits: 2,
     minimumFractionDigits: 0,
   });
 
 export const formatExactMoney = (value: unknown) =>
-  `${formatAmount(value)} ${CURRENCY_LABEL}`;
+  `${formatExactAmount(value)} ${CURRENCY_LABEL}`;
 
 export const formatMoneyInWords = (value: unknown) => {
   const amount = Math.abs(toAmount(value));
@@ -34,5 +34,5 @@ export const formatMoneyInWords = (value: unknown) => {
     (remainder >= LEI_PREPOSITION_THRESHOLD || (amount > 0 && remainder === 0));
   const currency = amount === 1 ? 'leu' : CURRENCY_LABEL;
 
-  return `${formatAmount(value)}${needsPreposition ? ' de ' : ' '}${currency}`;
+  return `${formatExactAmount(value)}${needsPreposition ? ' de ' : ' '}${currency}`;
 };

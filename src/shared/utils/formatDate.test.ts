@@ -8,9 +8,23 @@ import {
   companyNow,
   formatCompanyInput,
   formatCompanyDateTime,
+  formatCompanyLongDateTime,
   formatCompanyTime,
   toCompanyTimestamp,
 } from '@/shared/utils/formatDate';
+
+test('programul complet include ziua reală, luna în română și ora companiei', () => {
+  expect(formatCompanyLongDateTime('2026-11-19T18:00:00Z')).toBe(
+    'joi 19 noiembrie 2026 ora 20:00',
+  );
+  expect(formatCompanyLongDateTime('2026-11-20T05:00:00Z')).toBe(
+    'vineri 20 noiembrie 2026 ora 07:00',
+  );
+  expect(formatCompanyLongDateTime('2026-07-18T21:00:00Z')).toBe(
+    'duminică 19 iulie 2026 ora 00:00',
+  );
+  expect(formatCompanyLongDateTime(null)).toBe('Program necompletat');
+});
 
 test('formatează datele București fără parsarea textului localizat pe Hermes', () => {
   const localizedDate = jest

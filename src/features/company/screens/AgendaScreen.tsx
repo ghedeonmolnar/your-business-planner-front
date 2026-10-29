@@ -26,6 +26,7 @@ import {
 import { theme } from '@/shared/theme/theme';
 import { companyNow } from '@/shared/utils/formatDate';
 import { useAgendaClock } from '@/features/company/hooks/useAgendaClock';
+import { useRefreshAgendaSummary } from '@/features/company/hooks/useAgendaSummary';
 
 type AgendaNavigation = CompositeNavigationProp<
   BottomTabNavigationProp<HomeTabParamList, 'Dashboard'>,
@@ -40,6 +41,7 @@ export function AgendaScreen() {
   );
   const { now, focused } = useAgendaClock();
   const query = useBookings({ agenda: 'upcoming' }, focused);
+  const refreshSummary = useRefreshAgendaSummary();
   const { refetch } = query;
   useEffect(() => {
     if (focused) void refetch();
@@ -69,7 +71,7 @@ export function AgendaScreen() {
         stickySectionHeadersEnabled={false}
         showsVerticalScrollIndicator={false}
         refreshing={query.isRefetching && !query.isFetchingNextPage}
-        onRefresh={() => query.refetch()}
+        onRefresh={() => Promise.all([query.refetch(), refreshSummary()])}
         ListHeaderComponent={
           <View style={styles.header}>
             <AgendaHeader

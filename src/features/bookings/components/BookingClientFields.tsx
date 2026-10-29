@@ -80,7 +80,13 @@ export function BookingClientFields({
             <Text style={styles.clientName}>
               {name || 'Clientul rezervării'}
             </Text>
-            <Text style={[styles.description, styles.existingDescription]}>
+            <Text
+              style={[
+                styles.description,
+                styles.resultDescription,
+                styles.existingDescription,
+              ]}
+            >
               Rezervarea va fi asociată acestui client.
             </Text>
           </View>
@@ -96,7 +102,7 @@ export function BookingClientFields({
             />
             <View style={styles.resultContent}>
               <Text style={styles.clientName}>Număr nou</Text>
-              <Text style={styles.description}>
+              <Text style={[styles.description, styles.resultDescription]}>
                 Clientul se va salva odată cu rezervarea.
               </Text>
             </View>

@@ -38,6 +38,25 @@ export const queryKeys = {
       ['planner', companyId, 'calendar-authorization', socketId] as const,
     overviews: (companyId: string) =>
       ['planner', companyId, 'overview'] as const,
+    agendaSummary: (companyId: string, date: string, finance: boolean) =>
+      ['planner', companyId, 'overview', 'agenda', date, finance] as const,
+    agendaItems: (
+      companyId: string,
+      view: string,
+      month: string,
+      date: string,
+      finance: boolean,
+    ) =>
+      [
+        'planner',
+        companyId,
+        'overview',
+        'agenda-items',
+        view,
+        month,
+        date,
+        finance,
+      ] as const,
     directories: (companyId: string, kind: string) =>
       ['planner', companyId, 'directory', kind] as const,
     reminderWindows: (companyId: string) =>

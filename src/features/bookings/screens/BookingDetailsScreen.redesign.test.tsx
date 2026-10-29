@@ -63,7 +63,7 @@ test.each([null, 0, 240])(
     const { renderer, unmount } = await renderBookingDetails({
       final_guests: finalGuests,
     });
-    const value = finalGuests ?? 'În așteptarea confirmării';
+    const value = finalGuests ?? 'Numărul exact nu a fost completat';
     expect(
       renderer.root.findByProps({
         accessibilityLabel: `Meniuri confirmate: ${value}`,
@@ -76,7 +76,7 @@ test.each([null, 0, 240])(
     ).toBeDefined();
     expect(
       JSON.stringify(renderer.toJSON()).includes(
-        'Meniurile nu sunt confirmate',
+        'Numărul exact de meniuri nu a fost completat',
       ),
     ).toBe(finalGuests === null);
     await unmount();

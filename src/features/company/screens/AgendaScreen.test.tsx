@@ -7,6 +7,7 @@ import { AgendaScreen } from '@/features/company/screens/AgendaScreen';
 import { AgendaBookingCard } from '@/features/company/components/AgendaBookingCard';
 import { AgendaMonthHeader } from '@/features/company/components/AgendaMonthHeader';
 import { MetaPill } from '@/shared/components/MetaPill';
+import { agendaSummaryFixture } from '@/features/company/utils/agendaTestFixtures';
 import {
   plannerAccount,
   plannerBooking,
@@ -38,7 +39,14 @@ test('agenda cere date valide când motorul returnează text localizat incompati
     Promise.resolve(
       String(url).endsWith('/me')
         ? jsonResponse(200, { ...plannerAccount, features: [] })
-        : paginatedResponse([plannerBooking]),
+        : String(url).endsWith('/agenda/summary')
+          ? jsonResponse(200, {
+              ...agendaSummaryFixture,
+              received_amount: null,
+              due_amount: null,
+              due_count: null,
+            })
+          : paginatedResponse([plannerBooking]),
     ),
   ) as typeof globalThis.fetch;
   try {
@@ -99,7 +107,14 @@ test('agenda evidențiază prima zi cu o singură etichetă de grup, restrânge 
     Promise.resolve(
       String(url).endsWith('/me')
         ? jsonResponse(200, { ...plannerAccount, features: [] })
-        : paginatedResponse(upcomingBookings),
+        : String(url).endsWith('/agenda/summary')
+          ? jsonResponse(200, {
+              ...agendaSummaryFixture,
+              received_amount: null,
+              due_amount: null,
+              due_count: null,
+            })
+          : paginatedResponse(upcomingBookings),
     ),
   ) as typeof globalThis.fetch;
   const { renderer, unmount } = await renderWithProviders(<AgendaScreen />);

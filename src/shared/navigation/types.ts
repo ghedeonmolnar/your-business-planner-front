@@ -1,4 +1,9 @@
 export type RootStackParamList = {
+  AgendaDetails: {
+    view: 'events' | 'attention' | 'received' | 'due';
+    month: string;
+  };
+  AgendaWeekend: { date: string };
   CompanyProfile: undefined;
   CustomerHistory: { clientId: string };
   CompanyHalls: undefined;
