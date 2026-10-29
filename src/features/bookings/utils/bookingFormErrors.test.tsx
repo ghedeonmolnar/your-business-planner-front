@@ -95,8 +95,21 @@ test('mapează câmpul 422 din envelope fără a afișa textul tehnic al serveru
     );
   });
   expect(step).toBe(1);
-  expect(form.getFieldState('client_id').error?.message).toBe(
+  expect(form.getFieldState('client_phone').error?.message).toBe(
     'Completează telefonul clientului înainte de rezervare.',
+  );
+  await ReactTestRenderer.act(async () => {
+    step = applyBookingApiErrors(
+      new ApiError('Validare', 422, {
+        response: { error: { code: 'BOOKING_CHILD_MENU_PRICE_REQUIRED' } },
+      }),
+      form,
+      true,
+    );
+  });
+  expect(step).toBe(2);
+  expect(form.getFieldState('child_menu_price').error?.message).toBe(
+    'Completează prețul meniului pentru copii.',
   );
   await ReactTestRenderer.act(async () => {
     step = applyBookingApiErrors(

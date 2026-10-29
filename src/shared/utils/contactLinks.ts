@@ -32,7 +32,7 @@ const socialHosts: Record<
   tiktok: ['tiktok.com', 'www.tiktok.com'],
 };
 
-const normalizePhone = (value: string) => {
+export const normalizePhone = (value: string) => {
   if (!/^[+0-9\s().-]+$/.test(value.trim())) {
     return null;
   }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrollView, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Hall, HallPhotoDraft } from '@/features/halls/types';
 import {
@@ -63,7 +63,7 @@ export function HallEditor({
   const [initialAttempt] = useState(() =>
     editingId ? undefined : getHallCreationAttempt(recoveryKey),
   );
-  const form = useForm<HallFormValues>({
+  const form = useAppForm<HallFormValues>({
     resolver: zodResolver(hallFormSchema),
     defaultValues: initialAttempt?.values ?? hallFormDefaults(hall, duplicate),
   });

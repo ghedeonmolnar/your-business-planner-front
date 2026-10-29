@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   directorySchema,
@@ -36,7 +36,7 @@ export function useDirectoryForm(
   const [conflict, setConflict] = useState(false);
   const submitted = useRef<ClientCreationPayload | null>(recovered ?? null);
   const submitting = useRef(false);
-  const form = useForm<DirectoryFormValues>({
+  const form = useAppForm<DirectoryFormValues>({
     resolver: zodResolver(directorySchema),
     defaultValues: directoryFormValues(kind, item ?? recovered),
   });

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { EventPayment, EventPaymentOvertime } from '@/features/events/types';
 import {
@@ -36,7 +37,7 @@ export function usePaymentOvertimeForm({
 }: PaymentOvertimeFormOptions) {
   const submissionPending = useRef(false);
   const { control, handleSubmit, reset, setError } =
-    useForm<PaymentOvertimeValues>({
+    useAppForm<PaymentOvertimeValues>({
       resolver: zodResolver(paymentOvertimeSchema),
       defaultValues: {
         has_overtime: 'no',

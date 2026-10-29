@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   CustomerDateRange,
@@ -20,7 +20,7 @@ export function useCustomerFilters() {
   const [range, setRange] = useState<CustomerDateRange | null>(null);
   const [expanded, setExpanded] = useState(false);
   const debouncedSearch = useDebouncedValue(search, SEARCH_DELAY_MS);
-  const form = useForm<CustomerDateRange>({
+  const form = useAppForm<CustomerDateRange>({
     resolver: zodResolver(customerDateRangeSchema),
     defaultValues: EMPTY_RANGE,
   });

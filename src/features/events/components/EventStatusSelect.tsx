@@ -19,7 +19,10 @@ const fallbackStatuses = [
   { id: 'cancelled', name: 'Anulat' },
 ];
 
-export function EventStatusSelect({ control, editing = false }: EventStatusSelectProps) {
+export function EventStatusSelect({
+  control,
+  editing = false,
+}: EventStatusSelectProps) {
   const catalogsQuery = useCatalogs();
   const catalogOptions = catalogsQuery.data?.event_statuses?.length
     ? catalogsQuery.data.event_statuses
@@ -33,6 +36,7 @@ export function EventStatusSelect({ control, editing = false }: EventStatusSelec
   return (
     <ControlledSelectField
       control={control}
+      required
       label="Status"
       name="status"
       noItemsText="Nu există statusuri"

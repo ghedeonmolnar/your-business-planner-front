@@ -13,6 +13,7 @@ import {
 import { LocalitySelectField } from '@/features/catalogs/components/LocalitySelectField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
+import { useWatch } from 'react-hook-form';
 
 type ScheduleStepProps = {
   control: EventFormControl;
@@ -27,14 +28,22 @@ export function ScheduleStep({
   hourOptions,
   isEdit,
 }: ScheduleStepProps) {
+  const status = useWatch({ control, name: 'status' });
+  const required = ['confirmed', 'completed'].includes(status);
   return (
     <View>
       <SectionTitle title="Rezervare și program" />
       <EventStatusSelect control={control} editing={isEdit} />
-      <LocalitySelectField control={control} label="Locație" name="location" />
+      <LocalitySelectField
+        control={control}
+        label="Locație"
+        name="location"
+        required={required}
+      />
       <ControlledTextField
         control={control}
         label="Adresă completă"
+        required={required}
         name="address"
         placeholder="Ex: Strada Independenței 1"
       />
@@ -43,6 +52,7 @@ export function ScheduleStep({
           <ControlledSelectField
             control={control}
             label="Ora start"
+            required={required}
             name="start_time"
             options={hourOptions}
             placeholder="Alege ora"
@@ -55,6 +65,7 @@ export function ScheduleStep({
           <ControlledSelectField
             control={control}
             label="Ora final"
+            required={required}
             name="end_time"
             options={endTimeOptions}
             placeholder="Alege ora"
@@ -67,6 +78,7 @@ export function ScheduleStep({
       <ControlledTextField
         control={control}
         keyboardType="numeric"
+        required
         label="Preț pe oră"
         name="price_per_hour"
         numeric

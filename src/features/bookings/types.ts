@@ -29,6 +29,9 @@ export type Booking = {
   notes: string | null;
   staff: StaffAssignment[];
   minimum_guests?: number;
+  estimated_guests?: number | null;
+  child_guests?: number | null;
+  child_menu_price?: string;
   final_guests?: number | null;
   menu_price?: string;
   menu_name?: string | null;
@@ -50,7 +53,9 @@ export type BookingPayload = {
   operation_id?: string;
   version?: number;
   hall_id: string;
-  client_id: string;
+  client_id?: string;
+  client_phone?: string;
+  client_name?: string;
   date: string;
   type: string;
   status: Exclude<BookingStatus, 'expired'>;
@@ -58,6 +63,9 @@ export type BookingPayload = {
   ends_at: string | null;
   expires_at: string | null;
   minimum_guests: number;
+  estimated_guests?: number | null;
+  child_guests?: number | null;
+  child_menu_price?: string;
   final_guests: number | null;
   menu_price: string;
   menu_name: string | null;

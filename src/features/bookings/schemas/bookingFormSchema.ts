@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { companyNow, toCompanyTimestamp } from '@/shared/utils/formatDate';
+import { normalizePhone } from '@/shared/utils/contactLinks';
 import {
   MAX_BOOKING_GUESTS,
   MAX_BOOKING_AMOUNT,
@@ -35,7 +36,16 @@ const localTimestamp = z
 export const bookingFormSchema = z
   .object({
     hall_id: z.string().min(1, 'Alege sala.'),
-    client_id: z.string().min(1, 'Alege clientul.'),
+    client_id: z.string(),
+    client_phone: z
+      .string()
+      .max(64, 'Folosește cel mult 64 de caractere.')
+      .refine(
+        value => !value.trim() || normalizePhone(value) !== null,
+        'Introdu un număr de telefon valid.',
+      )
+      .optional(),
+    client_name: label.optional(),
     date: z.iso.date('Alege o dată validă.'),
     type: z.string().min(1, 'Alege tipul evenimentului.'),
     status: z.enum(['tentative', 'confirmed', 'completed', 'cancelled']),
@@ -43,6 +53,9 @@ export const bookingFormSchema = z
     ends_at: localTimestamp,
     expires_at: localTimestamp,
     minimum_guests: count,
+    estimated_guests: count.or(z.literal('')).optional(),
+    child_guests: count.or(z.literal('')).optional(),
+    child_menu_price: amount.or(z.literal('')).optional(),
     final_guests: z
       .string()
       .refine(
@@ -82,11 +95,28 @@ export const bookingFormSchema = z
       .max(MAX_BOOKING_NOTES_LENGTH, 'Folosește cel mult 20.000 de caractere.'),
   })
   .superRefine((value, context) => {
+    if (!value.client_id && !value.client_phone?.trim()) {
+      context.addIssue({
+        code: 'custom',
+        path: ['client_phone'],
+        message: 'Completează numărul de telefon al clientului.',
+      });
+    }
     if (Boolean(value.starts_at) !== Boolean(value.ends_at)) {
       context.addIssue({
         code: 'custom',
         path: [value.starts_at ? 'ends_at' : 'starts_at'],
         message: 'Completează ambele ore sau lasă programul necompletat.',
+      });
+    }
+    if (
+      Number(value.child_guests) > 0 &&
+      Number(value.child_menu_price?.replace(',', '.') || 0) <= 0
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['child_menu_price'],
+        message: 'Completează prețul meniului pentru copii.',
       });
     }
     if (value.starts_at && value.starts_at.slice(0, 10) !== value.date) {
@@ -129,11 +159,20 @@ export const bookingFormSchema = z
           });
         }
       }
-      if (Number(value.minimum_guests) < 1) {
+      if (
+        Math.max(
+          Number(value.minimum_guests),
+          Number(value.final_guests || value.estimated_guests || 0),
+        ) < 1
+      ) {
         context.addIssue({
           code: 'custom',
-          path: ['minimum_guests'],
-          message: 'Completează minimul garantat.',
+          path: [
+            value.estimated_guests === undefined
+              ? 'minimum_guests'
+              : 'estimated_guests',
+          ],
+          message: 'Completează numărul estimat de meniuri.',
         });
       }
       if (Number(value.menu_price.replace(',', '.')) <= 0) {

@@ -2,7 +2,7 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import React, { useState } from 'react';
 import { Text } from 'react-native-paper';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Booking } from '@/features/bookings/types';
 import {
@@ -16,6 +16,8 @@ import { BookingScheduleFields } from '@/features/bookings/components/BookingSch
 import { BookingCommercialFields } from '@/features/bookings/components/BookingCommercialFields';
 import { BookingStaffStep } from '@/features/bookings/components/BookingStaffStep';
 import { useBookingSubmission } from '@/features/bookings/hooks/useBookingSubmission';
+import { useBookingClientLookup } from '@/features/bookings/hooks/useBookingClientLookup';
+import { useBookingHallDefaults } from '@/features/bookings/hooks/useBookingHallDefaults';
 import {
   BookingCreationNotice,
   BookingCreationReconcileAction,
@@ -30,7 +32,7 @@ import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { FormActions } from '@/shared/components/FormActions';
 import { bookingStepFields } from '@/features/bookings/utils/bookingFormErrors';
 import { BookingConflictReview } from '@/features/bookings/components/BookingConflictReview';
-import { buildContactUrl } from '@/shared/utils/contactLinks';
+import { validateBookingClientPhone } from '@/features/bookings/utils/bookingClientValidation';
 import { companyNow } from '@/shared/utils/formatDate';
 
 const allSteps = [
@@ -65,7 +67,7 @@ export function BookingFormEditor({
   const steps = staffEnabled
     ? allSteps
     : allSteps.filter(title => title !== 'Personal');
-  const form = useForm<BookingFormValues>({
+  const form = useAppForm<BookingFormValues>({
     resolver: zodResolver(
       booking ? bookingFormSchema : bookingCreationFormSchema,
     ),
@@ -75,14 +77,11 @@ export function BookingFormEditor({
         !booking && date < today ? today : date,
         hallId,
         booking,
-        selectedHall?.minimum_guests,
+        selectedHall,
       ),
   });
   const [stepIndex, setStep] = useState(initialAttempt ? steps.length - 1 : 0);
   const step = Math.min(stepIndex, steps.length - 1);
-  const [selectedClient, setSelectedClient] = useState<DirectoryItem | null>(
-    null,
-  );
   const halls = useDirectory('halls');
   const hallItems = includeDirectorySelections(
     halls.data?.pages.flatMap(page => page.items) ?? [],
@@ -99,20 +98,21 @@ export function BookingFormEditor({
         : [],
   );
   const values = form.watch();
+  const onHallSelected = useBookingHallDefaults(
+    form,
+    hallItems,
+    values.hall_id,
+    booking,
+    Boolean(initialAttempt),
+  );
+  const clientLookup = useBookingClientLookup(
+    values.client_phone ?? '',
+    step === 1,
+  );
   const validateClientPhone = () => {
-    const clientId = form.getValues('client_id');
-    if (
-      booking?.client_id === clientId ||
-      (selectedClient?.id === clientId &&
-        buildContactUrl('call', selectedClient.phone))
-    )
-      return true;
-    form.setError('client_id', {
-      type: 'validate',
-      message: 'Completează telefonul clientului înainte de rezervare.',
-    });
-    setStep(1);
-    return false;
+    const valid = validateBookingClientPhone(form, booking);
+    if (!valid) setStep(1);
+    return valid;
   };
   const save = useBookingSubmission({
     form,
@@ -126,6 +126,7 @@ export function BookingFormEditor({
     onConflict: () => setConflict(true),
   });
   const next = async () => {
+    if (step === 1 && (clientLookup.checking || clientLookup.error)) return;
     if (step === 1 && !validateClientPhone()) return;
     if (await form.trigger(bookingStepFields(staffEnabled)[step])) {
       setStep(current => Math.min(current + 1, steps.length - 1));
@@ -134,6 +135,7 @@ export function BookingFormEditor({
   return (
     <FormModalFrame
       visible
+      fitContent={step === 1}
       busy={save.isPending}
       readOnly={!booking && save.uncertain}
       title={steps[step]}
@@ -159,7 +161,10 @@ export function BookingFormEditor({
                 : undefined
             }
             primary={{
-              disabled: step === steps.length - 1 && save.operationConflict,
+              disabled:
+                (step === steps.length - 1 && save.operationConflict) ||
+                (step === 1 &&
+                  Boolean(clientLookup.checking || clientLookup.error)),
               label:
                 step === steps.length - 1 ? 'Salvează rezervarea' : 'Continuă',
               onPress: step === steps.length - 1 ? save.submit : next,
@@ -185,53 +190,37 @@ export function BookingFormEditor({
         />
       ) : null}
       <Text style={styles.muted}>
-        Pasul {step + 1} din {steps.length} · Orele sunt în fusul României.
+        Pasul {step + 1} din {steps.length}
+        {step === 0 ? ' · Orele sunt în fusul României.' : ''}
       </Text>
       {step === 0 ? (
-        <>
-          <BookingScheduleFields
-            key={values.hall_id}
-            form={form}
-            halls={hallItems}
-            hallId={values.hall_id}
-            bookingId={booking?.id}
-            hallsState={{
-              loading: halls.isLoading,
-              error: halls.error,
-              onRetry: () => halls.refetch(),
-              pagination: {
-                hasMore: Boolean(halls.hasNextPage),
-                loading: halls.isFetchingNextPage,
-                error: halls.isFetchNextPageError ? halls.error : undefined,
-                onLoadMore: () => halls.fetchNextPage(),
-              },
-            }}
-            selectedHallId={booking?.hall_id}
-            retainedType={booking?.type}
-            onHallSelected={id => {
-              if (id === form.getValues('hall_id')) return;
-              for (const field of ['date', 'starts_at', 'ends_at'] as const) {
-                form.setValue(field, '', { shouldDirty: true });
-              }
-              form.clearErrors(['date', 'starts_at', 'ends_at']);
-              if (!booking && !form.getFieldState('minimum_guests').isDirty) {
-                form.setValue(
-                  'minimum_guests',
-                  String(
-                    hallItems.find(hall => hall.id === id)?.minimum_guests ?? 0,
-                  ),
-                );
-              }
-            }}
-          />
-        </>
+        <BookingScheduleFields
+          key={values.hall_id}
+          form={form}
+          halls={hallItems}
+          hallId={values.hall_id}
+          bookingId={booking?.id}
+          hallsState={{
+            loading: halls.isLoading,
+            error: halls.error,
+            onRetry: () => halls.refetch(),
+            pagination: {
+              hasMore: Boolean(halls.hasNextPage),
+              loading: halls.isFetchingNextPage,
+              error: halls.isFetchNextPageError ? halls.error : undefined,
+              onLoadMore: () => halls.fetchNextPage(),
+            },
+          }}
+          selectedHallId={booking?.hall_id}
+          retainedType={booking?.type}
+          onHallSelected={onHallSelected}
+        />
       ) : null}
       {step === 1 ? (
         <BookingClientFields
           form={form}
           booking={booking}
-          selectedClient={selectedClient}
-          onSelected={setSelectedClient}
+          lookup={clientLookup}
         />
       ) : null}
       {step === 2 ? <BookingCommercialFields form={form} /> : null}
@@ -243,9 +232,10 @@ export function BookingFormEditor({
           form={form}
           hallName={hallItems.find(item => item.id === values.hall_id)?.name}
           clientName={
-            selectedClient?.id === values.client_id
-              ? selectedClient.name
-              : booking?.client_name
+            clientLookup.data?.client?.name ||
+            values.client_name?.trim() ||
+            values.client_phone ||
+            booking?.client_name
           }
         />
       ) : null}

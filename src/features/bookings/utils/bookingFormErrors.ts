@@ -5,9 +5,12 @@ import { bookingAvailabilityField } from '@/features/bookings/utils/bookingCreat
 
 const stepFields: FieldPath<BookingFormValues>[][] = [
   ['hall_id', 'date', 'type', 'status', 'starts_at', 'ends_at'],
-  ['client_id'],
+  ['client_id', 'client_phone', 'client_name'],
   [
     'minimum_guests',
+    'estimated_guests',
+    'child_guests',
+    'child_menu_price',
     'final_guests',
     'menu_price',
     'menu_name',
@@ -69,9 +72,19 @@ export const applyBookingApiErrors = (
   const response = error.details.response;
   if (
     responseErrorCode({ kind: 'json', value: response }) ===
+    'BOOKING_CHILD_MENU_PRICE_REQUIRED'
+  ) {
+    form.setError('child_menu_price', {
+      type: 'server',
+      message: 'Completează prețul meniului pentru copii.',
+    });
+    return 2;
+  }
+  if (
+    responseErrorCode({ kind: 'json', value: response }) ===
     'BOOKING_CLIENT_PHONE_REQUIRED'
   ) {
-    form.setError('client_id', {
+    form.setError('client_phone', {
       type: 'server',
       message: 'Completează telefonul clientului înainte de rezervare.',
     });

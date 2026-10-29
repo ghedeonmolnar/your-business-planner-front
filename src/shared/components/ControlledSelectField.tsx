@@ -25,6 +25,7 @@ type ControlledSelectFieldProps<
   control: Control<TFieldValues, unknown, FieldValues>;
   name: FieldPath<TFieldValues>;
   label: string;
+  required?: boolean;
   options: SelectOption<TValue>[];
   placeholder: string;
   searchPlaceholder: string;
@@ -44,6 +45,7 @@ export function ControlledSelectField<
   control,
   name,
   label,
+  required = false,
   options,
   placeholder,
   searchPlaceholder,
@@ -69,7 +71,7 @@ export function ControlledSelectField<
             ? ([value] as TValue[])
             : [];
         return (
-          <FormInput error={error?.message} label={label}>
+          <FormInput error={error?.message} label={label} required={required}>
             <SearchableSelect
               testID={`select:${name}`}
               allowClear={!single || singleEmptyValue !== undefined}

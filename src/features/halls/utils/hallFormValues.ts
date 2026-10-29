@@ -10,6 +10,8 @@ export const hallFormDefaults = (
   minimum_guests:
     hall?.minimum_guests == null ? '' : String(hall.minimum_guests),
   address: hall?.address ?? '',
+  menu_price: hall?.menu_price ?? '',
+  child_menu_price: hall?.child_menu_price ?? '',
   description: hall?.description ?? '',
   internal_notes: duplicate ? '' : (hall?.internal_notes ?? ''),
   area_sqm: hall?.area_sqm ?? '',
@@ -47,6 +49,8 @@ export const hallSaveBody = (
     JSON.stringify({
       ...values,
       capacity: Number(values.capacity),
+      menu_price: values.menu_price?.replace(',', '.') || null,
+      child_menu_price: values.child_menu_price?.replace(',', '.') || null,
       minimum_guests: optionalNumber(values.minimum_guests),
       area_sqm: values.area_sqm ? values.area_sqm.replace(',', '.') : null,
       is_active: values.is_active === 'yes',

@@ -42,9 +42,18 @@ export function BookingConflictReview({
             {formatCompanyDateTime(booking.ends_at)}
           </Text>
           <Text style={plannerStyles.text}>
-            Preț meniu: {formatExactMoney(booking.menu_price)} ·{' '}
-            {booking.minimum_guests} invitați
+            Meniu adulți: {formatExactMoney(booking.menu_price)} ·{' '}
+            {booking.final_guests ??
+              booking.estimated_guests ??
+              booking.minimum_guests}{' '}
+            meniuri
           </Text>
+          {Number(booking.child_guests) > 0 ? (
+            <Text style={plannerStyles.text}>
+              Meniuri copii: {booking.child_guests} ·{' '}
+              {formatExactMoney(booking.child_menu_price)}
+            </Text>
+          ) : null}
           <Text style={plannerStyles.text}>
             {booking.notes || 'Fără observații'}
           </Text>

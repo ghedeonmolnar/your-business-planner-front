@@ -18,9 +18,18 @@ export const bookingCreationAttemptSchema = z.object({
       expires_at: true,
     })
     .extend({
+      client_id: z.string().optional(),
+      client_phone: z
+        .string()
+        .regex(/^\+[1-9][0-9]{7,14}$/)
+        .optional(),
+      client_name: z.string().max(255).optional(),
       operation_id: z.uuid(),
       status: z.enum(['tentative', 'confirmed', 'completed', 'cancelled']),
       minimum_guests: z.number().int().nonnegative(),
+      estimated_guests: z.number().int().nonnegative().nullable().optional(),
+      child_guests: z.number().int().nonnegative().nullable().optional(),
+      child_menu_price: z.string().optional(),
       final_guests: z.number().int().nonnegative().nullable(),
       menu_price: z.string(),
       menu_name: z.string().nullable(),
@@ -31,7 +40,10 @@ export const bookingCreationAttemptSchema = z.object({
       ),
       staff: z.array(staffAssignmentSchema).optional(),
       notes: z.string(),
-    }),
+    })
+    .refine(
+      payload => Boolean(payload.client_id) !== Boolean(payload.client_phone),
+    ),
   requiresReconciliation: z.boolean().optional(),
 });
 

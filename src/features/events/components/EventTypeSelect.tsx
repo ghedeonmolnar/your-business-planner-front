@@ -18,6 +18,7 @@ export function EventTypeSelect({ control }: EventTypeSelectProps) {
   return (
     <ControlledSelectField
       control={control}
+      required
       label="Tip"
       name="type"
       noItemsText="Nu există tipuri de eveniment"

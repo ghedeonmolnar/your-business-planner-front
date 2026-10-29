@@ -32,7 +32,11 @@ export const getClientEventsPageApi = (
     { itemSchema: eventSchema },
   );
 
-export const lookupClientApi = (channel: string, value: string) => {
+export const lookupClientApi = (
+  channel: string,
+  value: string,
+  signal?: AbortSignal,
+) => {
   const params = new URLSearchParams({
     communication_channel: channel,
     contact_value: value,
@@ -40,6 +44,7 @@ export const lookupClientApi = (channel: string, value: string) => {
 
   return apiRequest<ClientLookup>(`/clients-lookup?${params.toString()}`, {
     schema: clientLookupSchema,
+    signal,
   });
 };
 

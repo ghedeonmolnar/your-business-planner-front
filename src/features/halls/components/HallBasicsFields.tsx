@@ -15,12 +15,14 @@ export function HallBasicsFields({
       <ControlledTextField
         control={control}
         name="name"
+        required
         label="Nume sală *"
         placeholder="Numele sălii"
       />
       <ControlledTextField
         control={control}
         name="capacity"
+        required
         label="Capacitate maximă (persoane) *"
         placeholder="Capacitatea sălii"
         keyboardType="number-pad"
@@ -38,6 +40,22 @@ export function HallBasicsFields({
         name="address"
         label="Adresă"
         placeholder="Adresa spațiului"
+      />
+      <ControlledTextField
+        control={control}
+        name="menu_price"
+        label="Preț meniu adulți (lei)"
+        numeric
+        placeholder="Nespecificat"
+        keyboardType="decimal-pad"
+      />
+      <ControlledTextField
+        control={control}
+        name="child_menu_price"
+        label="Preț meniu copii (lei)"
+        numeric
+        placeholder="Nespecificat"
+        keyboardType="decimal-pad"
       />
       <ControlledTextField
         control={control}
@@ -62,6 +80,7 @@ export function HallBasicsFields({
       <ControlledSelectField
         control={control}
         name="is_active"
+        required
         label="Status"
         options={[
           { id: 'yes', name: 'Activă' },

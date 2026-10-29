@@ -1,7 +1,10 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { Text } from 'react-native-paper';
-import { CompanySettingsValues } from '@/features/company/schemas/companySettingsSchema';
+import {
+  CompanySettingsValues,
+  hasCompanyFiscalData,
+} from '@/features/company/schemas/companySettingsSchema';
 import { useFiscalLookup } from '@/features/company/hooks/useCompanyProfile';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { ControlledSwitchField } from '@/shared/components/ControlledSwitchField';
@@ -16,6 +19,7 @@ export function CompanyFiscalFields({
   form: UseFormReturn<CompanySettingsValues>;
 }) {
   const lookup = useFiscalLookup();
+  const required = hasCompanyFiscalData(form.watch());
   const findCompany = () => {
     const code = form
       .getValues('fiscal_code')
@@ -79,6 +83,7 @@ export function CompanyFiscalFields({
         control={form.control}
         name="fiscal_code"
         label="CUI"
+        required={required}
         placeholder="Codul fiscal, fără RO"
         keyboardType="number-pad"
       />
@@ -95,6 +100,7 @@ export function CompanyFiscalFields({
         control={form.control}
         name="legal_name"
         label="Denumire juridică"
+        required={required}
         placeholder="Denumirea din actele firmei"
       />
       <ControlledTextField
@@ -107,6 +113,7 @@ export function CompanyFiscalFields({
         control={form.control}
         name="fiscal_address"
         label="Adresă fiscală"
+        required={required}
         placeholder="Sediul fiscal al firmei"
         multiline
       />

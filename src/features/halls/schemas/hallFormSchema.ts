@@ -4,6 +4,17 @@ export const MAX_HALL_PHOTOS = 10;
 export const MAX_HALL_PHOTO_BYTES = 4 * 1024 * 1024;
 export const MAX_HALL_AMENITIES = 50;
 const MAX_HALL_GUESTS = 100_000;
+const MAX_MENU_PRICE = 99_999_999.99;
+const optionalPrice = z
+  .string()
+  .refine(
+    value =>
+      !value ||
+      (/^\d+([.,]\d{1,2})?$/.test(value) &&
+        Number(value.replace(',', '.')) <= MAX_MENU_PRICE),
+    'Introdu un preț valid, cu cel mult două zecimale.',
+  )
+  .optional();
 const MAX_ORGANIZATION_MINUTES = 10_080;
 const optionalCount = z
   .string()
@@ -32,6 +43,8 @@ export const hallFormSchema = z
       'Minimul trebuie să fie pozitiv.',
     ),
     address: z.string().trim().max(255, 'Folosește cel mult 255 de caractere.'),
+    menu_price: optionalPrice,
+    child_menu_price: optionalPrice,
     description: z
       .string()
       .trim()

@@ -1,5 +1,21 @@
 import { z } from 'zod';
 
+const fiscalFields = [
+  'fiscal_code',
+  'legal_name',
+  'fiscal_address',
+  'iban',
+  'bank_name',
+  'trade_register_number',
+  'city',
+  'county',
+  'postal_code',
+  'vat_registered',
+] as const;
+export const hasCompanyFiscalData = (
+  values: Record<(typeof fiscalFields)[number], string | boolean>,
+) => fiscalFields.some(field => Boolean(values[field]));
+
 export const companySettingsSchema = z
   .object({
     name: z.string().trim().min(1, 'Completează numele companiei.').max(255),
@@ -33,19 +49,7 @@ export const companySettingsSchema = z
     bank_name: z.string().trim().max(255),
   })
   .superRefine((values, context) => {
-    const hasFiscalData = Boolean(
-      values.fiscal_code ||
-      values.legal_name ||
-      values.fiscal_address ||
-      values.iban ||
-      values.bank_name ||
-      values.trade_register_number ||
-      values.city ||
-      values.county ||
-      values.postal_code ||
-      values.vat_registered,
-    );
-    if (!hasFiscalData) {
+    if (!hasCompanyFiscalData(values)) {
       return;
     }
     for (const [field, message] of [

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ClientSourceSelect } from '@/features/clients/components/ClientSourceSelect';
 import { LocalitySelectField } from '@/features/catalogs/components/LocalitySelectField';
@@ -49,7 +49,7 @@ export function ClientForm({
     formState: { isDirty },
     handleSubmit,
     reset,
-  } = useForm<ClientFormValues>({
+  } = useAppForm<ClientFormValues>({
     resolver: zodResolver(clientSchema),
     defaultValues: emptyClientForm,
   });
@@ -80,6 +80,7 @@ export function ClientForm({
     >
       <ControlledTextField
         control={control}
+        required
         label="Nume"
         name="name"
         placeholder="Numele clientului"

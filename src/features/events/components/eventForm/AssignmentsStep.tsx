@@ -93,6 +93,7 @@ function AnimatorAssignmentField({
     control,
     name: `assignments.${assignmentIndex}.employee_id`,
   });
+  const status = useWatch({ control, name: 'status' });
   const availabilityById = new Map(availability.map(item => [item.id, item]));
   const selectedElsewhere = new Set(
     assignments
@@ -143,6 +144,7 @@ function AnimatorAssignmentField({
       <ControlledSelectField
         control={control}
         label={`Animator ${mascot.name}`}
+        required={['confirmed', 'completed'].includes(status)}
         name={`assignments.${assignmentIndex}.employee_id`}
         noItemsText="Nu există angajați activi"
         options={options}

@@ -1,6 +1,6 @@
 import { Text } from 'react-native-paper';
 import React, { useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   bookingPaymentSchema,
@@ -44,7 +44,7 @@ export function BookingPaymentEditor({
   const submittedPayload = useRef<BookingPaymentValues | null>(
     recovered ?? null,
   );
-  const form = useForm<BookingPaymentValues>({
+  const form = useAppForm<BookingPaymentValues>({
     resolver: zodResolver(bookingPaymentSchema),
     defaultValues: bookingPaymentDefaults(payment, recovered),
   });
@@ -159,6 +159,7 @@ export function BookingPaymentEditor({
             }
           }
         }}
+        required
         label="Operațiune"
         single
         options={[
@@ -171,6 +172,7 @@ export function BookingPaymentEditor({
       <ControlledSelectField
         control={form.control}
         name="category"
+        required
         label="Categorie"
         single
         options={categories}
@@ -180,6 +182,7 @@ export function BookingPaymentEditor({
       <ControlledTextField
         control={form.control}
         name="amount"
+        required
         label="Sumă (lei)"
         placeholder="0,00"
         keyboardType="decimal-pad"
@@ -187,12 +190,14 @@ export function BookingPaymentEditor({
       <ControlledDateField
         control={form.control}
         name="paid_at"
+        required
         label="Data operațiunii"
         placeholder="Alege data"
       />
       <ControlledSelectField
         control={form.control}
         name="method"
+        required
         label="Metodă"
         single
         options={[
@@ -206,6 +211,7 @@ export function BookingPaymentEditor({
       <ControlledSelectField
         control={form.control}
         name="status"
+        required
         label="Stare"
         single
         options={[

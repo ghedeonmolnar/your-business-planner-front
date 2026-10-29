@@ -9,12 +9,14 @@ type ControlledDateRangeFieldsProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
   fromName: FieldPath<T>;
   toName: FieldPath<T>;
+  required?: boolean;
 };
 
 export function ControlledDateRangeFields<T extends FieldValues>({
   control,
   fromName,
   toName,
+  required = false,
 }: ControlledDateRangeFieldsProps<T>) {
   const singleColumn = useSingleColumnLayout();
   return (
@@ -22,6 +24,7 @@ export function ControlledDateRangeFields<T extends FieldValues>({
       <ControlledDateField
         control={control}
         name={fromName}
+        required={required}
         label="De la"
         placeholder="Alege data"
         displayFormat="numeric"
@@ -30,6 +33,7 @@ export function ControlledDateRangeFields<T extends FieldValues>({
       <ControlledDateField
         control={control}
         name={toName}
+        required={required}
         label="Până la"
         placeholder="Alege data"
         displayFormat="numeric"

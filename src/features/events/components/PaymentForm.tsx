@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   emptyPaymentForm,
@@ -46,7 +47,7 @@ export function PaymentForm({
     formState: { isDirty },
     handleSubmit,
     reset,
-  } = useForm<PaymentFormInput, unknown, PaymentFormValues>({
+  } = useAppForm<PaymentFormInput, unknown, PaymentFormValues>({
     resolver: zodResolver(paymentSchema),
     defaultValues: emptyPaymentForm,
   });

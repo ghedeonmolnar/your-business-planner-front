@@ -15,11 +15,20 @@ export const bookingMessage = (booking: Booking, companyName: string) =>
     'Început: ' + formatCompanyDateTime(booking.starts_at),
     'Sfârșit: ' + formatCompanyDateTime(booking.ends_at),
     'Meniu: ' + (booking.menu_name || 'Conform discuției'),
-    'Preț meniu: ' + formatExactMoney(booking.menu_price),
-    'Minim garantat: ' + booking.minimum_guests + ' invitați',
+    'Preț meniu adulți: ' + formatExactMoney(booking.menu_price),
+    'Minimul sălii: ' + booking.minimum_guests + ' meniuri pentru adulți',
+    'Meniuri estimate (adulți): ' +
+      (booking.estimated_guests ?? booking.minimum_guests),
     booking.final_guests == null
       ? ''
-      : 'Meniuri comandate: ' + booking.final_guests,
+      : 'Meniuri confirmate: ' + booking.final_guests,
+    Number(booking.child_guests) > 0
+      ? 'Meniuri copii: ' +
+        booking.child_guests +
+        ' · ' +
+        formatExactMoney(booking.child_menu_price) +
+        ' / meniu'
+      : '',
     'Valoare estimată: ' + formatExactMoney(booking.total_amount),
     booking.paid_amount === undefined
       ? ''

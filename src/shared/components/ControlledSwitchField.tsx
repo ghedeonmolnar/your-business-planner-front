@@ -11,6 +11,7 @@ type ControlledSwitchFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
   inactiveText: string;
   label: string;
+  required?: boolean;
   name: FieldPath<T>;
   disabled?: boolean;
 };
@@ -20,6 +21,7 @@ export function ControlledSwitchField<T extends FieldValues>({
   control,
   inactiveText,
   label,
+  required = false,
   name,
   disabled = false,
 }: ControlledSwitchFieldProps<T>) {
@@ -30,7 +32,7 @@ export function ControlledSwitchField<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field: { onChange, value }, fieldState: { error } }) => (
-        <FormInput error={error?.message} label={label}>
+        <FormInput error={error?.message} label={label} required={required}>
           <View
             style={[
               formInputStyles.field,

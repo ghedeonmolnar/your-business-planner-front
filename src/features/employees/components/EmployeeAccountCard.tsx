@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { EmployeeProfile } from '@/features/employees/types';
 import {
   useBlockEmployee,
@@ -37,7 +37,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
   const invite = useInviteEmployee(profile.id);
   const block = useBlockEmployee(profile.id);
   const unblock = useUnblockEmployee(profile.id);
-  const form = useForm<InvitationFormValues>({
+  const form = useAppForm<InvitationFormValues>({
     resolver: zodResolver(invitationSchema),
     defaultValues: { email: profile.account.email ?? '' },
   });
@@ -154,6 +154,7 @@ export function EmployeeAccountCard({ profile }: { profile: EmployeeProfile }) {
           autoCapitalize="none"
           control={form.control}
           keyboardType="email-address"
+          required
           label="Adresa de email"
           name="email"
           placeholder="nume@exemplu.ro"

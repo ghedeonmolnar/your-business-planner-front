@@ -2,11 +2,13 @@ import React, { type ReactNode } from 'react';
 import { StyleProp, StyleSheet, ViewStyle, View } from 'react-native';
 import { HelperText, Text } from 'react-native-paper';
 import { theme } from '@/shared/theme/theme';
+import { formFieldLabel } from '@/shared/utils/formFieldLabel';
 
 type FormInputProps = {
   children: ReactNode;
   error?: string;
   label: string;
+  required?: boolean;
   hideLabel?: boolean;
   style?: StyleProp<ViewStyle>;
 };
@@ -15,6 +17,7 @@ export function FormInput({
   children,
   error,
   label,
+  required = false,
   hideLabel = false,
   style,
 }: FormInputProps) {
@@ -22,7 +25,7 @@ export function FormInput({
     <View style={[styles.group, style]}>
       {hideLabel ? null : (
         <Text style={[styles.label, error ? styles.labelError : undefined]}>
-          {label}
+          {formFieldLabel(label, required)}
         </Text>
       )}
       {children}

@@ -28,6 +28,42 @@ test('accepts a confirmed reservation and staff interval across midnight', () =>
   ).toBe(true);
 });
 
+test('confirmarea adulților și meniurile copiilor pot fi completate ulterior', () => {
+  const values = {
+    ...overnight(),
+    minimum_guests: '0',
+    estimated_guests: '120',
+    final_guests: '',
+    child_guests: '',
+    child_menu_price: '',
+  };
+  expect(bookingFormSchema.safeParse(values).success).toBe(true);
+  expect(
+    bookingFormSchema.safeParse({
+      ...values,
+      child_guests: '10',
+      child_menu_price: '150,25',
+    }).success,
+  ).toBe(true);
+  for (const invalid of ['0', '', undefined]) {
+    const result = bookingFormSchema.safeParse({
+      ...values,
+      child_guests: '10',
+      child_menu_price: invalid,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success)
+      expect(
+        result.error.issues.some(
+          issue => issue.path.join('.') === 'child_menu_price',
+        ),
+      ).toBe(true);
+  }
+  expect(
+    bookingFormSchema.safeParse({ ...values, estimated_guests: '0' }).success,
+  ).toBe(false);
+});
+
 test('rejects a start date that differs from the event date', () => {
   const result = bookingFormSchema.safeParse({
     ...overnight(),

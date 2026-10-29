@@ -12,6 +12,7 @@ type ControlledBirthDateFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
   dayName: FieldPath<T>;
   label: string;
+  required?: boolean;
   monthName: FieldPath<T>;
   yearName: FieldPath<T>;
 };
@@ -23,6 +24,7 @@ export function ControlledBirthDateField<T extends FieldValues>({
   control,
   dayName,
   label,
+  required = false,
   monthName,
   yearName,
 }: ControlledBirthDateFieldProps<T>) {
@@ -56,6 +58,7 @@ export function ControlledBirthDateField<T extends FieldValues>({
     <DatePickerField
       error={error}
       label={label}
+      required={required}
       maximumDate={new Date()}
       minimumDate={minimumBirthDate}
       onBlur={blur}

@@ -13,6 +13,7 @@ import {
 import { ControlledDateField } from '@/shared/components/ControlledDateField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
+import { useWatch } from 'react-hook-form';
 
 type EventDetailsStepProps = {
   catalogsLoading: boolean;
@@ -35,6 +36,8 @@ export function EventDetailsStep({
   mascotOptions,
   showLegacyContactHint,
 }: EventDetailsStepProps) {
+  const legacyContact = useWatch({ control, name: 'legacy_contact_allowed' });
+  const phone = useWatch({ control, name: 'contact_phone' });
   return (
     <View>
       <SectionTitle title="Detalii despre eveniment" />
@@ -48,6 +51,7 @@ export function EventDetailsStep({
         control={control}
         disabled={catalogsLoading && !channelOptions.length}
         label="Comunicăm pe"
+        required={!legacyContact || Boolean(phone)}
         name="communication_channel"
         options={channelOptions}
         placeholder="Alege canalul"
@@ -59,11 +63,13 @@ export function EventDetailsStep({
         control={control}
         keyboardType="phone-pad"
         label="Telefon de contact"
+        required={!legacyContact}
         name="contact_phone"
         placeholder="Ex: 0732 652 339"
       />
       <ControlledDateField
         control={control}
+        required
         label="Data eveniment"
         maximumDate={maximumEventDate}
         minimumDate={minimumEventDate}
@@ -73,6 +79,7 @@ export function EventDetailsStep({
       <ControlledSelectField
         control={control}
         disabled={mascotsLoading && !mascotOptions.length}
+        required
         label="Mascote dorite"
         name="mascot_ids"
         noItemsText="Nu există mascote disponibile"

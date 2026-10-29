@@ -1,5 +1,4 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
 import { useWatch } from 'react-hook-form';
 import { EventDocumentType } from '@/features/events/types';
 import {
@@ -13,7 +12,7 @@ import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import { FormActions } from '@/shared/components/FormActions';
 import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice';
-import { theme } from '@/shared/theme/theme';
+import { FormInput } from '@/shared/components/FormInput';
 
 const documentTypes: Array<{ value: EventDocumentType; label: string }> = [
   { value: 'contract', label: 'Contract' },
@@ -54,33 +53,36 @@ export function DocumentForm(props: DocumentFormProps) {
       {state.conflict ? (
         <VersionConflictNotice onReload={state.reloadCurrent} />
       ) : null}
-      <AppSegmentedControl
-        containerStyle={styles.typeRow}
-        onChangeIndex={index =>
-          setValue('document_type', documentTypes[index].value, {
-            shouldDirty: true,
-          })
-        }
-        selectedIndex={documentTypes.findIndex(
-          option => option.value === documentType,
-        )}
-        segments={documentTypes.map(option => ({ label: option.label }))}
-      />
+      <FormInput label="Tip document" required>
+        <AppSegmentedControl
+          onChangeIndex={index =>
+            setValue('document_type', documentTypes[index].value, {
+              shouldDirty: true,
+            })
+          }
+          selectedIndex={documentTypes.findIndex(
+            option => option.value === documentType,
+          )}
+          segments={documentTypes.map(option => ({ label: option.label }))}
+        />
+      </FormInput>
 
       {!initialDocument ? (
-        <AppButton
-          fullWidth
-          icon="document-attach-outline"
-          label={file?.name ?? 'Alege fișier'}
-          onPress={pickFile}
-          shape="rounded"
-          style={styles.fileButton}
-          variant="soft"
-        />
+        <FormInput label="Fișier" required>
+          <AppButton
+            fullWidth
+            icon="document-attach-outline"
+            label={file?.name ?? 'Alege fișier'}
+            onPress={pickFile}
+            shape="rounded"
+            variant="soft"
+          />
+        </FormInput>
       ) : null}
 
       <ControlledTextField
         control={control}
+        required
         label="Titlu"
         name="title"
         placeholder="Titlul documentului"
@@ -101,12 +103,3 @@ export function DocumentForm(props: DocumentFormProps) {
     </FormModalFrame>
   );
 }
-
-const styles = StyleSheet.create({
-  typeRow: {
-    marginBottom: theme.spacing.md,
-  },
-  fileButton: {
-    marginBottom: theme.spacing.md,
-  },
-});

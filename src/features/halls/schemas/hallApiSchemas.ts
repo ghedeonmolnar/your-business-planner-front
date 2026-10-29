@@ -27,6 +27,8 @@ export const hallSchema = z.object({
   address: z.string().nullable(),
   is_active: z.boolean(),
   minimum_guests: z.number().int().positive().nullable(),
+  menu_price: z.string().nullable().optional(),
+  child_menu_price: z.string().nullable().optional(),
   description: z.string().nullable(),
   area_sqm: z.string().nullable(),
   arrangement: z.string().nullable(),

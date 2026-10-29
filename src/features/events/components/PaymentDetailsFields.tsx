@@ -41,6 +41,7 @@ export function PaymentDetailsFields({
     <>
       <ControlledSelectField
         control={control}
+        required
         label="Tip"
         name="type"
         options={[...typeOptions]}
@@ -62,6 +63,7 @@ export function PaymentDetailsFields({
         <ControlledTextField
           autoCapitalize="none"
           control={control}
+          required
           label="Categorie"
           name="category"
           placeholder="Ex: personal, furnizor"
@@ -77,6 +79,7 @@ export function PaymentDetailsFields({
       <ControlledTextField
         control={control}
         keyboardType="numeric"
+        required
         label={isFullSettlement ? 'Sumă fără prelungire' : 'Sumă'}
         name="amount"
         numeric
@@ -84,6 +87,7 @@ export function PaymentDetailsFields({
       />
       <ControlledDateField
         control={control}
+        required
         label="Data"
         name="paid_at"
         placeholder="Alege data"
@@ -100,6 +104,7 @@ export function PaymentDetailsFields({
       />
       <ControlledSelectField
         control={control}
+        required
         label="Status"
         name="status"
         options={[...statusOptions]}

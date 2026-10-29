@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
 import { FormActions } from '@/shared/components/FormActions';
 import { Text } from 'react-native-paper';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
 import { useEmployeeRegistration } from '@/features/auth/hooks/useAuthMutations';
@@ -17,7 +17,7 @@ import { showError } from '@/shared/feedback/showError';
 export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
   const registration = useEmployeeRegistration();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const form = useForm<EmployeeRegistrationFormValues>({
+  const form = useAppForm<EmployeeRegistrationFormValues>({
     resolver: zodResolver(employeeRegistrationSchema),
     defaultValues: {
       email: '',
@@ -43,6 +43,7 @@ export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
         autoCapitalize="none"
         control={form.control}
         keyboardType="email-address"
+        required
         label="Email"
         name="email"
         placeholder="email@exemplu.ro"
@@ -50,12 +51,14 @@ export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
       <ControlledTextField
         control={form.control}
         autoCapitalize="none"
+        required
         label="Cod invitație"
         name="code"
         placeholder="Codul complet din email"
       />
       <ControlledTextField
         control={form.control}
+        required
         label="Parolă"
         name="password"
         isPassword
@@ -69,6 +72,7 @@ export function EmployeeRegistrationPanel({ onBack }: { onBack: () => void }) {
       />
       <ControlledTextField
         control={form.control}
+        required
         label="Confirmă parola"
         name="password_confirmation"
         isPassword
