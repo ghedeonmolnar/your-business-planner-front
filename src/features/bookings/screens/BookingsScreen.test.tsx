@@ -2,9 +2,9 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { BookingsScreen } from '@/features/bookings/screens/BookingsScreen';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
-import { BookingTimePicker } from '@/features/bookings/components/BookingTimePicker';
-import { BookingClientFields } from '@/features/bookings/components/BookingClientFields';
+import { chooseBookingTime } from '@/features/bookings/components/bookingTimePickerTestHelpers';
 import { DatePickerField } from '@/shared/components/DatePickerField';
+import { FormInput } from '@/shared/components/FormInput';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import { waitForUi } from '@/shared/test/waitForUi';
 import { renderedText } from '@/shared/test/renderedText';
@@ -76,24 +76,6 @@ const select = async (
   });
 };
 
-const chooseTime = async (
-  renderer: ReactTestRenderer.ReactTestRenderer,
-  label: string,
-  value: string,
-) => {
-  await ReactTestRenderer.act(async () => {
-    renderer.root
-      .findAllByProps({ accessibilityLabel: label })
-      .find(node => typeof node.props.onPress === 'function')!
-      .props.onPress();
-  });
-  await ReactTestRenderer.act(async () => {
-    const picker = renderer.root.findByType(BookingTimePicker);
-    picker.props.onChange(value);
-    picker.props.onClose();
-  });
-};
-
 beforeEach(() => {
   globalThis.fetch = jest.fn((url, init) => {
     const path = String(url);
@@ -114,6 +96,25 @@ beforeEach(() => {
     }
     if (path.includes('/events') && init?.method === 'POST') {
       return Promise.resolve(jsonResponse(201, plannerBooking));
+    }
+    if (path.includes('/clients-lookup?')) {
+      return Promise.resolve(
+        jsonResponse(200, {
+          matched: true,
+          events_count: 1,
+          client: {
+            id: 'client-1',
+            name: 'Client test',
+            phone: '+40712345678',
+            judet: null,
+            oras: null,
+            strada: null,
+            source: null,
+            notes: null,
+          },
+          suggestion: null,
+        }),
+      );
     }
     if (path.includes('/halls')) {
       return Promise.resolve(
@@ -155,13 +156,16 @@ test('creates an overnight reservation through all five steps with the API mocke
       }
       date.props.onChange('2027-11-13');
     });
-    await chooseTime(renderer, 'Ora de început', '2027-11-13 18:00');
-    await chooseTime(renderer, 'Ora de sfârșit', '2027-11-14 04:00');
+    await chooseBookingTime(renderer, 'Ora de început', '2027-11-13 18:00');
+    await chooseBookingTime(renderer, 'Ora de sfârșit', '2027-11-14 04:00');
     await press(renderer, 'Continuă');
-    await select(renderer, 'Client', 'client-1');
+    await fill(renderer, 'Număr de telefon', '0712345678');
+    await waitForUi(() =>
+      expect(renderedText(renderer)).toContain('Client existent'),
+    );
     await press(renderer, 'Continuă');
-    await fill(renderer, 'Invitați minimi', '200');
-    await fill(renderer, 'Preț meniu / persoană (lei)', '350');
+    await fill(renderer, 'Meniuri estimate (adulți)', '200');
+    await fill(renderer, 'Preț meniu adulți (lei)', '350');
     await press(renderer, 'Continuă');
     await press(renderer, 'Continuă');
     await press(renderer, 'Salvează rezervarea');
@@ -175,20 +179,47 @@ test('creates an overnight reservation through all five steps with the API mocke
     const payload = JSON.parse(String(request?.[1]?.body));
     expect(payload).toMatchObject({
       hall_id: 'hall-1',
-      client_id: 'client-1',
-      minimum_guests: 200,
+      client_phone: '+40712345678',
+      minimum_guests: 0,
+      estimated_guests: 200,
       menu_price: '350',
       starts_at: '2027-11-13T16:00:00.000Z',
       ends_at: '2027-11-14T02:00:00.000Z',
     });
     expect(payload).not.toHaveProperty('company_id');
+    expect(payload).not.toHaveProperty('client_id');
     expect(renderer.root.findAllByType(BookingForm)).toHaveLength(0);
   } finally {
     await unmount();
   }
 });
 
-test('oprește o rezervare nouă la clientul fără telefon și oferă completarea lui', async () => {
+test('alegerea unei săli corectează imediat eroarea pasului și câmpurile obligatorii sunt marcate', async () => {
+  const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
+  const hallGroup = () =>
+    renderer.root
+      .findByType(BookingForm)
+      .findAllByType(FormInput)
+      .find(group => group.props.label === 'Sală');
+  try {
+    await press(renderer, 'Rezervare nouă');
+    await press(renderer, 'Continuă');
+    expect(hallGroup()?.props.error).toBe('Alege sala.');
+    expect(hallGroup()?.props.required).toBe(true);
+    expect(renderedText(renderer)).toContain('Sală *');
+    await select(renderer, 'Sală', 'hall-1');
+    await waitForUi(() => expect(hallGroup()?.props.error).toBeUndefined());
+    expect(
+      jest
+        .mocked(globalThis.fetch)
+        .mock.calls.some(([, init]) => init?.method === 'POST'),
+    ).toBe(false);
+  } finally {
+    await unmount();
+  }
+});
+
+test('oprește continuarea fără telefon și cere completarea lui în același pas', async () => {
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
   try {
     await press(renderer, 'Rezervare nouă');
@@ -206,23 +237,12 @@ test('oprește o rezervare nouă la clientul fără telefon și oferă completar
         ?.props.onChange('2027-11-13');
     });
     await press(renderer, 'Continuă');
-    await select(renderer, 'Client', 'client-1');
-    const selected = renderer.root
-      .findByType(BookingForm)
-      .findByType(BookingClientFields);
-    await ReactTestRenderer.act(async () => {
-      selected.props.onSelected({
-        id: 'client-1',
-        name: 'Client test',
-        phone: null,
-      });
-    });
     await press(renderer, 'Continuă');
     expect(renderedText(renderer)).toContain(
-      'Completează telefonul clientului înainte de rezervare.',
+      'Completează numărul de telefon al clientului.',
     );
     expect(
-      renderer.root.findByProps({ accessibilityLabel: 'Completează telefonul' }),
+      renderer.root.findByProps({ accessibilityLabel: 'Număr de telefon' }),
     ).toBeDefined();
     expect(
       jest

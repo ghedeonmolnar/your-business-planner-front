@@ -15,12 +15,16 @@ export function BookingTimeFields({
   const date = useWatch({ control, name: 'date' });
   const start = useWatch({ control, name: 'starts_at' });
   const end = useWatch({ control, name: 'ends_at' });
+  const status = useWatch({ control, name: 'status' });
+  const required =
+    ['confirmed', 'completed'].includes(status) || Boolean(start || end);
   return (
     <>
       <ControlledBookingTimeField
         control={control}
         name="starts_at"
         label="Ora de început"
+        required={required}
         date={date}
         disabled={!date}
         onSelectionChange={nextStart => {
@@ -38,6 +42,7 @@ export function BookingTimeFields({
         control={control}
         name="ends_at"
         label="Ora de sfârșit"
+        required={required}
         date={date}
         start={start}
         disabled={!date || !start}

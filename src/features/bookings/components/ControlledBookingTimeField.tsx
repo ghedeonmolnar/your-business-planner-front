@@ -14,6 +14,7 @@ export function ControlledBookingTimeField({
   control,
   name,
   label,
+  required = false,
   date,
   start = '',
   disabled = false,
@@ -22,6 +23,7 @@ export function ControlledBookingTimeField({
   control: Control<BookingFormValues>;
   name: 'starts_at' | 'ends_at';
   label: string;
+  required?: boolean;
   date: string;
   start?: string;
   disabled?: boolean;
@@ -47,10 +49,11 @@ export function ControlledBookingTimeField({
         };
         const display = value.split(' ').slice(1).join(' ');
         return (
-          <FormInput label={label} error={error?.message}>
+          <FormInput label={label} required={required} error={error?.message}>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={label}
+              accessibilityHint={required ? 'Câmp obligatoriu' : undefined}
               accessibilityValue={{ text: display || 'Ora necompletată' }}
               accessibilityState={{ disabled: blocked }}
               disabled={blocked}

@@ -23,6 +23,7 @@ import { formatLongDate, formatShortDate } from '@/shared/utils/formatDate';
 export type DatePickerFieldProps = {
   error?: string;
   label: string;
+  required?: boolean;
   maximumDate?: Date;
   minimumDate?: Date;
   onBlur?: () => void;
@@ -42,6 +43,7 @@ export type DatePickerFieldProps = {
 export function DatePickerField({
   error,
   label,
+  required = false,
   maximumDate,
   minimumDate,
   onBlur,
@@ -98,11 +100,12 @@ export function DatePickerField({
   };
 
   return (
-    <FormInput error={error} label={label} style={style}>
+    <FormInput error={error} label={label} required={required} style={style}>
       <Pressable
         disabled={blocked}
         accessibilityState={{ disabled: blocked }}
         accessibilityLabel={label}
+        accessibilityHint={required ? 'Câmp obligatoriu' : undefined}
         accessibilityRole="button"
         accessibilityValue={{ text: displayValue || placeholder }}
         onPress={openCalendar}

@@ -32,6 +32,7 @@ export function BookingStaffFields({
           <ControlledSelectField
             control={form.control}
             name={`staff.${index}.employee_id` as const}
+            required
             label="Persoană"
             icon="person-outline"
             optionsState={optionsState}
@@ -58,6 +59,7 @@ export function BookingStaffFields({
           <ControlledSelectField
             control={form.control}
             name={`staff.${index}.job_role` as const}
+            required
             label="Rol la eveniment"
             single
             options={staffRoleOptions}
@@ -67,6 +69,7 @@ export function BookingStaffFields({
           <ControlledSelectField
             control={form.control}
             name={`staff.${index}.pay_type` as const}
+            required
             label="Remunerație"
             single
             options={[
@@ -79,6 +82,7 @@ export function BookingStaffFields({
           <ControlledTextField
             control={form.control}
             name={`staff.${index}.rate` as const}
+            required
             label="Sumă / tarif (lei)"
             placeholder="0,00"
             keyboardType="decimal-pad"
@@ -86,12 +90,14 @@ export function BookingStaffFields({
           <ControlledTextField
             control={form.control}
             name={`staff.${index}.starts_at` as const}
+            required
             label="Început lucru — data și ora"
             placeholder="2026-10-24 16:00"
           />
           <ControlledTextField
             control={form.control}
             name={`staff.${index}.ends_at` as const}
+            required
             label="Sfârșit lucru — data și ora"
             placeholder="2026-10-25 05:00"
           />

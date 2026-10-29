@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
 import { FormActions } from '@/shared/components/FormActions';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
 import { useResetPassword } from '@/features/auth/hooks/useAuthMutations';
@@ -27,7 +27,7 @@ export function ResetPasswordPanel({
 }: ResetPasswordPanelProps) {
   const resetPassword = useResetPassword();
   const [isNewPasswordVisible, setNewPasswordVisible] = useState(false);
-  const resetForm = useForm<ResetPasswordFormValues>({
+  const resetForm = useAppForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       email: initialEmail,
@@ -68,6 +68,7 @@ export function ResetPasswordPanel({
         autoCapitalize="none"
         control={resetForm.control}
         keyboardType="email-address"
+        required
         label="Email"
         leftIcon="at-circle-outline"
         name="email"
@@ -76,6 +77,7 @@ export function ResetPasswordPanel({
       <ControlledTextField
         control={resetForm.control}
         keyboardType="number-pad"
+        required
         label="Cod"
         leftIcon="shield-checkmark-outline"
         name="code"
@@ -83,6 +85,7 @@ export function ResetPasswordPanel({
       />
       <ControlledTextField
         control={resetForm.control}
+        required
         label="Parolă nouă"
         leftIcon="key-outline"
         name="password"
@@ -97,6 +100,7 @@ export function ResetPasswordPanel({
       />
       <ControlledTextField
         control={resetForm.control}
+        required
         label="Confirmă parola"
         leftIcon="key-outline"
         name="password_confirmation"

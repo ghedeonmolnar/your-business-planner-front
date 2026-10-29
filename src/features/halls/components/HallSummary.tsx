@@ -9,6 +9,7 @@ import { MetaPill } from '@/shared/components/MetaPill';
 import { Card } from '@/shared/components/Card';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
+import { formatExactMoney } from '@/shared/utils/money';
 
 export function HallSummary({ hall }: { hall: Hall }) {
   const metrics: { icon: IconName; value: string; label: string }[] = [
@@ -55,10 +56,23 @@ export function HallSummary({ hall }: { hall: Hall }) {
       </View>
       <View style={styles.divider}>
         <Text style={styles.subtitle}>
-          Minimul comercial este propus pentru rezervările noi. Condițiile
-          rezervărilor existente rămân cele contractate.
+          Minimul sălii se aplică rezervărilor noi. Prețurile de mai jos sunt
+          precompletate și pot fi negociate la rezervare. Condițiile existente
+          se păstrează.
         </Text>
       </View>
+      <Text style={styles.body}>
+        Meniu adulți:{' '}
+        {hall.menu_price == null
+          ? 'Preț neconfigurat'
+          : formatExactMoney(hall.menu_price)}
+      </Text>
+      <Text style={styles.body}>
+        Meniu copii:{' '}
+        {hall.child_menu_price == null
+          ? 'Preț neconfigurat'
+          : formatExactMoney(hall.child_menu_price)}
+      </Text>
       {hall.area_sqm !== null ? (
         <Text style={styles.body}>
           Suprafață: {hallNumber(hall.area_sqm)} m²

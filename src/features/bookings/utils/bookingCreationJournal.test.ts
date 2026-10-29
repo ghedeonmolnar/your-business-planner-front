@@ -33,6 +33,31 @@ beforeEach(async () => {
   jest.clearAllMocks();
 });
 
+test('jurnalul păstrează telefonul și numele opțional fără a necesita un client creat înainte', async () => {
+  const phoneValues = {
+    ...values,
+    client_id: '',
+    client_phone: '0724111001',
+    client_name: '',
+  };
+  const phoneAttempt = {
+    values: phoneValues,
+    payload: {
+      ...bookingPayload(phoneValues),
+      operation_id: attempt.payload.operation_id,
+    },
+  };
+  await persistBookingCreationJournal(
+    owner,
+    phoneAttempt,
+    getSessionGeneration(),
+  );
+  expect(await loadBookingCreationJournal(owner)).toEqual({
+    ...phoneAttempt,
+    requiresReconciliation: false,
+  });
+});
+
 test('restaureaza cheia si payloadul original dupa resetarea memoriei procesului', async () => {
   await persistBookingCreationJournal(owner, attempt, getSessionGeneration());
   expect(await loadBookingCreationJournal(owner)).toEqual({
@@ -44,6 +69,33 @@ test('restaureaza cheia si payloadul original dupa resetarea memoriei procesului
   ).toBeUndefined();
   await clearBookingCreationJournal();
   expect(await loadBookingCreationJournal(owner)).toBeUndefined();
+});
+
+test('jurnalele vechi cu client_id rămân valide fără câmpurile telefonice noi', async () => {
+  const legacyValues = { ...values };
+  delete legacyValues.client_phone;
+  delete legacyValues.client_name;
+  delete legacyValues.estimated_guests;
+  delete legacyValues.child_guests;
+  delete legacyValues.child_menu_price;
+  const legacyPayload = { ...attempt.payload };
+  delete legacyPayload.estimated_guests;
+  delete legacyPayload.child_guests;
+  delete legacyPayload.child_menu_price;
+  const legacyAttempt = {
+    ...attempt,
+    values: legacyValues,
+    payload: legacyPayload,
+  };
+  await persistBookingCreationJournal(
+    owner,
+    legacyAttempt,
+    getSessionGeneration(),
+  );
+  expect(await loadBookingCreationJournal(owner)).toEqual({
+    ...legacyAttempt,
+    requiresReconciliation: false,
+  });
 });
 
 test('refuza generatia veche si sterge jurnalul la schimbarea sesiunii', async () => {

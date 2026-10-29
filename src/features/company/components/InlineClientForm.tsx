@@ -2,7 +2,7 @@ import { FormPanel } from '@/shared/components/FormPanel';
 import React, { useRef, useState } from 'react';
 import { Text } from 'react-native-paper';
 
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   newClientSchema,
@@ -33,7 +33,7 @@ export function InlineClientForm({
   );
   const [generation] = useState(getSessionGeneration);
   const [conflict, setConflict] = useState(false);
-  const form = useForm<NewClientValues>({
+  const form = useAppForm<NewClientValues>({
     resolver: zodResolver(newClientSchema),
     defaultValues: {
       name: recovered?.name ?? '',
@@ -82,6 +82,7 @@ export function InlineClientForm({
       <ControlledTextField
         control={form.control}
         name="name"
+        required
         label="Numele clientului nou"
         placeholder="Nume complet"
         disabled={uncertain}
@@ -89,6 +90,7 @@ export function InlineClientForm({
       <ControlledTextField
         control={form.control}
         name="phone"
+        required
         label="Telefonul clientului nou"
         placeholder="07…"
         keyboardType="phone-pad"

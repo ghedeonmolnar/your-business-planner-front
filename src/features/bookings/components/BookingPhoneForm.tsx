@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { DirectoryItem } from '@/features/company/types';
@@ -32,7 +32,7 @@ export function BookingPhoneForm({
   const [conflict, setConflict] = useState(false);
   const [generation] = useState(getSessionGeneration);
   const submitting = useRef(false);
-  const form = useForm<z.infer<typeof schema>>({
+  const form = useAppForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: { phone: client.phone ?? '' },
   });
@@ -109,6 +109,7 @@ export function BookingPhoneForm({
       <ControlledTextField
         control={form.control}
         name="phone"
+        required
         label="Telefonul clientului"
         placeholder="Număr real, cu prefix internațional"
         keyboardType="phone-pad"

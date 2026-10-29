@@ -47,14 +47,24 @@ export function BookingReviewFields({
         Sfârșit: {formatCompanyDateTime(preview.ends_at)}
       </Text>
       <Text style={styles.text}>
-        Invitați minimi: {values.minimum_guests} persoane
+        Meniuri estimate (adulți):{' '}
+        {values.estimated_guests || values.minimum_guests}
       </Text>
       <Text style={styles.text}>
-        Meniuri comandate: {values.final_guests || 'În așteptarea confirmării'}
+        Minimul sălii: {values.minimum_guests} meniuri pentru adulți
       </Text>
       <Text style={styles.text}>
-        Preț meniu: {formatExactMoney(preview.menu_price)}
+        Meniuri confirmate: {values.final_guests || 'Se completează ulterior'}
       </Text>
+      <Text style={styles.text}>
+        Preț meniu adulți: {formatExactMoney(preview.menu_price)}
+      </Text>
+      {Number(values.child_guests) > 0 ? (
+        <Text style={styles.text}>
+          Meniuri copii: {values.child_guests} ·{' '}
+          {formatExactMoney(preview.child_menu_price)} / meniu
+        </Text>
+      ) : null}
       <Text style={styles.text}>
         Avans convenit: {formatExactMoney(preview.agreed_advance)}
       </Text>

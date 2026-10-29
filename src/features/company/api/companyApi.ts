@@ -23,6 +23,8 @@ const directorySchema = z.object({
   is_available: z.boolean().optional(),
   capacity: z.number().optional(),
   minimum_guests: z.number().int().positive().nullable().optional(),
+  menu_price: z.string().nullable().optional(),
+  child_menu_price: z.string().nullable().optional(),
   address: z.string().nullable().optional(),
 });
 const versionedDirectorySchema = directorySchema.extend({

@@ -15,6 +15,8 @@ export const queryKeys = {
       ['planner', companyId, 'hall-details', id] as const,
     customer: (companyId: string, id: string) =>
       ['planner', companyId, 'directory', 'clients', 'detail', id] as const,
+    customerLookup: (companyId: string, phone: string) =>
+      ['planner', companyId, 'directory', 'clients', 'lookup', phone] as const,
     companyProfile: (companyId: string) =>
       ['planner', companyId, 'company-profile'] as const,
     bookingLists: (companyId: string) =>

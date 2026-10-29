@@ -1,5 +1,7 @@
 import React from 'react';
+import { StyleSheet, View } from 'react-native';
 import { Text } from 'react-native-paper';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { UseFormReturn } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { DirectoryItem } from '@/features/company/types';
@@ -14,6 +16,7 @@ import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
 import { useBookingDateAvailability } from '@/features/bookings/hooks/useBookingDateAvailability';
 import { companyNow } from '@/shared/utils/formatDate';
+import { theme } from '@/shared/theme/theme';
 
 export function BookingScheduleFields({
   form,
@@ -42,6 +45,7 @@ export function BookingScheduleFields({
       <ControlledSelectField
         control={control}
         name="hall_id"
+        required
         label="Sală"
         icon="business-outline"
         optionsState={hallsState}
@@ -59,6 +63,7 @@ export function BookingScheduleFields({
       <ControlledDateField
         control={control}
         name="date"
+        required
         label="Data evenimentului"
         placeholder="Alege data"
         minimumDate={
@@ -82,6 +87,7 @@ export function BookingScheduleFields({
       <ControlledSelectField
         control={control}
         name="type"
+        required
         label="Tip eveniment"
         optionsState={{
           loading: catalogs.isLoading,
@@ -107,6 +113,7 @@ export function BookingScheduleFields({
       <ControlledSelectField
         control={control}
         name="status"
+        required
         label="Stare rezervare"
         single
         options={Object.entries(bookingStatusLabels)
@@ -115,11 +122,36 @@ export function BookingScheduleFields({
         placeholder="Alege starea"
         searchPlaceholder="Caută stare"
       />
-      <Text>
-        În așteptarea avansului, sala rămâne disponibilă. După încasarea
-        avansului, schimbă starea în Confirmată pentru a rezerva data.
-      </Text>
+      <View accessible style={styles.statusHint}>
+        <Ionicons
+          accessible={false}
+          name="information-circle-outline"
+          color={theme.colors.menu.help}
+          size={theme.typography.bodyLarge}
+        />
+        <Text style={styles.statusHintText}>
+          În așteptarea avansului, sala rămâne disponibilă. După încasarea
+          avansului, schimbă starea în Confirmată pentru a rezerva data.
+        </Text>
+      </View>
       <BookingTimeFields form={form} />
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  statusHint: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: theme.spacing.sm,
+    marginBottom: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xs,
+  },
+  statusHintText: {
+    color: theme.colors.menu.muted,
+    flex: 1,
+    fontFamily: theme.fonts.body,
+    fontSize: theme.typography.label,
+    lineHeight: theme.typography.subtitle,
+  },
+});

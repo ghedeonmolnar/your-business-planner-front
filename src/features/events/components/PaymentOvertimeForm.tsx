@@ -26,6 +26,7 @@ export function PaymentOvertimeForm({
     <>
       <ControlledSelectField
         control={control}
+        required
         label="A fost prelungire?"
         name="has_overtime"
         options={[
@@ -41,6 +42,7 @@ export function PaymentOvertimeForm({
           <ControlledTextField
             control={control}
             keyboardType="decimal-pad"
+            required
             label="Câte ore a durat prelungirea?"
             name="hours"
             numeric
@@ -49,6 +51,7 @@ export function PaymentOvertimeForm({
           <ControlledTextField
             control={control}
             keyboardType="decimal-pad"
+            required
             label="Tarif client pe oră / animator (lei)"
             name="hourly_rate"
             numeric
@@ -56,6 +59,7 @@ export function PaymentOvertimeForm({
           />
           <ControlledSelectField
             control={control}
+            required
             label="Cine a participat la prelungire?"
             name="scope"
             options={[
@@ -69,6 +73,7 @@ export function PaymentOvertimeForm({
           {values.scope === 'selected' ? (
             <ControlledSelectField
               control={control}
+              required
               label="Animatori participanți"
               name="employee_ids"
               options={employees}

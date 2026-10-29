@@ -109,7 +109,8 @@ export function BookingTimePicker({
             accessibilityLabel={
               input === 'hour' ? 'Oră, între 00 și 23' : 'Minut, între 00 și 59'
             }
-            label={input === 'hour' ? 'Oră' : 'Minut'}
+            label={input === 'hour' ? 'Oră *' : 'Minut *'}
+            accessibilityHint="Câmp obligatoriu"
             mode="outlined"
             keyboardType="number-pad"
             maxLength={2}

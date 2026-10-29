@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useSaveOwnerProfile } from '@/features/company/hooks/useCompanyProfile';
@@ -16,7 +16,7 @@ export function OwnerProfileForm({ onClose }: { onClose: () => void }) {
   const { user, retryBootstrap } = useAuth();
   const save = useSaveOwnerProfile();
   const submitting = useRef(false);
-  const form = useForm<OwnerProfileValues>({
+  const form = useAppForm<OwnerProfileValues>({
     resolver: zodResolver(ownerProfileSchema),
     defaultValues: { name: user?.name ?? '' },
   });
@@ -51,6 +51,7 @@ export function OwnerProfileForm({ onClose }: { onClose: () => void }) {
       <ControlledTextField
         control={form.control}
         name="name"
+        required
         label="Numele tău"
         placeholder="Nume și prenume"
       />

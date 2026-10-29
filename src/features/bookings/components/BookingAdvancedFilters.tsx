@@ -1,7 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   BookingAdvancedFilterValues,
@@ -36,7 +36,7 @@ export function BookingAdvancedFilters({
   onApply: (values: BookingAdvancedFilterValues) => void;
   onClose: () => void;
 }) {
-  const form = useForm<BookingAdvancedFilterValues>({
+  const form = useAppForm<BookingAdvancedFilterValues>({
     resolver: zodResolver(bookingFilterSchema),
     defaultValues: values,
   });

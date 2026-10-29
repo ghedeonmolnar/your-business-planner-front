@@ -19,6 +19,8 @@ export type DirectoryItem = {
   is_available?: boolean;
   capacity?: number;
   minimum_guests?: number | null;
+  menu_price?: string | null;
+  child_menu_price?: string | null;
   address?: string | null;
 };
 export type DirectoryPayload = {

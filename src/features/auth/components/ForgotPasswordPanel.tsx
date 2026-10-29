@@ -1,7 +1,7 @@
 import React from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
 import { FormActions } from '@/shared/components/FormActions';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
 import { useForgotPassword } from '@/features/auth/hooks/useAuthMutations';
@@ -26,7 +26,7 @@ export function ForgotPasswordPanel({
   onCodeSent,
 }: ForgotPasswordPanelProps) {
   const forgotPassword = useForgotPassword();
-  const forgotForm = useForm<ForgotPasswordFormValues>({
+  const forgotForm = useAppForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: initialEmail,
@@ -59,6 +59,7 @@ export function ForgotPasswordPanel({
         autoCapitalize="none"
         control={forgotForm.control}
         keyboardType="email-address"
+        required
         label="Email"
         leftIcon="at-circle-outline"
         name="email"

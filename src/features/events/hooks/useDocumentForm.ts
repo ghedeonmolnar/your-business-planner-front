@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   DocumentPickerResponse,
@@ -63,7 +63,7 @@ export const useDocumentForm = ({
   const initial = useRef(initialDocument);
   initial.current = initialDocument;
   const reload = useReloadEventDocument();
-  const form = useForm<DocumentFormInput, unknown, DocumentFormValues>({
+  const form = useAppForm<DocumentFormInput, unknown, DocumentFormValues>({
     resolver: zodResolver(documentSchema),
     defaultValues: emptyDocumentForm,
   });

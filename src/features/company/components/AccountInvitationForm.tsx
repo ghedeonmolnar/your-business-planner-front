@@ -1,7 +1,7 @@
 import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
 import { useAuth } from '@/features/auth/AuthProvider';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   accountInvitationSchema,
@@ -23,7 +23,7 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
   const staffEnabled = hasCompanyFeature(user, 'staff');
   const invite = useInviteAccount();
   const employees = useDirectory('employees');
-  const form = useForm<AccountInvitationValues>({
+  const form = useAppForm<AccountInvitationValues>({
     resolver: zodResolver(accountInvitationSchema),
     defaultValues: { name: '', email: '', role: 'admin', employee_id: '' },
   });
@@ -63,12 +63,14 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
       <ControlledTextField
         control={form.control}
         name="name"
+        required
         label="Nume"
         placeholder="Numele persoanei"
       />
       <ControlledTextField
         control={form.control}
         name="email"
+        required
         label="Email"
         placeholder="email@exemplu.ro"
         autoCapitalize="none"
@@ -77,6 +79,7 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
       <ControlledSelectField
         control={form.control}
         name="role"
+        required
         label="Drepturi în aplicație"
         single
         options={[
@@ -90,6 +93,7 @@ export function AccountInvitationForm({ onClose }: { onClose: () => void }) {
         <ControlledSelectField
           control={form.control}
           name="employee_id"
+          required
           label="Persoană din personal"
           icon="person-outline"
           optionsState={{

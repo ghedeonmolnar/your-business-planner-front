@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useCatalogs } from '@/features/catalogs/hooks/useCatalogs';
 import { useClientLookup } from '@/features/clients/hooks/useClients';
@@ -68,7 +69,7 @@ export function EventForm({
     reset,
     setValue,
     trigger,
-  } = useForm<EventFormInput, unknown, EventFormValues>({
+  } = useAppForm<EventFormInput, unknown, EventFormValues>({
     resolver: zodResolver(isEdit ? eventSchema : createEventSchema),
     defaultValues: emptyEventForm,
   });

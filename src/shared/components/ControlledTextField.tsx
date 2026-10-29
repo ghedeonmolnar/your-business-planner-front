@@ -12,11 +12,13 @@ import { FormInput } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
 import { useFormBusy } from '@/shared/components/FormInteractionContext';
+import { formFieldLabel } from '@/shared/utils/formFieldLabel';
 
 type ControlledTextFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
   name: FieldPath<T>;
   label: string;
+  required?: boolean;
   placeholder: string;
   keyboardType?: KeyboardTypeOptions;
   secureTextEntry?: boolean;
@@ -30,12 +32,14 @@ type ControlledTextFieldProps<T extends FieldValues> = {
   onRightIconPress?: () => void;
   inputStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
+  onValueChange?: (value: string) => void;
 };
 
 export function ControlledTextField<T extends FieldValues>({
   control,
   name,
   label,
+  required = false,
   placeholder,
   keyboardType,
   secureTextEntry,
@@ -49,6 +53,7 @@ export function ControlledTextField<T extends FieldValues>({
   onRightIconPress,
   inputStyle,
   disabled = false,
+  onValueChange,
 }: ControlledTextFieldProps<T>) {
   const busy = useFormBusy();
   const blocked = busy || disabled;
@@ -60,11 +65,17 @@ export function ControlledTextField<T extends FieldValues>({
         field: { onChange, onBlur, value, ref },
         fieldState: { error },
       }) => (
-        <FormInput error={error?.message} label={label} hideLabel>
+        <FormInput
+          error={error?.message}
+          label={label}
+          required={required}
+          hideLabel
+        >
           <TextInput
             testID={`input:${name}`}
             disabled={blocked}
             accessibilityLabel={label}
+            accessibilityHint={required ? 'Câmp obligatoriu' : undefined}
             autoCapitalize={autoCapitalize ?? (isPassword ? 'none' : undefined)}
             autoCorrect={isPassword ? false : undefined}
             contentStyle={[
@@ -74,7 +85,7 @@ export function ControlledTextField<T extends FieldValues>({
             ]}
             error={Boolean(error)}
             keyboardType={keyboardType}
-            label={label}
+            label={formFieldLabel(label, required)}
             left={
               leftIcon ? (
                 <TextInput.Icon
@@ -89,7 +100,10 @@ export function ControlledTextField<T extends FieldValues>({
             multiline={multiline}
             onBlur={onBlur}
             onChangeText={text => {
-              if (!blocked) onChange(text);
+              if (!blocked) {
+                onChange(text);
+                onValueChange?.(text);
+              }
             }}
             placeholder={placeholder}
             ref={ref}

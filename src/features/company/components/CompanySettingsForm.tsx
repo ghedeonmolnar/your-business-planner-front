@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useSaveCompanySettings } from '@/features/company/hooks/useCompany';
@@ -28,7 +28,7 @@ export function CompanySettingsForm({
   const { retryBootstrap } = useAuth();
   const save = useSaveCompanySettings();
   const submitting = useRef(false);
-  const form = useForm<CompanySettingsValues>({
+  const form = useAppForm<CompanySettingsValues>({
     resolver: zodResolver(companySettingsSchema),
     defaultValues: companyProfileDefaults(company),
   });
@@ -64,6 +64,7 @@ export function CompanySettingsForm({
       <ControlledTextField
         control={form.control}
         name="name"
+        required
         label="Numele companiei"
         placeholder="Companie"
       />

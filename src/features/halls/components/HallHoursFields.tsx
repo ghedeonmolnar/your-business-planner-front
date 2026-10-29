@@ -35,6 +35,7 @@ function HallDayFields({
           <ControlledTextField
             control={control}
             name={`business_hours.${index}.start_time`}
+            required
             label={`${day}: început`}
             placeholder="HH:mm"
             keyboardType="numbers-and-punctuation"
@@ -42,6 +43,7 @@ function HallDayFields({
           <ControlledTextField
             control={control}
             name={`business_hours.${index}.end_time`}
+            required
             label={`${day}: sfârșit`}
             placeholder="HH:mm"
             keyboardType="numbers-and-punctuation"

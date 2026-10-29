@@ -7,12 +7,14 @@ type LocalitySelectFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
   label: string;
   name: FieldPath<T>;
+  required?: boolean;
 };
 
 export function LocalitySelectField<T extends FieldValues>({
   control,
   label,
   name,
+  required = false,
 }: LocalitySelectFieldProps<T>) {
   const catalogsQuery = useCatalogs();
   const options = catalogsQuery.data?.bihor_localities ?? [];
@@ -22,6 +24,7 @@ export function LocalitySelectField<T extends FieldValues>({
       control={control}
       disabled={catalogsQuery.isLoading && !options.length}
       label={label}
+      required={required}
       name={name}
       noItemsText="Nu există localități în Bihor"
       options={options}

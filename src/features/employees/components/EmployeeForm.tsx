@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   EmployeeFormInput,
@@ -64,7 +64,7 @@ export function EmployeeForm({
     formState: { isDirty },
     handleSubmit,
     reset,
-  } = useForm<EmployeeFormInput, unknown, EmployeeFormValues>({
+  } = useAppForm<EmployeeFormInput, unknown, EmployeeFormValues>({
     resolver: zodResolver(employeeSchema),
     defaultValues: emptyEmployeeForm,
   });
@@ -97,12 +97,14 @@ export function EmployeeForm({
       ) : null}
       <ControlledTextField
         control={control}
+        required
         label="Nume"
         name="name"
         placeholder="Numele angajatului"
       />
       <ControlledSelectField
         control={control}
+        required
         label="Sex"
         name="gender"
         noItemsText="Nu există opțiuni"
@@ -123,6 +125,7 @@ export function EmployeeForm({
       <ControlledBirthDateField
         control={control}
         dayName="birth_day"
+        required
         label="Data nașterii"
         monthName="birth_month"
         yearName="birth_year"
@@ -131,6 +134,7 @@ export function EmployeeForm({
         activeText="Activ"
         control={control}
         inactiveText="Inactiv"
+        required
         label="Status"
         name="is_active"
       />

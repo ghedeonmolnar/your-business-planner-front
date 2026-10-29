@@ -9,6 +9,7 @@ type ControlledDateFieldProps<T extends FieldValues> = {
   control: Control<T, unknown, FieldValues>;
   name: FieldPath<T>;
   label: string;
+  required?: boolean;
   placeholder: string;
   maximumDate?: Date;
   minimumDate?: Date;
@@ -24,6 +25,7 @@ export function ControlledDateField<T extends FieldValues>({
   control,
   name,
   label,
+  required = false,
   placeholder,
   maximumDate,
   minimumDate,
@@ -45,6 +47,7 @@ export function ControlledDateField<T extends FieldValues>({
         <DatePickerField
           error={error?.message}
           label={label}
+          required={required}
           maximumDate={maximumDate}
           minimumDate={minimumDate}
           onBlur={onBlur}

@@ -34,11 +34,19 @@ export function BookingEventSection({
       {canManage ? (
         <>
           <BookingDetailField
-            label="Invitați minimi"
+            label="Minimul sălii (adulți)"
             value={booking.minimum_guests ?? 'Necompletat'}
           />
           <BookingDetailField
-            label="Meniuri comandate"
+            label="Meniuri estimate (adulți)"
+            value={
+              booking.estimated_guests ??
+              booking.minimum_guests ??
+              'Necompletat'
+            }
+          />
+          <BookingDetailField
+            label="Meniuri confirmate"
             value={booking.final_guests ?? 'În așteptarea confirmării'}
           />
           <BookingDetailField
@@ -46,13 +54,25 @@ export function BookingEventSection({
             value={booking.menu_name || 'Necompletat'}
           />
           <BookingDetailField
-            label="Preț meniu"
+            label="Preț meniu adulți"
             value={
               booking.menu_price === undefined
                 ? 'Indisponibil'
                 : formatExactMoney(booking.menu_price)
             }
           />
+          {Number(booking.child_guests) > 0 ? (
+            <>
+              <BookingDetailField
+                label="Meniuri copii"
+                value={booking.child_guests ?? 0}
+              />
+              <BookingDetailField
+                label="Preț meniu copii"
+                value={formatExactMoney(booking.child_menu_price)}
+              />
+            </>
+          ) : null}
           {booking.final_guests == null &&
           !['cancelled', 'expired'].includes(booking.status) ? (
             <View style={styles.alert}>
@@ -67,7 +87,9 @@ export function BookingEventSection({
                   Meniurile nu sunt confirmate
                 </Text>
                 <Text style={styles.body}>
-                  Completează meniurile și numărul exact de invitați.
+                  Numărul final de adulți se poate completa cu aproximativ 7
+                  zile înainte de eveniment. Până atunci se folosește estimarea,
+                  respectând minimul sălii.
                 </Text>
               </View>
             </View>

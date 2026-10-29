@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Image, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Text } from 'react-native-paper';
-import { useForm, useWatch } from 'react-hook-form';
+import { useWatch } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -54,7 +55,7 @@ export function MascotForm({
     handleSubmit,
     reset,
     setValue,
-  } = useForm<MascotFormInput, unknown, MascotFormValues>({
+  } = useAppForm<MascotFormInput, unknown, MascotFormValues>({
     resolver: zodResolver(mascotSchema),
     defaultValues: emptyMascotForm,
   });
@@ -159,6 +160,7 @@ export function MascotForm({
 
       <ControlledTextField
         control={control}
+        required
         label="Nume"
         name="name"
         placeholder="Numele mascotei"
@@ -176,6 +178,7 @@ export function MascotForm({
         activeText="Activă"
         control={control}
         inactiveText="Inactivă"
+        required
         label="Status"
         name="is_active"
       />

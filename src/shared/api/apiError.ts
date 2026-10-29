@@ -94,7 +94,9 @@ const errorMessagesByCode: Record<string, string> = {
   BOOKING_INVALID_INTERVAL:
     'Verifică data și orele evenimentului, inclusiv ziua de încheiere.',
   BOOKING_DETAILS_INCOMPLETE:
-    'Completează programul, minimul garantat și prețul meniului.',
+    'Completează programul, numărul de meniuri și prețul pentru adulți.',
+  BOOKING_CHILD_MENU_PRICE_REQUIRED:
+    'Completează prețul meniului pentru copii.',
   BOOKING_CLIENT_PHONE_REQUIRED:
     'Completează telefonul clientului înainte de a crea rezervarea sau de a schimba clientul.',
   BOOKING_AMOUNT_TOO_LARGE: 'Valoarea calculată depășește limita permisă.',

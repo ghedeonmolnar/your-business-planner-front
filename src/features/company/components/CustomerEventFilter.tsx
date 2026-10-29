@@ -39,6 +39,7 @@ export function CustomerEventFilter({
         {expanded ? (
           <>
             <ControlledDateRangeFields
+              required
               control={form.control}
               fromName="date_from"
               toName="date_to"

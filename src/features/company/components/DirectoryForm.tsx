@@ -72,6 +72,7 @@ export function DirectoryForm({
       <ControlledTextField
         control={form.control}
         name="name"
+        required
         label="Nume"
         placeholder="Nume"
       />
@@ -98,6 +99,7 @@ export function DirectoryForm({
           <ControlledTextField
             control={form.control}
             name="capacity"
+            required
             label="Capacitate persoane"
             placeholder="200"
             keyboardType="number-pad"
@@ -115,6 +117,7 @@ export function DirectoryForm({
           <ControlledSelectField
             control={form.control}
             name="job_role"
+            required
             label="Rol operațional"
             single
             options={staffRoleOptions}
@@ -124,6 +127,7 @@ export function DirectoryForm({
           <ControlledTextField
             control={form.control}
             name="hourly_rate"
+            required
             label="Tarif orar implicit (lei)"
             placeholder="0,00"
             keyboardType="decimal-pad"
@@ -134,6 +138,7 @@ export function DirectoryForm({
         <ControlledSelectField
           control={form.control}
           name="active"
+          required
           label="Stare"
           single
           options={[

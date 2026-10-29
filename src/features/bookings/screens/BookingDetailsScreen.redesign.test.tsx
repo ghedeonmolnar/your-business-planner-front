@@ -66,11 +66,13 @@ test.each([null, 0, 240])(
     const value = finalGuests ?? 'În așteptarea confirmării';
     expect(
       renderer.root.findByProps({
-        accessibilityLabel: `Meniuri comandate: ${value}`,
+        accessibilityLabel: `Meniuri confirmate: ${value}`,
       }),
     ).toBeDefined();
     expect(
-      renderer.root.findByProps({ accessibilityLabel: 'Invitați minimi: 200' }),
+      renderer.root.findByProps({
+        accessibilityLabel: 'Minimul sălii (adulți): 200',
+      }),
     ).toBeDefined();
     expect(
       JSON.stringify(renderer.toJSON()).includes(

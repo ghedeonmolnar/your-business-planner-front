@@ -7,6 +7,30 @@ import { hallFormSchema } from '@/features/halls/schemas/hallFormSchema';
 import { bookingFormDefaults } from '@/features/bookings/utils/bookingFormValues';
 import { plannerBooking } from '@/features/bookings/utils/plannerTestFixtures';
 
+test('prețurile implicite pentru adulți și copii rămân zecimale și pot fi necompletate', () => {
+  const values = {
+    ...hallFormDefaults(hallFixture),
+    menu_price: '350,25',
+    child_menu_price: '150.50',
+  };
+  expect(hallFormSchema.safeParse(values).success).toBe(true);
+  const body = hallSaveBody(values, [], 'operation-id');
+  expect(JSON.parse(String(body.getAll('metadata')[0]))).toMatchObject({
+    menu_price: '350.25',
+    child_menu_price: '150.50',
+  });
+  expect(
+    hallFormSchema.safeParse({ ...values, child_menu_price: '1.001' }).success,
+  ).toBe(false);
+  expect(
+    hallFormSchema.safeParse({
+      ...values,
+      menu_price: '',
+      child_menu_price: '',
+    }).success,
+  ).toBe(true);
+});
+
 test('duplicarea pregătește datele comerciale fără note, identitate sau istoric', () => {
   const values = hallFormDefaults(hallFixture, true);
   expect(values.name).toBe('Sala test (copie)');
@@ -68,14 +92,16 @@ test('trimite coperta nouă și păstrează imaginile existente fără a trimite
 
 test('minimul sălii precompletează numai un contract nou și păstrează snapshotul existent', () => {
   expect(
-    bookingFormDefaults('2026-10-24', 'hall-1', undefined, 150).minimum_guests,
+    bookingFormDefaults('2026-10-24', 'hall-1', undefined, {
+      minimum_guests: 150,
+    }).minimum_guests,
   ).toBe('150');
   expect(
     bookingFormDefaults(
       '2026-10-24',
       'hall-1',
       { ...plannerBooking, minimum_guests: 200 },
-      150,
+      { minimum_guests: 150 },
     ).minimum_guests,
   ).toBe('200');
 });

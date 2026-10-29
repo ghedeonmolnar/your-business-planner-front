@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
 import { FormActions } from '@/shared/components/FormActions';
-import { useForm } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
 import { useLogin } from '@/features/auth/hooks/useAuthMutations';
@@ -26,7 +26,7 @@ export function LoginPanel({
 }: LoginPanelProps) {
   const login = useLogin();
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const loginForm = useForm<LoginFormValues>({
+  const loginForm = useAppForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       username: initialUsername,
@@ -53,6 +53,7 @@ export function LoginPanel({
       <ControlledTextField
         autoCapitalize="none"
         control={loginForm.control}
+        required
         label="Email"
         leftIcon="at-circle-outline"
         name="username"
@@ -60,6 +61,7 @@ export function LoginPanel({
       />
       <ControlledTextField
         control={loginForm.control}
+        required
         label="Parolă"
         leftIcon="key-outline"
         name="password"

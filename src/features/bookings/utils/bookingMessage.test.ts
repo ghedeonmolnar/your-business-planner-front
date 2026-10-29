@@ -7,11 +7,11 @@ test('exclude notele interne și diferențiază meniurile neconfirmate de zero',
     'Restaurant test',
   );
   expect(pending).not.toContain('Notă privată');
-  expect(pending).not.toContain('Meniuri comandate: 0');
+  expect(pending).not.toContain('Meniuri confirmate: 0');
   expect(bookingMessage({ ...plannerBooking, final_guests: 0 }, '')).toContain(
-    'Meniuri comandate: 0',
+    'Meniuri confirmate: 0',
   );
   expect(
     bookingMessage({ ...plannerBooking, final_guests: 240 }, ''),
-  ).toContain('Meniuri comandate: 240');
+  ).toContain('Meniuri confirmate: 240');
 });

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Controller, useForm, UseFormReturn } from 'react-hook-form';
+import { Controller, UseFormReturn } from 'react-hook-form';
+import { useAppForm } from '@/shared/hooks/useAppForm';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -29,7 +30,7 @@ export function HallAmenitiesFields({
 }: {
   form: UseFormReturn<HallFormValues>;
 }) {
-  const custom = useForm({
+  const custom = useAppForm({
     resolver: zodResolver(amenitySchema),
     defaultValues: { name: '' },
   });
@@ -112,6 +113,7 @@ export function HallAmenitiesFields({
       <ControlledTextField
         control={custom.control}
         name="name"
+        required
         label="Facilitate personalizată"
         placeholder="Numele facilității"
       />
