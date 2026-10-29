@@ -57,9 +57,10 @@ export function useAppForm<
 
   useEffect(() => {
     mounted.current = true;
+    const fieldsToRevalidate = pendingFields.current;
     return () => {
       mounted.current = false;
-      pendingFields.current.clear();
+      fieldsToRevalidate.clear();
     };
   }, []);
 
