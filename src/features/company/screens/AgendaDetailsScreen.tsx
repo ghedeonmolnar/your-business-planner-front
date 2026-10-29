@@ -104,7 +104,7 @@ export function AgendaDetailsScreen({
               title={presentation.empty}
               message={presentation.message}
             />
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
           <AgendaDetailCard
