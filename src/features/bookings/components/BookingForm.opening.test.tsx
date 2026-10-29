@@ -85,8 +85,8 @@ test.each(['booking', 'payment'] as const)(
         ).toHaveBeenCalled(),
       );
       expect(renderer.root.findAllByType(FormModalFrame)).toHaveLength(0);
-      expect(renderer.root.findAllByType(LoadingState).length).toBeGreaterThan(
-        0,
+      expect(renderer.root.findAllByType(LoadingState)).toHaveLength(
+        kind === 'booking' ? 0 : 1,
       );
       expect(
         renderer.root.findAllByType(Modal).filter(node => node.props.visible),

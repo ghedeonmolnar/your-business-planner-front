@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, View, ViewStyle, StyleProp } from 'react-native';
 import { Text } from 'react-native-paper';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { Card } from '@/shared/components/Card';
 import { IconBadge } from '@/shared/components/IconBadge';
 import { IconName } from '@/shared/types/icon';
@@ -40,6 +41,12 @@ export function AgendaMetric({
       <View style={styles.icons}>
         <IconBadge icon={icon} tone={attention ? 'invitations' : 'primary'} />
         <Text style={styles.label}>{title}</Text>
+        <Ionicons
+          accessible={false}
+          name="chevron-forward"
+          color={theme.colors.menu.primary}
+          size={theme.typography.bodyLarge}
+        />
       </View>
       <View style={styles.figures}>
         <Text style={[styles.value, attention && styles.attentionValue]}>

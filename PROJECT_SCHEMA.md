@@ -114,7 +114,7 @@ Galeria rezerva durabil metadatele in hall_images inaintea scrierii fisierului. 
 
 ## Ecrane, recuperare si accesibilitate
 
-Antetul Agendei afiseaza compania si salutul, fara text descriptiv sub salut. Actiunea Rezervare noua pentru owner/admin ramane fixa jos, in afara listei derulabile si deasupra navigatiei, cu acelasi model de layout ca in celelalte liste. Lista isi rezerva spatiul prin fluxul normal al ecranului, fara suprapunere peste continut sau compensare suplimentara pentru safe area.
+Antetul Agendei afiseaza compania si salutul, fara text descriptiv sub salut. Actiunea Rezervare noua pentru owner/admin ramane fixa jos, in afara listei derulabile si deasupra navigatiei, cu acelasi model de layout ca in celelalte liste. Lista isi rezerva spatiul prin fluxul normal al ecranului, fara suprapunere peste continut sau compensare suplimentara pentru safe area. Pregatirea rezervarii foloseste indicatorul butonului pana la citirea jurnalului local; formularul nu introduce un loader sau spatiu in ecranul parinte si deschide direct modalul final. Fiecare dintre cele patru carduri Pe scurt are sageata spre dreapta in antet si rol accesibil de buton, indicand deschiderea listei filtrate corespunzatoare.
 
 Cardul de sumar din pagina individuala a evenimentului aseaza numele clientului si sala in stanga, iar etichetele de stare si tip in dreapta sus, suprapuse vertical si aliniate la dreapta. Grupul etichetelor ocupa cel mult jumatate din latimea antetului; textele pot trece pe mai multe randuri la nume lungi sau font marit. Data, intervalul si contactul raman sub antet.
 
