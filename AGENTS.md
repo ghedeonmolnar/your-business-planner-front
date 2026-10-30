@@ -14,7 +14,7 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 8. Nu forta instalarea cu `--force` sau `--legacy-peer-deps`; un conflict de `peerDependencies` se rezolva prin versiuni compatibile.
 9. Orice schimbare de contract API, schema de baza de date, ecran sau flux se reflecta in `PROJECT_SCHEMA.md` in aceeasi schimbare.
 10. In mediul local folosim doar aplicatia Android: o deschidem si folosim aplicatia prin interfata ei.
-11. Selectorii compara ramura cu baza comuna fata de `origin/main` sau `--base`, plus staged, unstaged si untracked. Schimbarile globale, configurarile, dependentele, infrastructura testelor, stergerile/redenumirile, fisierele fara mapare/teste si baza Git indisponibila cer rulare completa. In CI, PR-urile draft folosesc `quality-affected`; PR-urile pregatite pentru merge, fiecare commit nou al lor, `main` si declansarea manuala folosesc `quality` cu suita completa. Un rezultat selectiv nu inlocuieste verificarea completa pentru merge sau livrare. Instructiunile si limitele sunt in `docs/TEST_SELECTION.md`.
+11. Selectorii compara ramura cu baza comuna fata de `origin/main` sau `--base`, plus staged, unstaged si untracked. Schimbarile globale, configurarile, dependentele, infrastructura testelor, stergerile/redenumirile, fisierele fara mapare/teste si baza Git indisponibila cer rulare completa. In CI, PR-urile draft folosesc `quality-affected`; PR-urile pregatite pentru merge, fiecare commit nou al lor, `main` si declansarea manuala folosesc `quality` cu suita completa. Un rezultat selectiv nu inlocuieste verificarea completa pentru merge sau livrare. Instructiunile si limitele sunt in `primary-docs/TEST_SELECTION.md`.
 
 ## Reguli comune
 
@@ -69,7 +69,7 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 26. Fiecare metoda noua sau modificata are docblock PHPDoc: o descriere scurta a rolului, `@param` pentru fiecare parametru (tipul si ce primeste) si `@return` (ce intoarce), chiar daca tipurile native le exprima deja. Proprietatile si constantele cu structura primesc `@var`. Descrierile noi se scriu in romana, fara diacritice.
 27. Docblock-urile existente nu se sterg; se actualizeaza odata cu semnatura sau comportamentul metodei.
 28. `business-api/pint.json` dezactiveaza `no_superfluous_phpdoc_tags`, ca Pint sa nu stearga tag-urile `@param`/`@return` care repeta tipurile native; nu reactiva regula.
-29. Raspunsurile de eroare intorc un cod de eroare stabil (identificator masina, documentat, parte din contractul API), nu un text destinat utilizatorului final; textul afisat il pune frontend-ul. Un mesaj tehnic poate fi intors doar pentru logare/diagnostic si nu se afiseaza utilizatorului (vezi `CONVENTII_TEXT_SI_ERORI.md`).
+29. Raspunsurile de eroare intorc un cod de eroare stabil (identificator masina, documentat, parte din contractul API), nu un text destinat utilizatorului final; textul afisat il pune frontend-ul. Un mesaj tehnic poate fi intors doar pentru logare/diagnostic si nu se afiseaza utilizatorului (vezi `primary-docs/CONVENTII_TEXT_SI_ERORI.md`).
 
 ## Reguli React
 
@@ -152,7 +152,7 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 13. Producatia foloseste HTTPS, APP_DEBUG=false, cookie-uri Secure/HttpOnly si document root exclusiv business-api/public. Fisierele de mediu, vendor, storage privat, dumpurile si uneltele locale nu sunt servite de webserver. Accesul operatorilor necesita MFA sau un gateway de acces cu autentificare suplimentara.
 14. Backupurile sunt private, criptate in afara serverului si au restaurarea verificata intr-o baza separata. Jurnalul de audit inregistreaza actorul si actiunea cu o lista explicita de campuri permise, fara payloaduri brute sau credentiale.
 15. Actualizarile native se livreaza numai dupa verificarea proiectelor native si un build Android; iOS necesita verificare pe macOS. Instalarea npm si peerDependencies rezolvate nu demonstreaza compatibilitatea la executie.
-16. Auditul precizeaza ce a fost verificat, rezultatele, limitarile si blocajele. Nu declara conformitate OWASP/WCAG sau securitate absoluta doar pentru ca testele automate trec. Cele trei copii AGENTS.md si PROJECT_SCHEMA.md se pastreaza sincronizate.
+16. Auditul precizeaza ce a fost verificat, rezultatele, limitarile si blocajele. Nu declara conformitate OWASP/WCAG sau securitate absoluta doar pentru ca testele automate trec. Sursele AGENTS.md si PROJECT_SCHEMA.md sunt in primary-docs; cele trei copii din radacina workspace-ului, business-api si business-front se pastreaza sincronizate cu ele.
 
 ## Reguli de calitate si livrare
 
@@ -162,6 +162,6 @@ Aceste reguli se aplica oricarei schimbari facute in `business-api` si `business
 4. Erorile aratate utilizatorului trec doar prin `showError`, mesajele prin `showMessage`, confirmarile prin `confirmAction` (toate din `shared/feedback`); nu folosi `Alert.alert` sau alte dialoguri de sistem.
 5. Fiecare flux critic (autentificare, creare eveniment, incasare) are cel putin un test care monteaza ecranul cu API-ul mock-uit.
 6. Configurarile dependente de mediu se citesc din fisiere de mediu, cate unul per mediu (`.env`, `.env.production`, citite prin `@env` in `business-front`); nu exista valori de mediu in cod.
-7. Textele afisate utilizatorului se scriu in romana, cu diacritice, consecvent cu restul aplicatiei (vezi `CONVENTII_TEXT_SI_ERORI.md`). Regula se refera doar la textul afisat in aplicatie; docblock-urile si descrierile din cod raman fara diacritice (vezi Reguli comune 17 si Laravel/PHP 26).
+7. Textele afisate utilizatorului se scriu in romana, cu diacritice, consecvent cu restul aplicatiei (vezi `primary-docs/CONVENTII_TEXT_SI_ERORI.md`). Regula se refera doar la textul afisat in aplicatie; docblock-urile si descrierile din cod raman fara diacritice (vezi Reguli comune 17 si Laravel/PHP 26).
 8. Accesibilitatea este parte din definitia de "terminat": contrast minim 4.5:1 pentru text mic si layout care rezista la font scaling.
-9. Textul erorilor afisate utilizatorului provine din frontend, nu din backend: backend-ul intoarce un cod de eroare stabil, iar `business-front` mapeaza codul la textul in romana cu diacritice si il afiseaza prin `showError` din `shared/feedback`. Maparea cod->text sta intr-un loc reutilizabil, cu un mesaj generic (fallback) pentru coduri necunoscute (vezi `CONVENTII_TEXT_SI_ERORI.md`).
+9. Textul erorilor afisate utilizatorului provine din frontend, nu din backend: backend-ul intoarce un cod de eroare stabil, iar `business-front` mapeaza codul la textul in romana cu diacritice si il afiseaza prin `showError` din `shared/feedback`. Maparea cod->text sta intr-un loc reutilizabil, cu un mesaj generic (fallback) pentru coduri necunoscute (vezi `primary-docs/CONVENTII_TEXT_SI_ERORI.md`).

@@ -14,4 +14,4 @@ Problema concreta, rezultatul si modulele afectate:
 
 Migrari, ordine API/client, recuperare, limite si punct de revenire:
 
-Nu bifa o proba neexecutata. Leaga blocajele externe la `docs/ROADMAP_LANSARE.md`.
+Nu bifa o proba neexecutata. Leaga blocajele externe la `primary-docs/ROADMAP_LANSARE.md` din workspace-ul comun.

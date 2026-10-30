@@ -3,18 +3,8 @@ const path = require('node:path');
 const crypto = require('node:crypto');
 
 const repository = path.resolve(__dirname, '../..');
-const manifestPath = path.join(repository, 'docs/documentation-manifest.json');
-const documents = [
-  'AGENTS.md',
-  'PROJECT_SCHEMA.md',
-  'docs/ROADMAP_LANSARE.md',
-  'docs/PLAN_CALITATE_2026-10-26.md',
-  'docs/PROJECT_SCHEMA_ISTORIC_2026-10-26.md',
-  'docs/RECUPERARE_SI_DEPLOY.md',
-  'docs/INVENTAR_LEGACY_2026-10-27.md',
-  'docs/IMPLEMENTARE_PLAN_CALITATE_2026-10-27.md',
-  'docs/DEMO_PREZENTARE.md',
-];
+const manifestPath = path.join(__dirname, 'manifest.json');
+const documents = ['AGENTS.md', 'PROJECT_SCHEMA.md'];
 const digest = file =>
   crypto
     .createHash('sha256')
@@ -45,6 +35,7 @@ if (process.argv.includes('--update')) {
   ) {
     copies.push(
       workspace,
+      path.join(workspace, 'primary-docs'),
       path.join(
         workspace,
         path.basename(repository) === 'business-api'
