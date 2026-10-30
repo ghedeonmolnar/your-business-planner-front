@@ -80,6 +80,59 @@ test('caps the dialog at the space left when the keyboard covers almost everythi
   );
 });
 
+test('păstrează aceeași înălțime când pașii au conținut diferit', async () => {
+  const renderStep = (step: number, title: string, content: string) => (
+    <SafeAreaInsetsContext.Provider value={insets}>
+      <FormModalFrame
+        visible
+        title={title}
+        progress={{ current: step, total: 3 }}
+        onClose={() => undefined}
+        footer={<Text>Continuă</Text>}
+      >
+        <Text>{content}</Text>
+      </FormModalFrame>
+    </SafeAreaInsetsContext.Provider>
+  );
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  await ReactTestRenderer.act(async () => {
+    renderer = ReactTestRenderer.create(
+      renderStep(1, 'Sală și program', 'Câmpuri pentru sală și program'),
+    );
+  });
+  if (!renderer) throw new Error('Nu am putut deschide formularul.');
+  const view = renderer;
+  const panelStyle = () => {
+    const panel = view.root.find(node => {
+      const style = StyleSheet.flatten(node.props.style);
+      return (
+        style?.borderRadius === theme.radius.lg &&
+        typeof style?.maxHeight === 'number'
+      );
+    });
+    return StyleSheet.flatten(panel.props.style);
+  };
+  try {
+    const initialHeight = panelStyle()?.maxHeight;
+    expect(panelStyle()?.flex).toBe(1);
+    for (const [step, title, content] of [
+      [2, 'Client', 'Telefon'],
+      [3, 'Condiții comerciale', 'Servicii suplimentare '.repeat(30)],
+    ] as const) {
+      await ReactTestRenderer.act(async () =>
+        view.update(renderStep(step, title, content)),
+      );
+      expect(panelStyle()?.maxHeight).toBe(initialHeight);
+      expect(panelStyle()?.flex).toBe(1);
+      expect(
+        StyleSheet.flatten(view.root.findByType(ScrollView).props.style)?.flex,
+      ).toBe(1);
+    }
+  } finally {
+    await ReactTestRenderer.act(async () => view.unmount());
+  }
+});
+
 test('cere confirmare înainte să închidă un formular modificat', async () => {
   const onClose = jest.fn();
   let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
@@ -108,6 +161,7 @@ test('cere confirmare înainte să închidă un formular modificat', async () =>
   expect(dialog?.props.dialog).toMatchObject({
     title: 'Modificări nesalvate',
     confirmLabel: 'Pleacă fără să salvezi',
+    destructive: true,
   });
 
   await ReactTestRenderer.act(async () => {

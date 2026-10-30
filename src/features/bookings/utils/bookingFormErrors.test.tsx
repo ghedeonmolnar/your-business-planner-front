@@ -124,5 +124,24 @@ test('mapează câmpul 422 din envelope fără a afișa textul tehnic al serveru
   expect(form.getFieldState('date').error?.message).toBe(
     'Alege ziua de azi sau o dată viitoare.',
   );
+  await ReactTestRenderer.act(async () => {
+    step = applyBookingApiErrors(
+      new ApiError('Validare', 422, {
+        response: {
+          errors: {
+            advance_due_at: ['BOOKING_ADVANCE_DUE_IN_PAST'],
+            'advance_receipt.method': ['required'],
+          },
+        },
+      }),
+      form,
+      true,
+    );
+  });
+  expect(step).toBe(2);
+  expect(form.getFieldState('advance_due_at').error?.message).toBe(
+    'Alege ziua de azi sau o dată viitoare.',
+  );
+  expect(form.getFieldState('advance_received_method').error).toBeDefined();
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });

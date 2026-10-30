@@ -8,7 +8,6 @@ import { AssignmentsStep } from '@/features/events/components/eventForm/Assignme
 import { EventDetailsStep } from '@/features/events/components/eventForm/EventDetailsStep';
 import { EventFormFooter } from '@/features/events/components/eventForm/EventFormFooter';
 import { ScheduleStep } from '@/features/events/components/eventForm/ScheduleStep';
-import { StepIndicator } from '@/features/events/components/eventForm/StepIndicator';
 import {
   eventDateBounds,
   EventFormStep,
@@ -176,14 +175,11 @@ export function EventForm({
       hasUnsavedChanges={isDirty}
       onClose={onCancel}
       onDismiss={onDismiss}
-      title={`${
-        isEdit ? 'Editează eveniment' : 'Eveniment nou'
-      } · Pas ${currentStep}/3`}
+      title={isEdit ? 'Editează eveniment' : 'Eveniment nou'}
+      progress={{ current: currentStep, total: 3 }}
       visible={visible}
       busy={saving}
     >
-      <StepIndicator currentStep={currentStep} />
-
       {currentStep === 1 && (
         <EventDetailsStep
           catalogsLoading={catalogsQuery.isLoading}

@@ -9,6 +9,7 @@ type CardProps = {
   children: ReactNode;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
   highlighted?: boolean;
 };
 
@@ -27,6 +28,7 @@ export function Card({
   children,
   onPress,
   style,
+  contentStyle,
   highlighted = false,
 }: CardProps) {
   const cardStyle: ViewStyle =
@@ -60,24 +62,27 @@ export function Card({
       accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       accessibilityRole={onPress ? 'button' : undefined}
-      contentStyle={{
-        alignItems,
-        justifyContent,
-        flexDirection,
-        flexWrap,
-        gap,
-        rowGap,
-        columnGap,
-        padding,
-        paddingHorizontal,
-        paddingVertical,
-        paddingTop,
-        paddingBottom,
-        paddingLeft,
-        paddingRight,
-        paddingStart,
-        paddingEnd,
-      }}
+      contentStyle={[
+        {
+          alignItems,
+          justifyContent,
+          flexDirection,
+          flexWrap,
+          gap,
+          rowGap,
+          columnGap,
+          padding,
+          paddingHorizontal,
+          paddingVertical,
+          paddingTop,
+          paddingBottom,
+          paddingLeft,
+          paddingRight,
+          paddingStart,
+          paddingEnd,
+        },
+        contentStyle,
+      ]}
       mode={borderWidth === 0 ? 'contained' : 'outlined'}
       onPress={onPress}
       style={containerStyle}

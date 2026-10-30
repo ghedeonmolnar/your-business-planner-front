@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { AppDialog } from '@/shared/components/AppDialog';
 import { AppButton } from '@/shared/components/AppButton';
 import { DialogHost } from '@/shared/feedback/DialogHost';
@@ -18,7 +19,11 @@ test('confirmarea asincronă păstrează dialogul, arată loaderul și blocheaz�
   await ReactTestRenderer.act(async () => {
     renderer = ReactTestRenderer.create(
       <AppThemeProvider>
-        <DialogHost />
+        <SafeAreaInsetsContext.Provider
+          value={{ top: 0, bottom: 0, left: 0, right: 0 }}
+        >
+          <DialogHost />
+        </SafeAreaInsetsContext.Provider>
       </AppThemeProvider>,
     );
     confirmAction({

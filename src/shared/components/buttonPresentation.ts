@@ -35,9 +35,9 @@ export const buttonPresentation = {
     color: theme.colors.menu.primary,
   },
   danger: {
-    mode: 'contained-tonal',
-    iconMode: 'contained-tonal',
-    backgroundColor: theme.colors.errorContainer,
-    color: theme.colors.onErrorContainer,
+    mode: 'contained',
+    iconMode: 'contained',
+    backgroundColor: theme.colors.error,
+    color: theme.colors.onError,
   },
 } as const;

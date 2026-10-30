@@ -108,6 +108,7 @@ export function TeamScreen() {
                 loading={block.isPending}
                 onPress={() =>
                   confirmAction({
+                    destructive: true,
                     title: 'Revoci accesul?',
                     message: item.name,
                     confirmLabel: 'Revocă accesul',

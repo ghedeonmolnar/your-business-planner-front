@@ -45,6 +45,7 @@ export const invalidatePlannerBooking = (
   client: QueryClient,
   companyId: string,
   bookingId: string,
+  paymentsChanged = false,
 ) => {
   invalidateCalendarAvailability(client, companyId);
   invalidateAll(client, [
@@ -58,6 +59,9 @@ export const invalidatePlannerBooking = (
     queryKeys.planner.directories(companyId, 'clients'),
     queryKeys.planner.hallLists(companyId),
     queryKeys.planner.hallDetails(companyId),
+    ...(paymentsChanged
+      ? [queryKeys.planner.finance(companyId, bookingId, 'payments')]
+      : []),
   ]);
 };
 

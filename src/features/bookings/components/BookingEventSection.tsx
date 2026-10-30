@@ -47,7 +47,7 @@ export function BookingEventSection({
           />
           <BookingDetailField
             label="Meniuri confirmate"
-            value={booking.final_guests ?? 'În așteptarea confirmării'}
+            value={booking.final_guests ?? 'Numărul exact nu a fost completat'}
           />
           <BookingDetailField
             label="Meniu"
@@ -84,7 +84,7 @@ export function BookingEventSection({
               />
               <View style={styles.alertContent}>
                 <Text style={styles.alertTitle}>
-                  Meniurile nu sunt confirmate
+                  Numărul exact de meniuri nu a fost completat
                 </Text>
                 <Text style={styles.body}>
                   Numărul final de adulți se poate completa cu aproximativ 7

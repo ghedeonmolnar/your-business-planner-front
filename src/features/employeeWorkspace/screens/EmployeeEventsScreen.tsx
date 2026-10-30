@@ -43,6 +43,7 @@ export function EmployeeEventsScreen() {
 
   const logout = () =>
     confirmAction({
+      destructive: true,
       title: 'Delogare',
       message: 'Sigur dorești să te deloghezi?',
       confirmLabel: 'Da',

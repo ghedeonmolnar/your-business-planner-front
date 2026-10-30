@@ -23,7 +23,8 @@ test.each(
     );
     expect(
       renderer.root.findByProps({
-        accessibilityLabel: 'Meniuri confirmate: În așteptarea confirmării',
+        accessibilityLabel:
+          'Meniuri confirmate: Numărul exact nu a fost completat',
       }),
     ).toBeDefined();
     expect(

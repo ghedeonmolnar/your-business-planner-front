@@ -4,7 +4,10 @@ import { View } from 'react-native';
 import { RecordCard } from '@/shared/components/RecordCard';
 import { MetaPill } from '@/shared/components/MetaPill';
 import { InfoRow } from '@/shared/components/InfoRow';
-import { bookingPaymentCategories } from '@/features/bookings/utils/bookingLabels';
+import {
+  bookingPaymentCategories,
+  paymentMethodLabels,
+} from '@/features/bookings/utils/bookingLabels';
 import { BookingPaymentForm } from '@/features/bookings/components/BookingPaymentForm';
 import { BookingPayment } from '@/features/bookings/schemas/bookingFinanceSchemas';
 import {
@@ -23,12 +26,6 @@ import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice
 import { useReloadBookingPayment } from '@/features/bookings/hooks/useReloadBookingPayment';
 import { getSessionGeneration } from '@/shared/api/sessionExpiry';
 import { assertCurrentRequestSession } from '@/shared/api/requestSession';
-
-const paymentMethodLabels = {
-  cash: 'Numerar',
-  card: 'Card',
-  transfer: 'Transfer bancar',
-};
 
 export function BookingPayments({ eventId }: { eventId: string }) {
   const query = useBookingPayments(eventId);
@@ -108,6 +105,7 @@ export function BookingPayments({ eventId }: { eventId: string }) {
                 loading={cancel.isPending}
                 onPress={() =>
                   confirmAction({
+                    destructive: true,
                     title: 'Anulezi plata?',
                     message:
                       'Înregistrarea rămâne în istoric și nu mai intră în sold.',

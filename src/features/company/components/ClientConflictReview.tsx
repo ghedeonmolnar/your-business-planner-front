@@ -28,6 +28,7 @@ export function ClientConflictReview({
         loading={query.isFetching}
         onPress={() =>
           confirmAction({
+            destructive: true,
             title: 'Încarci versiunea salvată?',
             message:
               'Ciorna ta va fi înlocuită cu datele curente ale clientului.',

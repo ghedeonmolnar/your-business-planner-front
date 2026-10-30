@@ -1,7 +1,12 @@
 import React from 'react';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
 import { SearchableSelect } from '@/shared/components/ControlledSelectField';
-import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
+import { FormModalFrame } from '@/shared/components/FormModalFrame';
+import { renderedText } from '@/shared/test/renderedText';
+import {
+  plannerAccount,
+  plannerBooking,
+} from '@/features/bookings/utils/plannerTestFixtures';
 import { catalogsFixture } from '@/shared/test/apiFixtures';
 import {
   jsonResponse,
@@ -46,8 +51,45 @@ test('păstrează numele sălii alese din calendar când directorul încărcat n
     .findAllByType(SearchableSelect)
     .find(field => field.props.label === 'Sală');
   expect(hall?.props.selectedValues).toEqual(['hall-25']);
+  expect(renderer.root.findByType(FormModalFrame).props.progress).toEqual({
+    current: 1,
+    total: 4,
+  });
+  expect(renderedText(renderer)).toContain('1/4');
+  expect(renderedText(renderer)).not.toContain('Pasul');
+  expect(renderedText(renderer)).not.toContain('Orele sunt în fusul României.');
   expect(hall?.props.options).toEqual(
     expect.arrayContaining([{ id: 'hall-25', name: 'Sala din pagina a doua' }]),
   );
   await unmount();
+});
+
+test('editarea păstrează pasul Personal și progresul din cinci pași', async () => {
+  globalThis.fetch = jest.fn(url =>
+    Promise.resolve(
+      String(url).endsWith('/me')
+        ? jsonResponse(200, plannerAccount)
+        : String(url).endsWith('/catalogs')
+          ? jsonResponse(200, catalogsFixture)
+          : paginatedResponse([]),
+    ),
+  ) as typeof globalThis.fetch;
+  const { renderer, unmount } = await renderWithProviders(
+    <BookingForm
+      date={plannerBooking.date}
+      booking={plannerBooking}
+      onClose={() => undefined}
+    />,
+  );
+  try {
+    await waitForUi(() =>
+      expect(renderer.root.findAllByType(FormModalFrame)).toHaveLength(1),
+    );
+    expect(renderer.root.findByType(FormModalFrame).props.progress).toEqual({
+      current: 1,
+      total: 5,
+    });
+  } finally {
+    await unmount();
+  }
 });

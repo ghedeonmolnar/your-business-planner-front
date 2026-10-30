@@ -21,9 +21,16 @@ import { CalendarDataFreshness } from '@/features/bookings/components/CalendarDa
 
 export function CalendarScreen({
   initialHallId = '',
+  initialDate,
+  headerTitle = 'Disponibilitate sală',
   onBack,
-}: { initialHallId?: string; onBack?: () => void } = {}) {
-  const calendarView = useCalendarNavigation();
+}: {
+  initialHallId?: string;
+  initialDate?: string;
+  headerTitle?: string;
+  onBack?: () => void;
+} = {}) {
+  const calendarView = useCalendarNavigation(initialDate);
   const focused = useIsFocused();
   const [hallId, setHallId] = useState(initialHallId);
   const [reservationHall, setReservationHall] =
@@ -52,7 +59,7 @@ export function CalendarScreen({
     <Screen style={styles.screen}>
       {onBack ? (
         <HallScreenHeader
-          title="Disponibilitate sală"
+          title={headerTitle}
           subtitle="Calendarul rezervărilor"
           onBack={onBack}
         />

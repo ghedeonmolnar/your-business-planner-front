@@ -3,6 +3,7 @@ import { theme } from '@/shared/theme/theme';
 
 export const dateCalendarPanelStyles = StyleSheet.create({
   panel: {
+    flex: 1,
     backgroundColor: theme.colors.surface,
     borderColor: theme.colors.primary,
     borderRadius: theme.radius.lg,
@@ -20,6 +21,7 @@ export const dateCalendarPanelStyles = StyleSheet.create({
     paddingBottom: theme.spacing.sm,
     paddingHorizontal: theme.spacing.xs,
   },
+  body: { flex: 1 },
   eyebrow: {
     color: theme.colors.muted,
     fontFamily: theme.fonts.bodyMedium,

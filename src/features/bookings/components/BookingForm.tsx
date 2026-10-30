@@ -6,14 +6,13 @@ import {
   type BookingFormProps,
 } from '@/features/bookings/components/BookingFormEditor';
 import { ErrorBanner } from '@/shared/components/ErrorBanner';
-import { LoadingState } from '@/shared/components/LoadingState';
 import { FormModalFrame } from '@/shared/components/FormModalFrame';
 
 function BookingRecoveryGate(props: BookingFormProps) {
   const { user } = useAuth();
   const owner = JSON.stringify([user?.company?.id, user?.id]);
   const recovery = useBookingCreationRecovery(owner, Boolean(props.booking));
-  if (recovery.loading) return <LoadingState />;
+  if (recovery.loading) return null;
   if (recovery.error)
     return (
       <FormModalFrame
@@ -31,7 +30,7 @@ function BookingRecoveryGate(props: BookingFormProps) {
 }
 export function BookingForm(props: BookingFormProps) {
   const { user } = useAuth();
-  if (!user?.company?.id) return <LoadingState />;
+  if (!user?.company?.id) return null;
   return (
     <BookingRecoveryGate
       key={JSON.stringify([user.company.id, user.id, props.booking?.id])}

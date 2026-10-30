@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BOOKING_SERVICE_PRICING_TYPES } from '@/features/bookings/types';
 import { companyNow, toCompanyTimestamp } from '@/shared/utils/formatDate';
 import { normalizePhone } from '@/shared/utils/contactLinks';
 import {
@@ -68,7 +69,12 @@ export const bookingFormSchema = z
       ),
     menu_price: amount,
     menu_name: label,
-    agreed_advance: amount,
+    agreed_advance: amount.or(z.literal('')),
+    advance_received_amount: amount.or(z.literal('')).optional(),
+    advance_received_method: z
+      .enum(['', 'cash', 'card', 'transfer'])
+      .optional(),
+    advance_received_at: z.iso.date('Alege o dată validă.').optional(),
     advance_due_at: z
       .string()
       .refine(
@@ -76,7 +82,13 @@ export const bookingFormSchema = z
         'Alege o dată validă.',
       ),
     extra_services: z
-      .array(z.object({ name: label.min(1, 'Completează serviciul.'), amount }))
+      .array(
+        z.object({
+          name: label.min(1, 'Completează serviciul.'),
+          amount,
+          pricing_type: z.enum(BOOKING_SERVICE_PRICING_TYPES).optional(),
+        }),
+      )
       .max(MAX_EXTRA_SERVICES, 'Sunt permise cel mult 100 de servicii.'),
     staff: z
       .array(

@@ -51,7 +51,6 @@ export function BookingAdvancedFilters({
   return (
     <FormModalFrame
       visible
-      fitContent
       title="Filtre avansate"
       closeLabel="Închide filtrele avansate"
       onClose={onClose}

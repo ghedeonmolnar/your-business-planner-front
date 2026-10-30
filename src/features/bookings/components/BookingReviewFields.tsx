@@ -1,92 +1,67 @@
-import { hasCompanyFeature } from '@/features/company/utils/companyFeatures';
-import { useAuth } from '@/features/auth/AuthProvider';
 import React from 'react';
 import { View } from 'react-native';
 import { Text } from 'react-native-paper';
-import { UseFormReturn, useFieldArray } from 'react-hook-form';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
+import { UseFormReturn } from 'react-hook-form';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
-import { bookingStatusLabels } from '@/features/bookings/utils/bookingLabels';
+import { Booking } from '@/features/bookings/types';
+import { BookingStatusPill } from '@/features/bookings/components/BookingStatusPill';
+import { BookingReviewSchedule } from '@/features/bookings/components/BookingReviewSchedule';
+import { BookingReviewCommercial } from '@/features/bookings/components/BookingReviewCommercial';
+import { bookingReviewStyles as styles } from '@/features/bookings/components/bookingReviewStyles';
 import { bookingPayload } from '@/features/bookings/utils/bookingFormValues';
-import { plannerStyles as styles } from '@/features/bookings/components/plannerStyles';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
-import {
-  formatCompanyDateTime,
-  formatLongDate,
-} from '@/shared/utils/formatDate';
-import { formatExactMoney } from '@/shared/utils/money';
+import { theme } from '@/shared/theme/theme';
 
 export function BookingReviewFields({
   form,
+  booking,
   hallName,
   clientName,
 }: {
   form: UseFormReturn<BookingFormValues>;
+  booking?: Booking;
   hallName?: string | null;
   clientName?: string | null;
 }) {
-  const { user } = useAuth();
-  const staffEnabled = hasCompanyFeature(user, 'staff');
   const values = form.watch();
-  const services = useFieldArray({
-    control: form.control,
-    name: 'extra_services',
-  });
-  const preview = bookingPayload(values);
+  const preview = bookingPayload(values, booking);
   return (
     <View style={styles.content}>
-      <Text style={styles.subtitle}>
-        {hallName ?? 'Sala selectată'} · {clientName ?? 'Clientul selectat'}
-      </Text>
-      <Text style={styles.text}>
-        {formatLongDate(values.date)} · {bookingStatusLabels[values.status]}
-      </Text>
-      <Text style={styles.text}>
-        Început: {formatCompanyDateTime(preview.starts_at)}
-      </Text>
-      <Text style={styles.text}>
-        Sfârșit: {formatCompanyDateTime(preview.ends_at)}
-      </Text>
-      <Text style={styles.text}>
-        Meniuri estimate (adulți):{' '}
-        {values.estimated_guests || values.minimum_guests}
-      </Text>
-      <Text style={styles.text}>
-        Minimul sălii: {values.minimum_guests} meniuri pentru adulți
-      </Text>
-      <Text style={styles.text}>
-        Meniuri confirmate: {values.final_guests || 'Se completează ulterior'}
-      </Text>
-      <Text style={styles.text}>
-        Preț meniu adulți: {formatExactMoney(preview.menu_price)}
-      </Text>
-      {Number(values.child_guests) > 0 ? (
-        <Text style={styles.text}>
-          Meniuri copii: {values.child_guests} ·{' '}
-          {formatExactMoney(preview.child_menu_price)} / meniu
+      <View style={styles.identity}>
+        <Text accessibilityRole="header" style={styles.title}>
+          {hallName || 'Sala selectată'}
         </Text>
-      ) : null}
-      <Text style={styles.text}>
-        Avans convenit: {formatExactMoney(preview.agreed_advance)}
-      </Text>
-      {services.fields.map((service, index) => (
-        <Text key={service.id} style={styles.text}>
-          {service.name}:{' '}
-          {formatExactMoney(preview.extra_services[index]?.amount)}
-        </Text>
-      ))}
-      {staffEnabled ? (
-        <Text style={styles.text}>Personal alocat: {values.staff.length}</Text>
-      ) : null}
-      <Text style={styles.muted}>
-        {staffEnabled
-          ? 'La salvare se verifică disponibilitatea sălii și a personalului.'
-          : 'La salvare se verifică disponibilitatea sălii.'}
-      </Text>
+        <View style={styles.client}>
+          <Ionicons
+            accessible={false}
+            name="person-outline"
+            size={theme.typography.subtitle}
+            color={theme.colors.menu.muted}
+          />
+          <Text style={styles.clientName}>
+            {clientName || 'Clientul selectat'}
+          </Text>
+        </View>
+        <View style={styles.status}>
+          <BookingStatusPill status={values.status} />
+        </View>
+      </View>
+      <BookingReviewSchedule
+        date={preview.date}
+        starts_at={preview.starts_at}
+        ends_at={preview.ends_at}
+      />
+      <BookingReviewCommercial
+        form={form}
+        booking={booking}
+        preview={preview}
+      />
       <ControlledTextField
         control={form.control}
         name="notes"
         label="Note interne"
-        placeholder="Detalii private pentru echipă"
+        placeholder="Detalii private pentru echipă (opțional)"
         multiline
       />
     </View>

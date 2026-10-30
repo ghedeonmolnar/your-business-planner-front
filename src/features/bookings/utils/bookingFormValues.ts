@@ -3,6 +3,7 @@ import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema
 import { normalizePhone } from '@/shared/utils/contactLinks';
 import {
   formatCompanyInput,
+  companyNow,
   toCompanyTimestamp,
 } from '@/shared/utils/formatDate';
 
@@ -52,7 +53,14 @@ export const bookingFormDefaults = (
   menu_name: booking?.menu_name ?? '',
   agreed_advance: booking?.agreed_advance ?? '0',
   advance_due_at: booking?.advance_due_at ?? '',
-  extra_services: booking?.extra_services ?? [],
+  advance_received_amount: '',
+  advance_received_method: '',
+  advance_received_at: companyNow().format('YYYY-MM-DD'),
+  extra_services:
+    booking?.extra_services?.map(service => ({
+      ...service,
+      pricing_type: service.pricing_type ?? 'fixed',
+    })) ?? [],
   notes: booking?.notes ?? '',
   staff:
     booking?.staff.map(person => ({
@@ -95,53 +103,84 @@ const clientPayload = (
 export const bookingPayload = (
   values: BookingFormValues,
   original?: Booking,
-): BookingPayload => ({
-  ...values,
-  ...clientPayload(values, original),
-  version: original?.version,
-  starts_at: retainedTimestamp(values.starts_at, original?.starts_at),
-  ends_at: retainedTimestamp(values.ends_at, original?.ends_at),
-  expires_at: null,
-  minimum_guests: Number(values.minimum_guests),
-  estimated_guests:
-    values.estimated_guests === undefined
-      ? undefined
-      : values.estimated_guests
-        ? Number(values.estimated_guests)
-        : null,
-  child_guests:
-    values.child_guests === undefined
-      ? undefined
-      : values.child_guests
-        ? Number(values.child_guests)
-        : null,
-  child_menu_price:
-    values.child_menu_price === undefined
-      ? undefined
-      : values.child_menu_price.replace(',', '.') || '0',
-  final_guests: values.final_guests ? Number(values.final_guests) : null,
-  menu_price: values.menu_price.replace(',', '.'),
-  menu_name: values.menu_name || null,
-  agreed_advance: values.agreed_advance.replace(',', '.'),
-  advance_due_at: values.advance_due_at || null,
-  extra_services: values.extra_services.map(service => ({
-    ...service,
-    amount: service.amount.replace(',', '.'),
-  })),
-  staff: values.staff.map(person => ({
-    ...person,
-    rate: person.rate.replace(',', '.'),
-    starts_at:
-      retainedTimestamp(
-        person.starts_at,
-        original?.staff.find(item => item.employee_id === person.employee_id)
-          ?.starts_at,
-      ) ?? '',
-    ends_at:
-      retainedTimestamp(
-        person.ends_at,
-        original?.staff.find(item => item.employee_id === person.employee_id)
-          ?.ends_at,
-      ) ?? '',
-  })),
-});
+  advanceOperationId?: string,
+): BookingPayload => {
+  const {
+    advance_received_amount,
+    advance_received_method,
+    advance_received_at,
+    ...fields
+  } = values;
+  const receivedAmount = advance_received_amount?.replace(',', '.') || '0';
+  const receiving =
+    ['confirmed', 'completed'].includes(values.status) &&
+    Number(receivedAmount) > 0;
+  return {
+    ...fields,
+    ...clientPayload(values, original),
+    version: original?.version,
+    starts_at: retainedTimestamp(values.starts_at, original?.starts_at),
+    ends_at: retainedTimestamp(values.ends_at, original?.ends_at),
+    expires_at: null,
+    minimum_guests: Number(values.minimum_guests),
+    estimated_guests:
+      values.estimated_guests === undefined
+        ? undefined
+        : values.estimated_guests
+          ? Number(values.estimated_guests)
+          : null,
+    child_guests:
+      values.child_guests === undefined
+        ? undefined
+        : values.child_guests
+          ? Number(values.child_guests)
+          : null,
+    child_menu_price:
+      values.child_menu_price === undefined
+        ? undefined
+        : values.child_menu_price.replace(',', '.') || '0',
+    final_guests: values.final_guests ? Number(values.final_guests) : null,
+    menu_price: values.menu_price.replace(',', '.'),
+    menu_name: values.menu_name || null,
+    agreed_advance:
+      !original && receiving
+        ? receivedAmount
+        : values.agreed_advance.replace(',', '.') || '0',
+    advance_due_at:
+      !original && values.status !== 'tentative'
+        ? null
+        : values.advance_due_at || null,
+    advance_receipt:
+      receiving &&
+      advanceOperationId &&
+      advance_received_method &&
+      advance_received_at
+        ? {
+            operation_id: advanceOperationId,
+            amount: receivedAmount,
+            method: advance_received_method,
+            paid_at: advance_received_at,
+          }
+        : undefined,
+    extra_services: values.extra_services.map(service => ({
+      ...service,
+      amount: service.amount.replace(',', '.'),
+    })),
+    staff: values.staff.map(person => ({
+      ...person,
+      rate: person.rate.replace(',', '.'),
+      starts_at:
+        retainedTimestamp(
+          person.starts_at,
+          original?.staff.find(item => item.employee_id === person.employee_id)
+            ?.starts_at,
+        ) ?? '',
+      ends_at:
+        retainedTimestamp(
+          person.ends_at,
+          original?.staff.find(item => item.employee_id === person.employee_id)
+            ?.ends_at,
+        ) ?? '',
+    })),
+  };
+};

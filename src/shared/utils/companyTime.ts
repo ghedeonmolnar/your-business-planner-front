@@ -124,6 +124,13 @@ export const formatCompanyTime = (value?: string | null) => {
   return formatCompanyInput(value).split(' ').slice(1).join(' ');
 };
 
+export const formatCompanyLongDateTime = (value?: string | null) => {
+  if (!value) return 'Program necompletat';
+  const date = companyDate(value);
+  if (!date.isValid()) return 'Program necompletat';
+  return `${date.locale('ro').format('dddd D MMMM YYYY').toLowerCase()} ora ${formatCompanyTime(value)}`;
+};
+
 export const formatCompanyTimeRange = (
   start?: string | null,
   end?: string | null,

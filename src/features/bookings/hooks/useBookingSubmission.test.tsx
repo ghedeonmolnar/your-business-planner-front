@@ -28,14 +28,7 @@ jest.mock('@/shared/storage/authTokenStorage', () => ({
 }));
 afterEach(() => forgetBookingCreationAttempt(owner));
 
-test.each([
-  ['HALL_ALREADY_BOOKED', 'Schimbă sala', { hall_id: 'hall-B' }],
-  [
-    'EMPLOYEE_ALREADY_ASSIGNED',
-    'Schimbă persoana',
-    { staff: [expect.objectContaining({ employee_id: 'employee-B' })] },
-  ],
-])(
+test.each([['HALL_ALREADY_BOOKED', 'Schimbă sala', { hall_id: 'hall-B' }]])(
   'primul %s permite corectarea si o cheie noua fara pierderea ciornei',
   async (code, correctionLabel, correctedFields) => {
     const bodies: Record<string, unknown>[] = [];
@@ -77,6 +70,31 @@ test.each([
     }
   },
 );
+
+test('crearea nu trimite alocări de personal păstrate în valorile formularului', async () => {
+  const bodies: Record<string, unknown>[] = [];
+  globalThis.fetch = jest.fn((_url, init) => {
+    if (init?.method !== 'POST')
+      return Promise.resolve(jsonResponse(200, plannerAccount));
+    bodies.push(JSON.parse(String(init.body)));
+    return Promise.resolve(jsonResponse(201, plannerBooking));
+  }) as typeof globalThis.fetch;
+  const onClose = jest.fn();
+  const view = await renderWithProviders(<Probe onClose={onClose} />);
+  try {
+    await waitForUi(() =>
+      expect(
+        view.renderer.root.findByProps({ accessibilityLabel: 'Trimite' }).props
+          .disabled,
+      ).toBe(false),
+    );
+    await press(view.renderer, 'Trimite');
+    await waitForUi(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(bodies[0].staff).toEqual([]);
+  } finally {
+    await view.unmount();
+  }
+});
 
 test('dupa primul refuz 409 redeschiderea pentru alta data nu recupereaza vechea incercare', async () => {
   globalThis.fetch = jest.fn((_url, init) =>

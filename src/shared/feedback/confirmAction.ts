@@ -6,6 +6,7 @@ type ConfirmActionOptions = {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
+  destructive?: boolean;
   onConfirm: ButtonAction;
 };
 

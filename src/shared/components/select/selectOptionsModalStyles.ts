@@ -9,7 +9,7 @@ export const selectOptionsModalStyles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
   },
   backdrop: {
     backgroundColor: theme.colors.overlay,
@@ -24,7 +24,7 @@ export const selectOptionsModalStyles = StyleSheet.create({
     borderColor: theme.colors.border,
     borderRadius: theme.radius.lg,
     borderWidth: 1,
-    maxHeight: '76%',
+    flex: 1,
     overflow: 'hidden',
     width: '100%',
     ...theme.shadow,
@@ -55,8 +55,7 @@ export const selectOptionsModalStyles = StyleSheet.create({
     marginHorizontal: theme.spacing.lg,
   },
   list: {
-    flexShrink: 1,
-    flexGrow: 0,
+    flex: 1,
   },
   listContent: {
     paddingBottom: theme.spacing.sm,

@@ -15,6 +15,7 @@ export {
   toCompanyTimestamp,
   formatCompanyInput,
   formatCompanyDateTime,
+  formatCompanyLongDateTime,
   formatCompanyTime,
   formatCompanyTimeRange,
 } from '@/shared/utils/companyTime';

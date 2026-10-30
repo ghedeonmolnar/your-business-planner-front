@@ -13,6 +13,9 @@ import {
 } from '@/features/bookings/utils/plannerTestFixtures';
 import { AppButton } from '@/shared/components/AppButton';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
+import { ControlledDateField } from '@/shared/components/ControlledDateField';
+import { companyNow } from '@/shared/utils/formatDate';
+import { SearchableSelect } from '@/shared/components/ControlledSelectField';
 import { IconButton } from '@/shared/components/IconButton';
 import {
   jsonResponse,
@@ -50,7 +53,13 @@ function Probe({
     select(id);
     form.setValue('hall_id', id);
   };
-  return <BookingCommercialFields form={form} />;
+  return (
+    <BookingCommercialFields
+      form={form}
+      editing={Boolean(booking)}
+      booking={booking}
+    />
+  );
 }
 
 const firstHall = {
@@ -119,7 +128,9 @@ test('minimul este informativ, iar prețurile sosite ulterior nu suprascriu nego
       date: '',
     });
     await ReactTestRenderer.act(async () => {
-      controls.form?.setValue('child_menu_price', '110.00', { shouldDirty: true });
+      controls.form?.setValue('child_menu_price', '110.00', {
+        shouldDirty: true,
+      });
       controls.setHalls?.([
         firstHall,
         { ...secondHall, child_menu_price: '130.00' },
@@ -174,6 +185,13 @@ test('serviciile sunt carduri distincte, iar eliminarea unuia păstrează restul
       controls.form?.setValue('extra_services.1.name', 'Photo booth');
       controls.form?.setValue('extra_services.1.amount', '500.25');
     });
+    await ReactTestRenderer.act(async () =>
+      renderer.root
+        .findByProps({ name: 'extra_services.1.pricing_type' })
+        .findByType(SearchableSelect)
+        .props.onChange(['per_menu']),
+    );
+    expect(renderedText(renderer)).toContain('Extra pe meniu adult (lei)');
     expect(renderedText(renderer)).toMatch(/Serviciu suplimentar\s+1/);
     expect(renderedText(renderer)).toMatch(/Serviciu suplimentar\s+2/);
     await ReactTestRenderer.act(async () =>
@@ -185,9 +203,69 @@ test('serviciile sunt carduri distincte, iar eliminarea unuia păstrează restul
         ?.props.onPress(),
     );
     expect(controls.form?.getValues('extra_services')).toEqual([
-      { name: 'Photo booth', amount: '500.25' },
+      { name: 'Photo booth', amount: '500.25', pricing_type: 'per_menu' },
     ]);
   } finally {
     await unmount();
   }
 });
+
+test.each([false, true])(
+  'detaliile finale sunt disponibile numai la editare: %s',
+  async editing => {
+    const controls: ProbeControls = {};
+    const { renderer, unmount } = await renderWithProviders(
+      <Probe
+        controls={controls}
+        booking={editing ? plannerBooking : undefined}
+      />,
+    );
+    try {
+      const fieldNames = () =>
+        renderer.root
+          .findAllByType(ControlledTextField)
+          .map(field => field.props.name);
+      for (const field of [
+        'menu_name',
+        'final_guests',
+        'child_guests',
+        'child_menu_price',
+      ]) {
+        expect(fieldNames().includes(field)).toBe(editing);
+      }
+      await ReactTestRenderer.act(async () =>
+        controls.form?.setValue('status', 'tentative'),
+      );
+      expect(fieldNames()).toContain('agreed_advance');
+      expect(fieldNames()).not.toContain('advance_received_amount');
+      const dueDate = renderer.root
+        .findAllByType(ControlledDateField)
+        .find(field => field.props.name === 'advance_due_at');
+      expect(dueDate?.props.minimumDate).toEqual(
+        new Date(`${companyNow().format('YYYY-MM-DD')}T00:00:00`),
+      );
+      await ReactTestRenderer.act(async () =>
+        controls.form?.setValue('status', 'confirmed'),
+      );
+      const advance = renderer.root
+        .findAllByType(ControlledTextField)
+        .find(field => field.props.name === 'advance_received_amount');
+      expect(advance).toBeDefined();
+      expect(advance?.props.required).toBe(!editing);
+      expect(fieldNames()).not.toContain('agreed_advance');
+      expect(controls.form?.getValues('advance_received_at')).toBe(
+        companyNow().format('YYYY-MM-DD'),
+      );
+      const method = renderer.root
+        .findAllByType(SearchableSelect)
+        .find(field => field.props.label === 'Metoda de încasare');
+      expect(method?.props.options).toEqual([
+        { id: 'cash', name: 'Cash' },
+        { id: 'card', name: 'Card' },
+        { id: 'transfer', name: 'Transfer bancar' },
+      ]);
+    } finally {
+      await unmount();
+    }
+  },
+);

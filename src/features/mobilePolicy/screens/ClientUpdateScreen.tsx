@@ -61,6 +61,7 @@ export function ClientUpdateScreen({
           variant="ghost"
           onPress={() =>
             confirmAction({
+              destructive: true,
               title: 'Deconectare',
               message:
                 'Deconectarea șterge de pe dispozitiv ciornele și operațiunile neconfirmate. Continuă numai după verificarea lor.',

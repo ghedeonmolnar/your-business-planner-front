@@ -1,12 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  FlatList,
-  KeyboardAvoidingView,
-  Modal,
-  Platform,
-  Pressable,
-  View,
-} from 'react-native';
+import { FlatList, Modal, Pressable, View } from 'react-native';
 import { Surface, Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { IconButton } from '@/shared/components/IconButton';
@@ -18,18 +11,14 @@ import {
   SelectValue,
   SelectOptionsState,
 } from '@/shared/components/select/selectOptions';
-import {
-  EMPTY_LIST_HEIGHT,
-  OPTION_ROW_HEIGHT,
-  selectOptionsModalStyles as styles,
-} from '@/shared/components/select/selectOptionsModalStyles';
+import { selectOptionsModalStyles as styles } from '@/shared/components/select/selectOptionsModalStyles';
 import { theme } from '@/shared/theme/theme';
 import { QueryState } from '@/shared/components/QueryState';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { SelectModalActions } from '@/shared/components/select/SelectModalActions';
+import { useDialogLayout } from '@/shared/hooks/useDialogLayout';
 
 const SEARCH_FROM_OPTIONS = 7;
-const MAX_LIST_HEIGHT = 360;
 
 type SelectOptionsModalProps<TValue extends SelectValue> = {
   visible: boolean;
@@ -60,6 +49,10 @@ export function SelectOptionsModal<TValue extends SelectValue>({
   disabled = false,
   optionsState,
 }: SelectOptionsModalProps<TValue>) {
+  const { modalMaxHeight, overlayInsets } = useDialogLayout(
+    visible,
+    'selection',
+  );
   const [query, setQuery] = useState('');
   const [draftValues, setDraftValues] = useState<TValue[]>(selectedValues);
   const selectionKey = JSON.stringify(selectedValues);
@@ -81,10 +74,6 @@ export function SelectOptionsModal<TValue extends SelectValue>({
   const filteredOptions = useMemo(
     () => filterSelectOptions(options, query),
     [options, query],
-  );
-  const listHeight = Math.min(
-    Math.max(options.length * OPTION_ROW_HEIGHT, EMPTY_LIST_HEIGHT),
-    MAX_LIST_HEIGHT,
   );
   const canClearSelection = single
     ? selectedValues.length > 0
@@ -133,16 +122,16 @@ export function SelectOptionsModal<TValue extends SelectValue>({
       transparent
       visible={visible}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.modalRoot}
-      >
+      <View style={[styles.modalRoot, overlayInsets]}>
         <Pressable
           accessibilityLabel="Închide lista"
           onPress={onClose}
           style={styles.backdrop}
         />
-        <Surface elevation={3} style={styles.panel}>
+        <Surface
+          elevation={3}
+          style={[styles.panel, { maxHeight: modalMaxHeight }]}
+        >
           <View style={styles.header}>
             <View style={styles.headerCopy}>
               <Text style={styles.title}>{label}</Text>
@@ -212,7 +201,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
               />
             )}
             showsVerticalScrollIndicator={false}
-            style={[styles.list, { maxHeight: listHeight }]}
+            style={styles.list}
           />
 
           {optionsState?.pagination ? (
@@ -238,7 +227,7 @@ export function SelectOptionsModal<TValue extends SelectValue>({
             </View>
           ) : null}
         </Surface>
-      </KeyboardAvoidingView>
+      </View>
     </Modal>
   );
 }

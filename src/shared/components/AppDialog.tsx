@@ -3,6 +3,7 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Dialog, Surface, Text } from 'react-native-paper';
 import { AppButton } from '@/shared/components/AppButton';
 import { theme } from '@/shared/theme/theme';
+import { useDialogLayout } from '@/shared/hooks/useDialogLayout';
 
 const DIALOG_MAX_WIDTH = 420;
 
@@ -11,6 +12,7 @@ export type AppDialogContent = {
   message: string;
   confirmLabel: string;
   cancelLabel?: string;
+  destructive?: boolean;
 };
 
 type AppDialogProps = {
@@ -26,6 +28,10 @@ export function AppDialog({
   onConfirm,
   busy = false,
 }: AppDialogProps) {
+  const { modalMaxHeight, overlayInsets } = useDialogLayout(
+    dialog !== null,
+    'confirmation',
+  );
   const cancel = () => {
     if (!busy) onCancel();
   };
@@ -44,7 +50,7 @@ export function AppDialog({
       transparent
       visible={dialog !== null}
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, overlayInsets]}>
         <Pressable
           accessible={false}
           onPress={cancel}
@@ -52,7 +58,11 @@ export function AppDialog({
           style={styles.backdrop}
         />
         {content ? (
-          <Surface accessibilityViewIsModal elevation={3} style={styles.panel}>
+          <Surface
+            accessibilityViewIsModal
+            elevation={3}
+            style={[styles.panel, { maxHeight: modalMaxHeight }]}
+          >
             <Dialog.Title accessibilityRole="header" style={styles.title}>
               {content.title}
             </Dialog.Title>
@@ -64,6 +74,7 @@ export function AppDialog({
             <Dialog.Actions style={styles.actions}>
               <AppButton
                 label={content.confirmLabel}
+                variant={content.destructive ? 'danger' : 'primary'}
                 onPress={onConfirm}
                 loading={busy}
                 size="large"
@@ -94,16 +105,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.xl,
   },
   backdrop: {
     ...StyleSheet.absoluteFill,
     backgroundColor: theme.colors.overlay,
   },
   panel: {
+    backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     flexShrink: 1,
-    maxHeight: '90%',
     maxWidth: DIALOG_MAX_WIDTH,
     width: '100%',
   },

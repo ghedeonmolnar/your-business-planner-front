@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { Modal, ScrollView } from 'react-native';
+import { SafeAreaInsetsContext } from 'react-native-safe-area-context';
 import { CalendarControls } from '@/features/bookings/components/CalendarControls';
 import { CalendarPeriodPicker } from '@/features/bookings/components/CalendarPeriodPicker';
 import { useCalendarNavigation } from '@/features/bookings/hooks/useCalendarNavigation';
@@ -17,16 +18,20 @@ jest.mock('@react-navigation/native', () => ({
 function CalendarNavigation() {
   const navigation = useCalendarNavigation();
   return (
-    <CalendarControls
-      period={navigation.period}
-      selected={navigation.selected}
-      hallId="hall-1"
-      halls={[{ id: 'hall-1', name: 'Sala test', is_active: true }]}
-      onPeriod={navigation.setPeriod}
-      onMove={navigation.move}
-      onHall={() => undefined}
-      onSelectMonth={navigation.selectMonth}
-    />
+    <SafeAreaInsetsContext.Provider
+      value={{ top: 0, bottom: 0, left: 0, right: 0 }}
+    >
+      <CalendarControls
+        period={navigation.period}
+        selected={navigation.selected}
+        hallId="hall-1"
+        halls={[{ id: 'hall-1', name: 'Sala test', is_active: true }]}
+        onPeriod={navigation.setPeriod}
+        onMove={navigation.move}
+        onHall={() => undefined}
+        onSelectMonth={navigation.selectMonth}
+      />
+    </SafeAreaInsetsContext.Provider>
   );
 }
 

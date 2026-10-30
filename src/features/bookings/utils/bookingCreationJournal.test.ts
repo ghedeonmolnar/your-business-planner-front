@@ -1,4 +1,5 @@
 import * as Keychain from 'react-native-keychain';
+import { BookingExtraService } from '@/features/bookings/types';
 import {
   bookingFormDefaults,
   bookingPayload,
@@ -32,6 +33,61 @@ beforeEach(async () => {
   await clearBookingCreationJournal();
   jest.clearAllMocks();
 });
+
+test('jurnalul păstrează identitatea și data încasării pentru retry fără duplicare', async () => {
+  const receivedValues = {
+    ...values,
+    status: 'confirmed' as const,
+    advance_received_amount: '500,25',
+    advance_received_method: 'card' as const,
+  };
+  const receivedAttempt = {
+    values: receivedValues,
+    payload: {
+      ...bookingPayload(
+        receivedValues,
+        undefined,
+        '20000000-0000-4000-8000-000000000001',
+      ),
+      operation_id: attempt.payload.operation_id,
+    },
+  };
+  await persistBookingCreationJournal(
+    owner,
+    receivedAttempt,
+    getSessionGeneration(),
+  );
+  expect(await loadBookingCreationJournal(owner)).toEqual({
+    ...receivedAttempt,
+    requiresReconciliation: false,
+  });
+});
+
+test.each(['per_child_menu', 'per_all_menus'] as const)(
+  'jurnalul păstrează tariful %s la recuperarea rezervării',
+  async pricing_type => {
+    const extra_services: BookingExtraService[] = [
+      { name: 'Extra', amount: '10.00', pricing_type },
+    ];
+    const savedValues = { ...values, extra_services };
+    const savedAttempt = {
+      values: savedValues,
+      payload: {
+        ...bookingPayload(savedValues),
+        operation_id: attempt.payload.operation_id,
+      },
+    };
+    await persistBookingCreationJournal(
+      owner,
+      savedAttempt,
+      getSessionGeneration(),
+    );
+    expect(await loadBookingCreationJournal(owner)).toEqual({
+      ...savedAttempt,
+      requiresReconciliation: false,
+    });
+  },
+);
 
 test('jurnalul păstrează telefonul și numele opțional fără a necesita un client creat înainte', async () => {
   const phoneValues = {

@@ -29,6 +29,7 @@ export const useBookingSubmission = ({
   owner,
   initialAttempt,
   staffEnabled,
+  financeEnabled = true,
   validatePhone,
   onClose,
   onErrorStep,
@@ -39,6 +40,7 @@ export const useBookingSubmission = ({
   owner: string;
   initialAttempt?: BookingCreationAttempt;
   staffEnabled: boolean;
+  financeEnabled?: boolean;
   validatePhone: () => boolean;
   onClose: () => void;
   onErrorStep: (step: number) => void;
@@ -53,6 +55,7 @@ export const useBookingSubmission = ({
     Boolean(initialAttempt?.requiresReconciliation),
   );
   const [generation] = useState(getSessionGeneration);
+  const [advanceOperationId] = useState(createOperationId);
   const save = async (values: BookingFormValues) => {
     if (
       submitting.current ||
@@ -65,11 +68,15 @@ export const useBookingSubmission = ({
     setPersisting(true);
     const recovering = Boolean(attempt.current);
     try {
-      const formPayload = bookingPayload(values, booking);
+      const formPayload = bookingPayload(
+        values,
+        booking,
+        financeEnabled ? advanceOperationId : undefined,
+      );
       const payload = attempt.current?.payload ?? {
         ...formPayload,
         operation_id: booking ? undefined : createOperationId(),
-        staff: staffEnabled ? formPayload.staff : undefined,
+        staff: booking ? (staffEnabled ? formPayload.staff : undefined) : [],
       };
       if (!booking) {
         const nextAttempt = attempt.current ?? { values, payload };

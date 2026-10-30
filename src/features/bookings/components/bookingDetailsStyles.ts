@@ -8,7 +8,12 @@ export const bookingDetailsStyles = StyleSheet.create({
     height: 'auto',
     minHeight: theme.spacing.xxl * 2,
   },
-  headerLabels: { flex: 1, minWidth: 0, paddingVertical: theme.spacing.sm },
+  headerLabels: {
+    flex: 1,
+    minWidth: 0,
+    marginHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.sm,
+  },
   headerTitle: {
     color: theme.colors.menu.text,
     fontFamily: theme.fonts.heading,
@@ -50,6 +55,17 @@ export const bookingDetailsStyles = StyleSheet.create({
   disabled: { color: theme.colors.disabled },
   danger: { color: theme.colors.danger },
   card: { padding: theme.spacing.lg, borderWidth: 1, gap: theme.spacing.md },
+  summaryHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: theme.spacing.md,
+  },
+  summaryBadges: {
+    alignItems: 'flex-end',
+    flexShrink: 1,
+    maxWidth: '50%',
+    gap: theme.spacing.xs,
+  },
   client: {
     color: theme.colors.menu.text,
     fontFamily: theme.fonts.heading,

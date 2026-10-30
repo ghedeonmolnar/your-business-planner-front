@@ -44,7 +44,6 @@ export function MoreInfoModal({
   return (
     <FormModalFrame
       visible
-      fitContent
       closeLabel="Închide"
       title={titles[panel]}
       onClose={onClose}

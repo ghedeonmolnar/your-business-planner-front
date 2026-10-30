@@ -82,8 +82,13 @@ export const useSaveBooking = () => {
         );
       }
     },
-    onSuccess: booking =>
-      invalidatePlannerBooking(client, user?.company?.id ?? '', booking.id),
+    onSuccess: (booking, variables) =>
+      invalidatePlannerBooking(
+        client,
+        user?.company?.id ?? '',
+        booking.id,
+        Boolean(variables.payload.advance_receipt),
+      ),
   });
 };
 export const useCancelBooking = () => {

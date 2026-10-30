@@ -28,6 +28,35 @@ test('accepts a confirmed reservation and staff interval across midnight', () =>
   ).toBe(true);
 });
 
+test('avansul poate rămâne gol, iar tipul tarifului este validat', () => {
+  const values = { ...overnight(), agreed_advance: '' };
+  expect(bookingFormSchema.safeParse(values).success).toBe(true);
+  expect(
+    bookingFormSchema.safeParse({
+      ...values,
+      extra_services: [
+        { name: 'Candy bar', amount: '10', pricing_type: 'per_menu' },
+      ],
+    }).success,
+  ).toBe(true);
+  for (const pricing_type of ['per_child_menu', 'per_all_menus']) {
+    expect(
+      bookingFormSchema.safeParse({
+        ...values,
+        extra_services: [{ name: 'Extra', amount: '10', pricing_type }],
+      }).success,
+    ).toBe(true);
+  }
+  for (const pricing_type of ['unknown', [], null]) {
+    expect(
+      bookingFormSchema.safeParse({
+        ...values,
+        extra_services: [{ name: 'Candy bar', amount: '10', pricing_type }],
+      }).success,
+    ).toBe(false);
+  }
+});
+
 test('confirmarea adulților și meniurile copiilor pot fi completate ulterior', () => {
   const values = {
     ...overnight(),

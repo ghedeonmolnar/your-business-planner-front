@@ -63,6 +63,7 @@ export function ClientDetailsScreen({ navigation, route }: Props) {
   const confirmDelete = () => {
     if (!client || saving) return;
     confirmAction({
+      destructive: true,
       title: 'Ștergi clientul?',
       message: `Ștergi clientul „${client.name}”? Evenimentele lui se păstrează.`,
       confirmLabel: 'Șterge',

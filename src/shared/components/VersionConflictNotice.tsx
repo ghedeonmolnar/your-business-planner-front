@@ -44,6 +44,7 @@ export function VersionConflictNotice({
         variant="outline"
         onPress={() =>
           confirmAction({
+            destructive: hasDraft,
             title: hasDraft
               ? 'Înlocuiești ciorna?'
               : 'Încarci versiunea curentă?',

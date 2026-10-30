@@ -54,6 +54,7 @@ export const useMascotAdmin = () => {
 
   const confirmPermanentDelete = (mascot: Mascot) => {
     confirmAction({
+      destructive: true,
       title: 'Ștergere definitivă',
       message: `Sigur dorești să ștergi mascota ${mascot.name}?`,
       cancelLabel: 'Nu',
@@ -76,6 +77,7 @@ export const useMascotAdmin = () => {
     }
 
     confirmAction({
+      destructive: true,
       title: 'Dezactivare mascotă',
       message: `Mascota ${mascot.name} va fi trecută în inactiv. Apasă din nou pe coș pentru ștergerea definitivă.`,
       confirmLabel: 'Dezactivează',

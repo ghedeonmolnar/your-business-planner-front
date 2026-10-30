@@ -19,6 +19,7 @@ import { theme } from '@/shared/theme/theme';
 import { useFormBusy } from '@/shared/components/FormInteractionContext';
 import { dateToIsoDate, isValidIsoDate } from '@/shared/utils/dateInput';
 import { formatLongDate, formatShortDate } from '@/shared/utils/formatDate';
+import { useDialogLayout } from '@/shared/hooks/useDialogLayout';
 
 export type DatePickerFieldProps = {
   error?: string;
@@ -59,6 +60,10 @@ export function DatePickerField({
   const busy = useFormBusy();
   const blocked = disabled || busy;
   const [isCalendarOpen, setCalendarOpen] = useState(false);
+  const { modalMaxHeight, overlayInsets } = useDialogLayout(
+    isCalendarOpen,
+    'calendar',
+  );
   const valueAsString = typeof value === 'string' ? value : '';
   const selectedDate = isValidIsoDate(valueAsString) ? valueAsString : '';
   const displayValue = selectedDate
@@ -143,7 +148,7 @@ export function DatePickerField({
         transparent
         visible={isCalendarOpen}
       >
-        <View style={styles.overlay}>
+        <View style={[styles.overlay, overlayInsets]}>
           <Pressable
             accessibilityLabel="Închide calendarul"
             onPress={closeCalendar}
@@ -151,6 +156,7 @@ export function DatePickerField({
           />
           {isCalendarOpen ? (
             <DateCalendarPanel
+              panelStyle={{ maxHeight: modalMaxHeight }}
               displayValue={displayValue}
               maximumDate={maximumDate ? dateToIsoDate(maximumDate) : undefined}
               minimumDate={minimumDate ? dateToIsoDate(minimumDate) : undefined}
@@ -191,7 +197,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
     justifyContent: 'center',
-    padding: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg,
   },
   backdrop: {
     ...StyleSheet.absoluteFill,

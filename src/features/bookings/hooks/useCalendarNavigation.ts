@@ -6,10 +6,10 @@ export type CalendarPeriod = 'month' | 'year';
 const DAYS_PER_WEEK = 7;
 const MONDAY_INDEX = 1;
 
-export function useCalendarNavigation() {
+export function useCalendarNavigation(initialDate?: string) {
   const [period, setPeriod] = useState<CalendarPeriod>('month');
-  const [selected, setSelected] = useState(() =>
-    companyNow().format('YYYY-MM-DD'),
+  const [selected, setSelected] = useState(
+    () => initialDate ?? companyNow().format('YYYY-MM-DD'),
   );
   const first = dayjs(selected).startOf(period);
   const last = dayjs(selected).endOf(period);

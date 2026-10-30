@@ -9,6 +9,7 @@ export const formModalStyles = StyleSheet.create({
     justifyContent: 'flex-start',
     paddingHorizontal: theme.spacing.lg,
   },
+  centered: { justifyContent: 'center' },
   content: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
@@ -31,10 +32,14 @@ export const formModalStyles = StyleSheet.create({
     fontFamily: theme.fonts.heading,
     paddingRight: theme.spacing.md,
   },
+  progress: {
+    color: theme.colors.menu.muted,
+    fontFamily: theme.fonts.body,
+    fontSize: theme.typography.bodySmall,
+  },
   scroll: {
     flex: 1,
   },
-  fitContent: { flex: 0, flexBasis: 'auto', flexGrow: 0, flexShrink: 1 },
   scrollContent: {
     paddingBottom: theme.spacing.md,
     paddingHorizontal: theme.spacing.lg,

@@ -42,6 +42,7 @@ export function useMoreActions() {
   const requestSignOut = () => {
     const generation = getSessionGeneration();
     confirmAction({
+      destructive: true,
       title: 'Deconectare',
       message: 'Vrei să te deconectezi din cont?',
       confirmLabel: 'Deconectează-mă',

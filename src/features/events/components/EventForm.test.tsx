@@ -2,6 +2,7 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import dayjs from 'dayjs';
 import { EventForm } from '@/features/events/components/EventForm';
+import { FormModalFrame } from '@/shared/components/FormModalFrame';
 import {
   jsonResponse,
   paginatedResponse,
@@ -289,7 +290,11 @@ test('propune statusul Rezervat și trece de primul pas fără animatori', async
 
   const renderedText = getRenderedText(renderer.toJSON());
 
-  expect(renderedText).toContain('Eveniment nou · Pas 2/3');
+  expect(renderer.root.findByType(FormModalFrame).props.progress).toEqual({
+    current: 2,
+    total: 3,
+  });
+  expect(renderedText).not.toContain('· Pas');
   expect(
     renderer.root.findByProps({ name: 'status' }).props.options[0],
   ).toEqual({ id: 'confirmed', name: 'Rezervat' });

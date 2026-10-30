@@ -63,6 +63,7 @@ export function TeamInvitations() {
               loading={revoke.isPending}
               onPress={() =>
                 confirmAction({
+                  destructive: true,
                   title: 'Revoci invitația?',
                   message: item.email,
                   confirmLabel: 'Revocă invitația',

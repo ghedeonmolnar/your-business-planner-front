@@ -6,6 +6,7 @@ import {
 } from '@react-navigation/native';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useAuth } from '@/features/auth/AuthProvider';
 import { useBookings } from '@/features/bookings/hooks/useBookings';
 import { QueryState } from '@/shared/components/QueryState';
 import { BookingForm } from '@/features/bookings/components/BookingForm';
@@ -14,6 +15,7 @@ import { AgendaBookingCard } from '@/features/company/components/AgendaBookingCa
 import { AgendaMonthHeader } from '@/features/company/components/AgendaMonthHeader';
 import { buildAgendaSections } from '@/features/company/utils/agendaSections';
 import { Screen } from '@/shared/components/Screen';
+import { AppButton } from '@/shared/components/AppButton';
 import { EmptyState } from '@/shared/components/EmptyState';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { ListItemSeparator } from '@/shared/components/ListItemSeparator';
@@ -26,6 +28,7 @@ import {
 import { theme } from '@/shared/theme/theme';
 import { companyNow } from '@/shared/utils/formatDate';
 import { useAgendaClock } from '@/features/company/hooks/useAgendaClock';
+import { useRefreshAgendaSummary } from '@/features/company/hooks/useAgendaSummary';
 
 type AgendaNavigation = CompositeNavigationProp<
   BottomTabNavigationProp<HomeTabParamList, 'Dashboard'>,
@@ -34,12 +37,15 @@ type AgendaNavigation = CompositeNavigationProp<
 
 export function AgendaScreen() {
   const navigation = useNavigation<AgendaNavigation>();
+  const { user } = useAuth();
+  const canManage = user?.role !== 'employee';
   const [creating, setCreating] = useState(false);
   const [collapsedMonths, setCollapsedMonths] = useState<Set<string>>(
     new Set(),
   );
   const { now, focused } = useAgendaClock();
   const query = useBookings({ agenda: 'upcoming' }, focused);
+  const refreshSummary = useRefreshAgendaSummary();
   const { refetch } = query;
   useEffect(() => {
     if (focused) void refetch();
@@ -69,12 +75,10 @@ export function AgendaScreen() {
         stickySectionHeadersEnabled={false}
         showsVerticalScrollIndicator={false}
         refreshing={query.isRefetching && !query.isFetchingNextPage}
-        onRefresh={() => query.refetch()}
+        onRefresh={() => Promise.all([query.refetch(), refreshSummary()])}
         ListHeaderComponent={
           <View style={styles.header}>
             <AgendaHeader
-              creating={creating}
-              onCreate={() => setCreating(true)}
               onOpenCalendar={() => navigation.navigate('Calendar')}
             />
             <QueryState
@@ -136,6 +140,16 @@ export function AgendaScreen() {
           />
         }
       />
+      {canManage ? (
+        <View style={styles.create}>
+          <AppButton
+            icon="add"
+            label="Rezervare nouă"
+            loading={creating}
+            onPress={() => setCreating(true)}
+          />
+        </View>
+      ) : null}
       {creating ? (
         <BookingForm
           date={companyNow().format('YYYY-MM-DD')}
@@ -154,6 +168,10 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   header: { gap: theme.spacing.sm },
+  create: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+  },
   nextHeader: { paddingVertical: theme.spacing.sm },
   nextDate: {
     color: theme.colors.menu.primary,

@@ -169,6 +169,11 @@ export function PaymentForm({
             : 'Plată nouă'
       }
       visible={visible}
+      progress={
+        selectedType === 'incoming' && settlementType === 'full'
+          ? { current: showOvertime ? 2 : 1, total: 2 }
+          : undefined
+      }
       busy={saving}
     >
       {showOvertime ? (

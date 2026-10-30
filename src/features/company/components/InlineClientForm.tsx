@@ -105,7 +105,7 @@ export function InlineClientForm({
         }}
         secondary={{
           label: 'Renunță la clientul nou',
-          variant: 'ghost',
+          variant: 'danger',
           onPress: onCancel,
         }}
       />

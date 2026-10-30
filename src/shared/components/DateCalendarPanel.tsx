@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
-import { Pressable, View } from 'react-native';
+import {
+  Pressable,
+  ScrollView,
+  StyleProp,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { Surface, Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { Calendar, CalendarProps, DateData } from 'react-native-calendars';
@@ -24,6 +30,7 @@ export type DateCalendarAvailability = {
 };
 
 type DateCalendarPanelProps = {
+  panelStyle?: StyleProp<ViewStyle>;
   displayValue: string;
   maximumDate?: string;
   minimumDate?: string;
@@ -52,6 +59,7 @@ const clampIsoDate = (
 const yearOf = (isoDate: string) => Number(isoDate.slice(0, 4));
 
 export function DateCalendarPanel({
+  panelStyle,
   displayValue,
   maximumDate,
   minimumDate,
@@ -124,7 +132,7 @@ export function DateCalendarPanel({
   };
 
   return (
-    <Surface elevation={3} style={styles.panel}>
+    <Surface elevation={3} style={[styles.panel, panelStyle]}>
       <View style={styles.header}>
         <View>
           <Text style={styles.eyebrow}>Data selectată</Text>
@@ -136,108 +144,116 @@ export function DateCalendarPanel({
           onPress={onClose}
         />
       </View>
-      {availability?.loading ? <LoadingState /> : null}
-      {availability?.unverified ? (
-        <Text accessibilityRole="alert" style={styles.notice}>
-          Disponibilitatea nu a fost actualizată. O vom verifica la salvare.
-        </Text>
-      ) : null}
-      {availability?.error && !availability.loading ? (
-        <ErrorBanner
-          message="Nu am putut verifica disponibilitatea sălii."
-          onRetry={availability.onRetry}
-        />
-      ) : null}
-      {yearRange ? (
-        <Pressable
-          accessibilityLabel="Alege anul"
-          accessibilityRole="button"
-          accessibilityState={{ expanded: isYearListOpen }}
-          accessibilityValue={{ text: String(visibleYear) }}
-          onPress={() => setYearListOpen(open => !open)}
-          style={styles.yearToggle}
-        >
-          <Text style={styles.yearToggleText}>Anul {visibleYear}</Text>
-          <Ionicons
-            color={theme.colors.primary}
-            name={isYearListOpen ? 'chevron-up' : 'chevron-down'}
-            size={18}
+      <ScrollView style={styles.body} keyboardShouldPersistTaps="handled">
+        {availability?.loading ? <LoadingState /> : null}
+        {availability?.unverified ? (
+          <Text accessibilityRole="alert" style={styles.notice}>
+            Disponibilitatea nu a fost actualizată. O vom verifica la salvare.
+          </Text>
+        ) : null}
+        {availability?.error && !availability.loading ? (
+          <ErrorBanner
+            message="Nu am putut verifica disponibilitatea sălii."
+            onRetry={availability.onRetry}
           />
-        </Pressable>
-      ) : null}
-      {yearRange && isYearListOpen ? (
-        <CalendarYearPicker
-          maximumYear={yearRange.maximum}
-          minimumYear={yearRange.minimum}
-          onSelect={pickYear}
-          selectedYear={visibleYear}
-        />
-      ) : (
-        <Calendar
-          current={visibleDate}
-          disableAllTouchEventsForDisabledDays
-          disabledByDefault={selectionBlocked}
-          disableArrowLeft={previousMonthBlocked}
-          disableArrowRight={nextMonthBlocked}
-          enableSwipeMonths
-          firstDay={1}
-          hideExtraDays
-          markedDates={markedDates}
-          maxDate={maximumDate}
-          minDate={minimumDate}
-          onPressArrowLeft={subtractMonth => {
-            if (!previousMonthBlocked) subtractMonth();
-          }}
-          onPressArrowRight={addMonth => {
-            if (!nextMonthBlocked) addMonth();
-          }}
-          onDayPress={(day: DateData) => {
-            if (
-              selectionBlocked ||
-              markedDates[day.dateString]?.disabled ||
-              (minimumDate && day.dateString < minimumDate) ||
-              (maximumDate && day.dateString > maximumDate)
-            )
-              return;
-            onSelect(day.dateString);
-          }}
-          onMonthChange={(month: DateData) =>
-            changeVisibleDate(month.dateString)
-          }
-          renderArrow={direction => (
-            <View
-              style={[
-                styles.arrow,
-                (direction === 'left' ? previousMonthBlocked : nextMonthBlocked)
-                  ? styles.disabledArrow
-                  : undefined,
-              ]}
-            >
-              <Ionicons
-                color={theme.colors.surface}
-                name={direction === 'left' ? 'chevron-back' : 'chevron-forward'}
-                size={18}
-              />
-            </View>
-          )}
-          theme={
-            {
-              arrowColor: theme.colors.surface,
-              calendarBackground: theme.colors.surface,
-              monthTextColor: theme.colors.primary,
-              selectedDayTextColor: theme.colors.surface,
-              'stylesheet.day.basic': calendarDayStyles,
-              textDayHeaderFontFamily: theme.fonts.bodySemibold,
-              textDayHeaderFontSize: 13,
-              textDisabledColor: theme.colors.disabled,
-              textMonthFontFamily: theme.fonts.heading,
-              textMonthFontSize: 17,
-              textSectionTitleColor: theme.colors.muted,
-              todayTextColor: theme.colors.primary,
-            } as CalendarProps['theme']
-          }
-        />
-      )}
+        ) : null}
+        {yearRange ? (
+          <Pressable
+            accessibilityLabel="Alege anul"
+            accessibilityRole="button"
+            accessibilityState={{ expanded: isYearListOpen }}
+            accessibilityValue={{ text: String(visibleYear) }}
+            onPress={() => setYearListOpen(open => !open)}
+            style={styles.yearToggle}
+          >
+            <Text style={styles.yearToggleText}>Anul {visibleYear}</Text>
+            <Ionicons
+              color={theme.colors.primary}
+              name={isYearListOpen ? 'chevron-up' : 'chevron-down'}
+              size={18}
+            />
+          </Pressable>
+        ) : null}
+        {yearRange && isYearListOpen ? (
+          <CalendarYearPicker
+            maximumYear={yearRange.maximum}
+            minimumYear={yearRange.minimum}
+            onSelect={pickYear}
+            selectedYear={visibleYear}
+          />
+        ) : (
+          <Calendar
+            current={visibleDate}
+            disableAllTouchEventsForDisabledDays
+            disabledByDefault={selectionBlocked}
+            disableArrowLeft={previousMonthBlocked}
+            disableArrowRight={nextMonthBlocked}
+            enableSwipeMonths
+            firstDay={1}
+            hideExtraDays
+            markedDates={markedDates}
+            maxDate={maximumDate}
+            minDate={minimumDate}
+            onPressArrowLeft={subtractMonth => {
+              if (!previousMonthBlocked) subtractMonth();
+            }}
+            onPressArrowRight={addMonth => {
+              if (!nextMonthBlocked) addMonth();
+            }}
+            onDayPress={(day: DateData) => {
+              if (
+                selectionBlocked ||
+                markedDates[day.dateString]?.disabled ||
+                (minimumDate && day.dateString < minimumDate) ||
+                (maximumDate && day.dateString > maximumDate)
+              )
+                return;
+              onSelect(day.dateString);
+            }}
+            onMonthChange={(month: DateData) =>
+              changeVisibleDate(month.dateString)
+            }
+            renderArrow={direction => (
+              <View
+                style={[
+                  styles.arrow,
+                  (
+                    direction === 'left'
+                      ? previousMonthBlocked
+                      : nextMonthBlocked
+                  )
+                    ? styles.disabledArrow
+                    : undefined,
+                ]}
+              >
+                <Ionicons
+                  color={theme.colors.surface}
+                  name={
+                    direction === 'left' ? 'chevron-back' : 'chevron-forward'
+                  }
+                  size={18}
+                />
+              </View>
+            )}
+            theme={
+              {
+                arrowColor: theme.colors.surface,
+                calendarBackground: theme.colors.surface,
+                monthTextColor: theme.colors.primary,
+                selectedDayTextColor: theme.colors.surface,
+                'stylesheet.day.basic': calendarDayStyles,
+                textDayHeaderFontFamily: theme.fonts.bodySemibold,
+                textDayHeaderFontSize: 13,
+                textDisabledColor: theme.colors.disabled,
+                textMonthFontFamily: theme.fonts.heading,
+                textMonthFontSize: 17,
+                textSectionTitleColor: theme.colors.muted,
+                todayTextColor: theme.colors.primary,
+              } as CalendarProps['theme']
+            }
+          />
+        )}
+      </ScrollView>
     </Surface>
   );
 }

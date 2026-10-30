@@ -7,6 +7,11 @@ export const bookingStatusLabels: Record<BookingStatus, string> = {
   cancelled: 'Anulată',
   expired: 'Expirată',
 };
+export const paymentMethodLabels = {
+  cash: 'Numerar',
+  card: 'Card',
+  transfer: 'Transfer bancar',
+};
 export const staffRoleOptions = [
   { id: 'hall_manager', name: 'Șef de sală' },
   { id: 'waiter', name: 'Ospătar' },

@@ -32,17 +32,19 @@ export function BookingSummaryCard({
   const validPhone = Boolean(buildContactUrl('call', booking.client_phone));
   return (
     <Card style={styles.card}>
-      <View style={styles.sectionLabels}>
-        <Text style={styles.client}>
-          {booking.client_name ?? 'Client necompletat'}
-        </Text>
-        <Text style={styles.hall}>
-          {booking.hall_name ?? 'Sală necompletată'}
-        </Text>
-      </View>
-      <View style={styles.row}>
-        <BookingStatusPill status={booking.status} />
-        <MetaPill icon="heart-outline" label={eventType} tone="primary" />
+      <View style={styles.summaryHeader}>
+        <View style={styles.sectionLabels}>
+          <Text style={styles.client}>
+            {booking.client_name ?? 'Client necompletat'}
+          </Text>
+          <Text style={styles.hall}>
+            {booking.hall_name ?? 'Sală necompletată'}
+          </Text>
+        </View>
+        <View style={styles.summaryBadges}>
+          <BookingStatusPill status={booking.status} />
+          <MetaPill icon="heart-outline" label={eventType} tone="primary" />
+        </View>
       </View>
       <View style={[styles.row, styles.schedule]}>
         <View style={styles.scheduleItem}>

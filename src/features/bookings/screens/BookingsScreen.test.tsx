@@ -140,7 +140,7 @@ beforeEach(() => {
   }) as typeof globalThis.fetch;
 });
 
-test('creates an overnight reservation through all five steps with the API mocked', async () => {
+test('creează o rezervare de noapte în patru pași, fără personal, cu API-ul mock-uit', async () => {
   const { renderer, unmount } = await renderWithProviders(<BookingsScreen />);
   try {
     await press(renderer, 'Rezervare nouă');
@@ -166,8 +166,11 @@ test('creates an overnight reservation through all five steps with the API mocke
     await press(renderer, 'Continuă');
     await fill(renderer, 'Meniuri estimate (adulți)', '200');
     await fill(renderer, 'Preț meniu adulți (lei)', '350');
+    await fill(renderer, 'Avans primit (lei)', '10000');
+    await select(renderer, 'Metoda de încasare', 'cash');
     await press(renderer, 'Continuă');
-    await press(renderer, 'Continuă');
+    expect(renderedText(renderer)).toContain('4/4');
+    expect(renderedText(renderer)).not.toContain('Personal alocat');
     await press(renderer, 'Salvează rezervarea');
     const request = jest
       .mocked(globalThis.fetch)
@@ -183,6 +186,11 @@ test('creates an overnight reservation through all five steps with the API mocke
       minimum_guests: 0,
       estimated_guests: 200,
       menu_price: '350',
+      staff: [],
+      advance_receipt: expect.objectContaining({
+        amount: '10000',
+        method: 'cash',
+      }),
       starts_at: '2027-11-13T16:00:00.000Z',
       ends_at: '2027-11-14T02:00:00.000Z',
     });
