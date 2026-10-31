@@ -7,7 +7,11 @@ export const bookingPaymentDefaults = (
   recovered?: BookingPaymentValues,
 ): BookingPaymentValues => ({
   type: payment?.type ?? recovered?.type ?? 'incoming',
-  category: payment?.category ?? recovered?.category ?? 'advance',
+  category:
+    recovered?.category ??
+    (payment?.type === 'incoming' && payment.category !== 'advance'
+      ? 'payment'
+      : (payment?.category ?? 'advance')),
   amount: payment ? String(payment.amount) : (recovered?.amount ?? ''),
   paid_at:
     payment?.paid_at ?? recovered?.paid_at ?? companyNow().format('YYYY-MM-DD'),

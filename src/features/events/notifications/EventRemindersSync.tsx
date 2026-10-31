@@ -56,7 +56,10 @@ export function EventRemindersSync({
         const now = Date.now();
         const planned: PlannedNotification[] = [];
         for (const event of events) {
-          if (event.status !== 'confirmed' || !event.starts_at) {
+          if (
+            !['confirmed', 'completed'].includes(event.status) ||
+            !event.starts_at
+          ) {
             continue;
           }
           for (const hours of LEAD_HOURS) {

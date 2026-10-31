@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { moneySchema } from '@/shared/api/moneySchema';
 import { BOOKING_SERVICE_PRICING_TYPES } from '@/features/bookings/types';
 
 export const staffAssignmentSchema = z.object({
@@ -7,10 +8,10 @@ export const staffAssignmentSchema = z.object({
   employee_name: z.string().nullable().optional(),
   job_role: z.string(),
   pay_type: z.enum(['fixed', 'hourly']),
-  rate: z.string(),
+  rate: moneySchema,
   starts_at: z.iso.datetime({ offset: true }),
   ends_at: z.iso.datetime({ offset: true }),
-  estimated_cost: z.string().optional(),
+  estimated_cost: moneySchema.optional(),
 });
 export const bookingSchema = z.object({
   id: z.string(),
@@ -38,28 +39,28 @@ export const bookingSchema = z.object({
   minimum_guests: z.number().optional(),
   estimated_guests: z.number().int().nonnegative().nullable().optional(),
   child_guests: z.number().int().nonnegative().nullable().optional(),
-  child_menu_price: z.string().optional(),
+  child_menu_price: moneySchema.optional(),
   final_guests: z.number().nullable().optional(),
-  menu_price: z.string().optional(),
+  menu_price: moneySchema.optional(),
   menu_name: z.string().nullable().optional(),
-  minimum_amount: z.string().optional(),
-  total_amount: z.string().optional(),
-  agreed_advance: z.string().optional(),
+  minimum_amount: moneySchema.optional(),
+  total_amount: moneySchema.optional(),
+  agreed_advance: moneySchema.optional(),
   advance_due_at: z.string().nullable().optional(),
   extra_services: z
     .array(
       z.object({
         name: z.string(),
-        amount: z.string(),
+        amount: moneySchema,
         pricing_type: z.enum(BOOKING_SERVICE_PRICING_TYPES).optional(),
       }),
     )
     .optional(),
-  paid_amount: z.string().optional(),
-  outgoing_amount: z.string().optional(),
-  cash_profit_amount: z.string().optional(),
-  employee_cost: z.string().optional(),
-  balance_due: z.string().optional(),
+  paid_amount: moneySchema.optional(),
+  outgoing_amount: moneySchema.optional(),
+  cash_profit_amount: moneySchema.optional(),
+  employee_cost: moneySchema.optional(),
+  balance_due: moneySchema.optional(),
   documents_count: z.number().optional(),
   incoming_payments_count: z.number().int().nonnegative().optional(),
   outgoing_payments_count: z.number().int().nonnegative().optional(),

@@ -32,6 +32,15 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  BILLING_NOT_CONFIGURED:
+    'Facturarea abonamentului nu este încă disponibilă. Contactează echipa Gatify.',
+  BILLING_DOWNLOAD_UNAVAILABLE:
+    'Factura nu poate fi descărcată acum. Încearcă din nou sau contactează echipa Gatify.',
+  BILLING_ISSUE_UNCERTAIN:
+    'Emiterea facturii se verifică. Nu este necesară o nouă solicitare.',
+  PASSWORD_CURRENT_INVALID: 'Parola actuală nu este corectă.',
+  PAYMENT_COMPLETED_IN_FUTURE:
+    'O operațiune efectuată trebuie să aibă data de azi sau din trecut. Pentru o dată viitoare alege „În așteptare”.',
   CLIENT_UPDATE_REQUIRED:
     'Actualizează aplicația pentru a continua în siguranță. Datele operațiunilor neconfirmate rămân păstrate.',
   OVERVIEW_RANGE_TOO_LARGE:

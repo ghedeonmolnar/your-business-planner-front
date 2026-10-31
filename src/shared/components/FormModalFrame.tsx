@@ -31,7 +31,7 @@ type FormModalFrameProps = {
   closeLabel?: string;
   busy?: boolean;
   readOnly?: boolean;
-  size?: 'form' | 'time';
+  size?: 'form' | 'time' | 'review';
 };
 
 type ScrollViewport = {
@@ -55,7 +55,7 @@ export function FormModalFrame({
 }: FormModalFrameProps) {
   const { modalTop, modalMaxHeight, overlayInsets } = useDialogLayout(
     visible,
-    size,
+    size === 'review' ? 'form' : size,
   );
   const scrollRef = useRef<React.ComponentRef<typeof ScrollView>>(null);
   const scrollOffsetRef = useRef(0);
@@ -180,12 +180,17 @@ export function FormModalFrame({
         style={[
           styles.overlay,
           size === 'time' ? styles.centered : undefined,
+          size === 'review' ? styles.bottom : undefined,
           overlayInsets,
         ]}
       >
         <Surface
           elevation={2}
-          style={[styles.content, { maxHeight: modalMaxHeight }]}
+          style={[
+            styles.content,
+            size === 'review' ? styles.compact : undefined,
+            { maxHeight: modalMaxHeight },
+          ]}
         >
           {scrollChrome ? null : header}
 
@@ -200,7 +205,10 @@ export function FormModalFrame({
             ref={scrollRef}
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
-            style={styles.scroll}
+            style={[
+              styles.scroll,
+              size === 'review' ? styles.compact : undefined,
+            ]}
           >
             {scrollChrome ? header : null}
             <FormInteractionContext.Provider value={busy || readOnly}>

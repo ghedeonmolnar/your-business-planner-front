@@ -1,4 +1,9 @@
 import { z } from 'zod';
+import {
+  normalizeFiscalCode,
+  normalizeIban,
+  isValidFiscalCode,
+} from '@/features/company/utils/fiscalProfileValues';
 
 const fiscalFields = [
   'fiscal_code',
@@ -19,17 +24,22 @@ export const hasCompanyFiscalData = (
 export const companySettingsSchema = z
   .object({
     name: z.string().trim().min(1, 'Completează numele companiei.').max(255),
-    email: z.union([
-      z.literal(''),
-      z.string().email('Completează un email valid.'),
-    ]),
-    phone: z.string().max(50),
-    address: z.string().max(255),
-    fiscal_code: z
+    email: z
       .string()
       .trim()
-      .regex(
-        /^(?:[1-9][0-9]{1,9})?$/,
+      .pipe(
+        z.union([
+          z.literal(''),
+          z.string().email('Completează un email valid.').max(255),
+        ]),
+      ),
+    phone: z.string().trim().max(50),
+    address: z.string().trim().max(255),
+    fiscal_code: z
+      .string()
+      .transform(normalizeFiscalCode)
+      .refine(
+        code => code === '' || isValidFiscalCode(code),
         'Completează un CUI valid, doar cu cifre.',
       ),
     legal_name: z.string().trim().max(255),
@@ -41,10 +51,14 @@ export const companySettingsSchema = z
     vat_registered: z.boolean(),
     iban: z
       .string()
-      .trim()
-      .regex(
-        /^(?:RO[0-9]{2}[A-Z]{4}[A-Z0-9]{16})?$/,
-        'Completează un IBAN românesc valid, fără spații.',
+      .transform(normalizeIban)
+      .pipe(
+        z
+          .string()
+          .regex(
+            /^(?:RO[0-9]{2}[A-Z]{4}[A-Z0-9]{16})?$/,
+            'Completează un IBAN românesc valid, fără spații.',
+          ),
       ),
     bank_name: z.string().trim().max(255),
   })

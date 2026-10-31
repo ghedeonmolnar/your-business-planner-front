@@ -1,5 +1,15 @@
 import { StyleSheet } from 'react-native';
+import { CalendarProps } from 'react-native-calendars';
+import { calendarDayStyles } from '@/shared/components/calendarDayStyles';
 import { theme } from '@/shared/theme/theme';
+
+export const dateCalendarTheme = {
+  calendarBackground: theme.colors.surface,
+  selectedDayTextColor: theme.colors.surface,
+  'stylesheet.day.basic': calendarDayStyles,
+  textDisabledColor: theme.colors.disabled,
+  todayTextColor: theme.colors.primary,
+} as CalendarProps['theme'];
 
 export const dateCalendarPanelStyles = StyleSheet.create({
   panel: {
@@ -22,6 +32,8 @@ export const dateCalendarPanelStyles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xs,
   },
   body: { flex: 1 },
+  hiddenHeader: { display: 'none' },
+  calendarBody: { paddingLeft: 0, paddingRight: 0 },
   eyebrow: {
     color: theme.colors.muted,
     fontFamily: theme.fonts.bodyMedium,
@@ -51,16 +63,5 @@ export const dateCalendarPanelStyles = StyleSheet.create({
     color: theme.colors.primary,
     fontFamily: theme.fonts.bodySemibold,
     fontSize: theme.typography.body,
-  },
-  arrow: {
-    alignItems: 'center',
-    backgroundColor: theme.colors.primary,
-    borderRadius: theme.radius.sm,
-    height: 38,
-    justifyContent: 'center',
-    width: 38,
-  },
-  disabledArrow: {
-    backgroundColor: theme.colors.surfaceDisabled,
   },
 });

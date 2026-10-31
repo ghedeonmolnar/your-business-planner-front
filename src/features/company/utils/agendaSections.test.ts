@@ -17,6 +17,14 @@ test('grupează toate rezervările active din prima zi și exclude stările inac
     { ...plannerBooking, id: 'completed', status: 'completed' as const },
     {
       ...plannerBooking,
+      id: 'completed-past',
+      status: 'completed' as const,
+      date: '2027-11-10',
+      starts_at: '2027-11-10T16:00:00Z',
+      ends_at: '2027-11-11T02:00:00Z',
+    },
+    {
+      ...plannerBooking,
       id: 'next-year',
       date: '2028-11-01',
       starts_at: '2028-11-01T16:00:00Z',
@@ -27,16 +35,17 @@ test('grupează toate rezervările active din prima zi și exclude stările inac
   expect(
     sections.map(section => [section.key, section.count, section.featured]),
   ).toEqual([
-    ['next:2027-11-13', 2, true],
+    ['next:2027-11-13', 3, true],
     ['2028-11', 1, false],
   ]);
   expect(sections[0].data.map(booking => booking.id)).toEqual([
     plannerBooking.id,
     'tentative',
+    'completed',
   ]);
   expect(
     sections.flatMap(section => section.data.map(booking => booking.id)),
-  ).toEqual([plannerBooking.id, 'tentative', 'next-year']);
+  ).toEqual([plannerBooking.id, 'tentative', 'completed', 'next-year']);
 });
 
 test('elimină expirările și încheierile exact la limita curentă, inclusiv fără răspuns nou de la server', () => {

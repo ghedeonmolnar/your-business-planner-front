@@ -105,6 +105,7 @@ export function CalendarScreen({
           updatedAt={calendar.dataUpdatedAt}
           fetching={calendar.isFetching}
           stale={calendar.isError || synchronization.isError}
+          offline={calendar.fetchStatus === 'paused'}
         />
         {calendar.data ? (
           calendarView.period === 'month' ? (

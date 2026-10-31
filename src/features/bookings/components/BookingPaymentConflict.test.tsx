@@ -13,6 +13,7 @@ import {
   pressDialogButton,
 } from '@/shared/test/renderWithProviders';
 import { waitForUi } from '@/shared/test/waitForUi';
+import { companyNow } from '@/shared/utils/formatDate';
 
 jest.mock('@/shared/storage/authTokenStorage', () => ({
   clearAuthToken: jest.fn(() => Promise.resolve()),
@@ -26,7 +27,7 @@ const payment: BookingPayment = {
   type: 'incoming',
   category: 'advance',
   amount: 100,
-  paid_at: '2027-11-01',
+  paid_at: companyNow().format('YYYY-MM-DD'),
   method: 'cash',
   status: 'completed',
   notes: '',

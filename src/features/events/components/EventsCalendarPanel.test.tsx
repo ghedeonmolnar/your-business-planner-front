@@ -9,6 +9,12 @@ import { EventPlanner } from '@/features/events/hooks/useEventPlanner';
 import { Event } from '@/features/events/types';
 import { theme } from '@/shared/theme/theme';
 
+jest.useFakeTimers({
+  now: new Date('2026-11-10T12:00:00Z'),
+  doNotFake: ['setTimeout', 'setInterval', 'setImmediate', 'nextTick'],
+});
+afterAll(() => jest.useRealTimers());
+
 const todayDate = dayjs().format('YYYY-MM-DD');
 const selectedDate = dayjs().add(1, 'day').format('YYYY-MM-DD');
 const otherEventDate = dayjs().add(2, 'day').format('YYYY-MM-DD');

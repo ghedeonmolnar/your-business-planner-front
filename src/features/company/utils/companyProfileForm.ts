@@ -1,5 +1,9 @@
 import { CompanyProfile } from '@/features/company/schemas/companyProfileSchemas';
 import { CompanySettingsValues } from '@/features/company/schemas/companySettingsSchema';
+import {
+  normalizeFiscalCode,
+  normalizeIban,
+} from '@/features/company/utils/fiscalProfileValues';
 
 export function companyProfileDefaults(
   company: CompanyProfile,
@@ -31,7 +35,7 @@ export function companyProfilePayload(values: CompanySettingsValues) {
     address: values.address || null,
     billing_profile: values.fiscal_code
       ? {
-          fiscal_code: values.fiscal_code,
+          fiscal_code: normalizeFiscalCode(values.fiscal_code),
           legal_name: values.legal_name,
           trade_register_number: values.trade_register_number || null,
           address: values.fiscal_address,
@@ -40,7 +44,7 @@ export function companyProfilePayload(values: CompanySettingsValues) {
           postal_code: values.postal_code || null,
           country: 'RO' as const,
           vat_registered: values.vat_registered,
-          iban: values.iban || null,
+          iban: normalizeIban(values.iban) || null,
           bank_name: values.bank_name || null,
         }
       : null,

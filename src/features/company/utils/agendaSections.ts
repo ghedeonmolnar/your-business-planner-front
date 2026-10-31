@@ -21,7 +21,7 @@ export function buildAgendaSections(
   const today = companyNow(now).format('YYYY-MM-DD');
   const upcoming = bookings.filter(
     booking =>
-      (booking.status === 'confirmed' || booking.status === 'tentative') &&
+      ['confirmed', 'completed', 'tentative'].includes(booking.status) &&
       (booking.ends_at
         ? Date.parse(booking.ends_at) > now
         : booking.date >= today),

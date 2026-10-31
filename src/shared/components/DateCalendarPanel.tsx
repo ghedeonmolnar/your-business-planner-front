@@ -10,15 +10,19 @@ import { Surface, Text } from 'react-native-paper';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { Calendar, CalendarProps, DateData } from 'react-native-calendars';
 import dayjs from 'dayjs';
-import { calendarDayStyles } from '@/shared/components/calendarDayStyles';
 import { CalendarYearPicker } from '@/shared/components/CalendarYearPicker';
+import { DateCalendarHeader } from '@/shared/components/DateCalendarHeader';
 import { IconButton } from '@/shared/components/IconButton';
 import { theme } from '@/shared/theme/theme';
 import { dateToIsoDate } from '@/shared/utils/dateInput';
 import { formatLongDate } from '@/shared/utils/formatDate';
 import { ErrorBanner } from '@/shared/components/ErrorBanner';
 import { LoadingState } from '@/shared/components/LoadingState';
-import { dateCalendarPanelStyles as styles } from '@/shared/components/dateCalendarPanelStyles';
+import {
+  dateCalendarPanelStyles as styles,
+  dateCalendarTheme,
+} from '@/shared/components/dateCalendarPanelStyles';
+import { useCalendarMonthSwipe } from '@/shared/hooks/useCalendarMonthSwipe';
 
 export type DateCalendarAvailability = {
   disabledDates: string[];
@@ -119,6 +123,16 @@ export function DateCalendarPanel({
     setVisibleDate(allowedDate);
     availability?.onMonthChange(allowedDate);
   };
+  const moveMonth = (direction: -1 | 1) => {
+    if (direction < 0 ? previousMonthBlocked : nextMonthBlocked) return;
+    changeVisibleDate(
+      dayjs(visibleDate)
+        .add(direction, 'month')
+        .startOf('month')
+        .format('YYYY-MM-DD'),
+    );
+  };
+  const monthSwipe = useCalendarMonthSwipe(moveMonth);
 
   const pickYear = (year: number) => {
     changeVisibleDate(
@@ -144,7 +158,11 @@ export function DateCalendarPanel({
           onPress={onClose}
         />
       </View>
-      <ScrollView style={styles.body} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        style={styles.body}
+        keyboardShouldPersistTaps="handled"
+        disableScrollViewPanResponder
+      >
         {availability?.loading ? <LoadingState /> : null}
         {availability?.unverified ? (
           <Text accessibilityRole="alert" style={styles.notice}>
@@ -182,76 +200,49 @@ export function DateCalendarPanel({
             selectedYear={visibleYear}
           />
         ) : (
-          <Calendar
-            current={visibleDate}
-            disableAllTouchEventsForDisabledDays
-            disabledByDefault={selectionBlocked}
-            disableArrowLeft={previousMonthBlocked}
-            disableArrowRight={nextMonthBlocked}
-            enableSwipeMonths
-            firstDay={1}
-            hideExtraDays
-            markedDates={markedDates}
-            maxDate={maximumDate}
-            minDate={minimumDate}
-            onPressArrowLeft={subtractMonth => {
-              if (!previousMonthBlocked) subtractMonth();
-            }}
-            onPressArrowRight={addMonth => {
-              if (!nextMonthBlocked) addMonth();
-            }}
-            onDayPress={(day: DateData) => {
-              if (
-                selectionBlocked ||
-                markedDates[day.dateString]?.disabled ||
-                (minimumDate && day.dateString < minimumDate) ||
-                (maximumDate && day.dateString > maximumDate)
-              )
-                return;
-              onSelect(day.dateString);
-            }}
-            onMonthChange={(month: DateData) =>
-              changeVisibleDate(month.dateString)
-            }
-            renderArrow={direction => (
-              <View
-                style={[
-                  styles.arrow,
-                  (
-                    direction === 'left'
-                      ? previousMonthBlocked
-                      : nextMonthBlocked
-                  )
-                    ? styles.disabledArrow
-                    : undefined,
-                ]}
-              >
-                <Ionicons
-                  color={theme.colors.surface}
-                  name={
-                    direction === 'left' ? 'chevron-back' : 'chevron-forward'
-                  }
-                  size={18}
-                />
-              </View>
-            )}
-            theme={
-              {
-                arrowColor: theme.colors.surface,
-                calendarBackground: theme.colors.surface,
-                monthTextColor: theme.colors.primary,
-                selectedDayTextColor: theme.colors.surface,
-                'stylesheet.day.basic': calendarDayStyles,
-                textDayHeaderFontFamily: theme.fonts.bodySemibold,
-                textDayHeaderFontSize: 13,
-                textDisabledColor: theme.colors.disabled,
-                textMonthFontFamily: theme.fonts.heading,
-                textMonthFontSize: 17,
-                textSectionTitleColor: theme.colors.muted,
-                todayTextColor: theme.colors.primary,
-              } as CalendarProps['theme']
-            }
-          />
+          <View collapsable={false} {...monthSwipe}>
+            <DateCalendarHeader
+              month={visibleDate}
+              onChangeMonth={moveMonth}
+              disableArrowLeft={previousMonthBlocked}
+              disableArrowRight={nextMonthBlocked}
+            />
+            <Calendar
+              current={visibleDate}
+              initialDate={visibleDate}
+              headerStyle={styles.hiddenHeader}
+              style={styles.calendarBody}
+              disableAllTouchEventsForDisabledDays
+              disabledByDefault={selectionBlocked}
+              disableArrowLeft={previousMonthBlocked}
+              disableArrowRight={nextMonthBlocked}
+              firstDay={1}
+              hideExtraDays
+              markedDates={markedDates}
+              maxDate={maximumDate}
+              minDate={minimumDate}
+              onPressArrowLeft={subtractMonth => {
+                if (!previousMonthBlocked) subtractMonth();
+              }}
+              onPressArrowRight={addMonth => {
+                if (!nextMonthBlocked) addMonth();
+              }}
+              onDayPress={(day: DateData) => {
+                if (
+                  selectionBlocked ||
+                  markedDates[day.dateString]?.disabled ||
+                  (minimumDate && day.dateString < minimumDate) ||
+                  (maximumDate && day.dateString > maximumDate)
+                )
+                  return;
+                onSelect(day.dateString);
+              }}
+              onMonthChange={(month: DateData) =>
+                changeVisibleDate(month.dateString)
+              }
+              theme={dateCalendarTheme}
+            />
+          </View>
         )}
       </ScrollView>
     </Surface>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView } from 'react-native';
 import { Text } from 'react-native-paper';
 import { useAuth } from '@/features/auth/AuthProvider';
@@ -7,9 +7,11 @@ import { AppButton } from '@/shared/components/AppButton';
 import { Screen } from '@/shared/components/Screen';
 import { ContentSection } from '@/shared/components/ContentSection';
 import { showError } from '@/shared/feedback/showError';
+import { ChangePasswordForm } from '@/features/auth/components/ChangePasswordForm';
 
 export function SubscriptionBlockedScreen() {
   const { user, signOut, retryBootstrap } = useAuth();
+  const [changingPassword, setChangingPassword] = useState(false);
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.content}>
@@ -22,6 +24,11 @@ export function SubscriptionBlockedScreen() {
         <Text style={styles.text}>{user?.support_phone ?? ''}</Text>
         <AppButton label="Verifică reactivarea" onPress={retryBootstrap} />
         <AppButton
+          label="Schimbă parola"
+          variant="outline"
+          onPress={() => setChangingPassword(true)}
+        />
+        <AppButton
           label="Deconectare"
           variant="outline"
           onPress={() => {
@@ -31,6 +38,9 @@ export function SubscriptionBlockedScreen() {
           }}
         />
       </ScrollView>
+      {changingPassword ? (
+        <ChangePasswordForm onClose={() => setChangingPassword(false)} />
+      ) : null}
     </Screen>
   );
 }

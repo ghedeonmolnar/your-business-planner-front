@@ -1,31 +1,55 @@
-import React, { useState } from 'react';
-import { ScrollView } from 'react-native';
-import { Text } from 'react-native-paper';
+﻿import React from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { useCompanyProfile } from '@/features/company/hooks/useCompanyProfile';
-import { CompanySettingsForm } from '@/features/company/components/CompanySettingsForm';
-import { OwnerProfileForm } from '@/features/company/components/OwnerProfileForm';
-import { BillingProfileSummary } from '@/features/company/components/BillingProfileSummary';
-import { QueryState } from '@/shared/components/QueryState';
-import { contentStyles as styles } from '@/shared/components/contentStyles';
+import { SubscriptionInvoices } from '@/features/company/components/SubscriptionInvoices';
+import { ActionList } from '@/shared/components/ActionList';
+import { ActionItem } from '@/shared/components/ActionTile';
+import { RootStackParamList } from '@/shared/navigation/types';
 import { Screen } from '@/shared/components/Screen';
 import { Card } from '@/shared/components/Card';
-import { AppButton } from '@/shared/components/AppButton';
 import { IconButton } from '@/shared/components/IconButton';
 import { ContentSection } from '@/shared/components/ContentSection';
+import { theme } from '@/shared/theme/theme';
 
 export function CompanyProfileScreen() {
   const { user } = useAuth();
-  const navigation = useNavigation();
-  const query = useCompanyProfile();
-  const [editing, setEditing] = useState<'owner' | 'company' | null>(null);
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const owner = user?.role === 'owner';
+  const items: ActionItem[] = [
+    {
+      id: 'account',
+      label: 'Contul meu',
+      description: 'Date personale și securitate',
+      icon: 'person-outline',
+      onPress: () => navigation.navigate('AccountSettings', { tab: 'profile' }),
+    },
+  ];
+  if (owner)
+    items.push({
+      id: 'company',
+      label: 'Firmă și facturare',
+      description: 'Datele companiei și profilul fiscal',
+      icon: 'business-outline',
+      onPress: () => navigation.navigate('CompanySettings', { tab: 'general' }),
+    });
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <ContentSection
-          title="Profil și facturare"
+          title={owner ? 'Profil și facturare' : 'Profilul meu'}
+          subtitle={
+            owner
+              ? 'Setările contului și ale companiei'
+              : 'Datele și securitatea contului'
+          }
           size="page"
+          titleStyle={styles.title}
           leading={
             <IconButton
               icon="arrow-back"
@@ -34,81 +58,23 @@ export function CompanyProfileScreen() {
             />
           }
         />
-        <Card style={styles.card}>
-          <Text style={styles.eyebrow}>Profilul meu</Text>
-          <Text style={styles.subtitle}>{user?.name}</Text>
-          <Text style={styles.muted}>{user?.email}</Text>
-          <AppButton
-            label="Editează profilul meu"
-            loading={editing === 'owner'}
-            multiline
-            variant="ghost"
-            icon="person-outline"
-            onPress={() => setEditing('owner')}
-          />
-        </Card>
-        <QueryState
-          loading={query.isLoading}
-          error={query.error}
-          retry={() => query.refetch()}
-        />
-        {query.data ? (
-          <>
-            <Card style={styles.card}>
-              <Text style={styles.eyebrow}>Firma mea</Text>
-              <Text style={styles.subtitle}>{query.data.name}</Text>
-              {query.data.email ? (
-                <Text style={styles.text}>{query.data.email}</Text>
-              ) : null}
-              {query.data.phone ? (
-                <Text style={styles.text}>{query.data.phone}</Text>
-              ) : null}
-              {query.data.address ? (
-                <Text style={styles.muted}>{query.data.address}</Text>
-              ) : null}
-              <AppButton
-                label="Editează firma și datele fiscale"
-                loading={editing === 'company'}
-                variant="outline"
-                icon="create-outline"
-                onPress={() => setEditing('company')}
-                multiline
-              />
-            </Card>
-            <Card style={styles.card}>
-              <Text style={styles.eyebrow}>Date pentru facturare</Text>
-              {query.data.billing_profile ? (
-                <BillingProfileSummary profile={query.data.billing_profile} />
-              ) : (
-                <>
-                  <Text style={styles.subtitle}>
-                    Completează datele fiscale
-                  </Text>
-                  <Text style={styles.muted}>
-                    Introdu CUI-ul firmei și preluăm datele disponibile la ANAF.
-                    Profilul salvat precompletează datele de facturare.
-                  </Text>
-                  <AppButton
-                    label="Completează datele fiscale"
-                    loading={editing === 'company'}
-                    multiline
-                    onPress={() => setEditing('company')}
-                  />
-                </>
-              )}
-            </Card>
-          </>
+        <ActionList items={items} />
+        {owner ? (
+          <Card>
+            <SubscriptionInvoices />
+          </Card>
         ) : null}
       </ScrollView>
-      {editing === 'owner' ? (
-        <OwnerProfileForm onClose={() => setEditing(null)} />
-      ) : null}
-      {editing === 'company' && query.data ? (
-        <CompanySettingsForm
-          company={query.data}
-          onClose={() => setEditing(null)}
-        />
-      ) : null}
     </Screen>
   );
 }
+
+const styles = StyleSheet.create({
+  title: { fontSize: theme.typography.title },
+  content: {
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
+    gap: theme.spacing.lg,
+  },
+});

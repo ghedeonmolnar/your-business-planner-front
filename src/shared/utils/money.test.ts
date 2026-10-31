@@ -17,11 +17,12 @@ test('reads amounts that arrive as decimal strings', () => {
   expect(formatMoney('250.50')).toBe('251 lei');
 });
 
-test('falls back to zero for missing or invalid amounts', () => {
-  expect(toAmount(null)).toBe(0);
-  expect(toAmount(undefined)).toBe(0);
-  expect(toAmount('n/a')).toBe(0);
-  expect(formatMoney(undefined)).toBe('0 lei');
+test('distinguishes unavailable or malformed amounts from a real zero', () => {
+  for (const value of [null, undefined, 'n/a', '', [], {}, true])
+    expect(toAmount(value)).toBeNaN();
+  expect(formatMoney(undefined)).toBe('Indisponibil');
+  expect(formatExactMoney('n/a')).toBe('Indisponibil');
+  expect(formatExactMoney('0.00')).toBe('0 lei');
 });
 
 test('adds money through integer cents', () => {

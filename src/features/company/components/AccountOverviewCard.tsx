@@ -12,6 +12,7 @@ type AccountOverviewCardProps = {
   email: string;
   companyName?: string;
   onOpenProfile?: () => void;
+  profileLabel?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -20,6 +21,7 @@ export function AccountOverviewCard({
   email,
   companyName,
   onOpenProfile,
+  profileLabel = 'Profil și facturare',
   style,
 }: AccountOverviewCardProps) {
   return (
@@ -47,7 +49,7 @@ export function AccountOverviewCard({
       </View>
       {onOpenProfile ? (
         <ActionTile
-          label="Profil și facturare"
+          label={profileLabel}
           icon="document-text-outline"
           variant="soft"
           labelStyle={styles.profileLabel}

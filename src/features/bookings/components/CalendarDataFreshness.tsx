@@ -8,16 +8,23 @@ export function CalendarDataFreshness({
   updatedAt,
   fetching,
   stale,
+  offline = false,
 }: {
   label: string;
   updatedAt: number;
   fetching: boolean;
   stale: boolean;
+  offline?: boolean;
 }) {
-  if (!updatedAt || !stale) return null;
+  if (!updatedAt || (!stale && !offline)) return null;
   return (
     <Text style={calendarStyles.muted}>
-      {label} · {fetching ? 'Se actualizează · ' : stale ? 'Date vechi · ' : ''}
+      {label} ·{' '}
+      {offline
+        ? 'Fără conexiune. Datele nu pot fi reverificate · '
+        : fetching
+          ? 'Se actualizează · '
+          : 'Date vechi · '}
       Ultima actualizare:{' '}
       {formatCompanyDateTime(new Date(updatedAt).toISOString())}
     </Text>
