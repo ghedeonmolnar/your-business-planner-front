@@ -17,8 +17,9 @@ import { CustomerHistoryScreen } from '@/features/company/screens/CustomerHistor
 import { TeamScreen } from '@/features/company/screens/TeamScreen';
 import { OverviewScreen } from '@/features/company/screens/OverviewScreen';
 import { AgendaDetailsScreen } from '@/features/company/screens/AgendaDetailsScreen';
-import { AgendaWeekendScreen } from '@/features/company/screens/AgendaWeekendScreen';
 import { CompanyProfileScreen } from '@/features/company/screens/CompanyProfileScreen';
+import { AccountSettingsScreen } from '@/features/company/screens/AccountSettingsScreen';
+import { CompanySettingsScreen } from '@/features/company/screens/CompanySettingsScreen';
 import { SubscriptionBlockedScreen } from '@/features/company/screens/SubscriptionBlockedScreen';
 import { EventRemindersSync } from '@/features/events/notifications/EventRemindersSync';
 import { useNotificationNavigation } from '@/features/events/notifications/useNotificationNavigation';
@@ -130,10 +131,6 @@ function ApplicationNavigation() {
                   component={AgendaDetailsScreen}
                 />
                 <Stack.Screen
-                  name="AgendaWeekend"
-                  component={AgendaWeekendScreen}
-                />
-                <Stack.Screen
                   name="CustomerHistory"
                   component={CustomerHistoryScreen}
                 />
@@ -162,13 +159,21 @@ function ApplicationNavigation() {
                 ) : null}
               </>
             ) : null}
+            <Stack.Screen
+              name="CompanyProfile"
+              component={CompanyProfileScreen}
+            />
+            <Stack.Screen
+              name="AccountSettings"
+              component={AccountSettingsScreen}
+            />
             {user?.role === 'owner' ? (
               <>
-                <Stack.Screen name="CompanyTeam" component={TeamScreen} />
                 <Stack.Screen
-                  name="CompanyProfile"
-                  component={CompanyProfileScreen}
+                  name="CompanySettings"
+                  component={CompanySettingsScreen}
                 />
+                <Stack.Screen name="CompanyTeam" component={TeamScreen} />
               </>
             ) : null}
           </>

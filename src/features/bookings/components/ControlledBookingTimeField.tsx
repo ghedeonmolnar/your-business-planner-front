@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { Keyboard, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, FieldPath, FieldValues } from 'react-hook-form';
 import { Ionicons } from '@react-native-vector-icons/ionicons/static';
-import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { BookingTimePicker } from '@/features/bookings/components/BookingTimePicker';
 import { bookingTimePickerStyles as styles } from '@/features/bookings/components/bookingTimePickerStyles';
 import { FormInput, formInputStyles } from '@/shared/components/FormInput';
 import { useFormBusy } from '@/shared/components/FormInteractionContext';
 import { theme } from '@/shared/theme/theme';
 
-export function ControlledBookingTimeField({
+export function ControlledBookingTimeField<T extends FieldValues>({
   control,
   name,
   label,
@@ -19,15 +18,17 @@ export function ControlledBookingTimeField({
   start = '',
   disabled = false,
   onSelectionChange,
+  end,
 }: {
-  control: Control<BookingFormValues>;
-  name: 'starts_at' | 'ends_at';
+  control: Control<T, unknown, FieldValues>;
+  name: FieldPath<T>;
   label: string;
   required?: boolean;
   date: string;
   start?: string;
   disabled?: boolean;
   onSelectionChange?: (value: string) => void;
+  end?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const blocked = useFormBusy() || disabled;
@@ -47,7 +48,8 @@ export function ControlledBookingTimeField({
           onChange(next);
           onSelectionChange?.(next);
         };
-        const display = value.split(' ').slice(1).join(' ');
+        const timestamp = typeof value === 'string' ? value : '';
+        const display = timestamp.split(' ').slice(1).join(' ');
         return (
           <FormInput label={label} required={required} error={error?.message}>
             <Pressable
@@ -87,8 +89,8 @@ export function ControlledBookingTimeField({
               <BookingTimePicker
                 date={date}
                 start={start}
-                end={name === 'ends_at'}
-                value={value}
+                end={end ?? name === 'ends_at'}
+                value={timestamp}
                 label={label}
                 onChange={change}
                 onClose={close}

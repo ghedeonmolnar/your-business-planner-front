@@ -10,6 +10,7 @@ import {
   SelectOptionsState,
 } from '@/shared/components/ControlledSelectField';
 import { AppButton } from '@/shared/components/AppButton';
+import { BookingStaffScheduleFields } from '@/features/bookings/components/BookingStaffScheduleFields';
 
 export function BookingStaffFields({
   form,
@@ -24,8 +25,8 @@ export function BookingStaffFields({
   return (
     <>
       <Text>
-        La ora repetată de toamnă adaugă +03:00 pentru prima apariție sau +02:00
-        pentru a doua apariție.
+        Completează programul și remunerația fiecărei persoane. Tariful zero
+        trebuie ales explicit.
       </Text>
       {staff.fields.map((field, index) => (
         <React.Fragment key={field.id}>
@@ -55,6 +56,34 @@ export function BookingStaffFields({
               }))}
             placeholder="Alege persoana"
             searchPlaceholder="Caută persoană"
+            onSelectionChange={selected => {
+              if (form.getValues(`staff.${index}.employee_id`) === selected[0])
+                return;
+              const person = employees.find(item => item.id === selected[0]);
+              if (!person) return;
+              if (
+                person.job_role &&
+                staffRoleOptions.some(option => option.id === person.job_role)
+              )
+                form.setValue(`staff.${index}.job_role`, person.job_role, {
+                  shouldDirty: true,
+                });
+              if (
+                person.hourly_rate !== null &&
+                person.hourly_rate !== undefined
+              ) {
+                form.setValue(`staff.${index}.pay_type`, 'hourly', {
+                  shouldDirty: true,
+                });
+                form.setValue(
+                  `staff.${index}.rate`,
+                  String(person.hourly_rate),
+                  { shouldDirty: true },
+                );
+              } else {
+                form.setValue(`staff.${index}.rate`, '', { shouldDirty: true });
+              }
+            }}
           />
           <ControlledSelectField
             control={form.control}
@@ -87,20 +116,7 @@ export function BookingStaffFields({
             placeholder="0,00"
             keyboardType="decimal-pad"
           />
-          <ControlledTextField
-            control={form.control}
-            name={`staff.${index}.starts_at` as const}
-            required
-            label="Început lucru — data și ora"
-            placeholder="2026-10-24 16:00"
-          />
-          <ControlledTextField
-            control={form.control}
-            name={`staff.${index}.ends_at` as const}
-            required
-            label="Sfârșit lucru — data și ora"
-            placeholder="2026-10-25 05:00"
-          />
+          <BookingStaffScheduleFields form={form} index={index} />
           <AppButton
             label="Elimină persoana"
             variant="ghost"
@@ -116,7 +132,7 @@ export function BookingStaffFields({
             employee_id: '',
             job_role: 'waiter',
             pay_type: 'fixed',
-            rate: '0',
+            rate: '',
             starts_at: form.getValues('starts_at'),
             ends_at: form.getValues('ends_at'),
           })

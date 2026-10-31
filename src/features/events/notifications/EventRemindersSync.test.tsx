@@ -63,3 +63,23 @@ test('disabling reminders cancels scheduled notifications without asking for per
   expect(ensureNotificationPermissions).not.toHaveBeenCalled();
   await ReactTestRenderer.act(async () => renderer?.unmount());
 });
+
+test('o rezervare finalizată financiar păstrează reminderele pentru evenimentul viitor', async () => {
+  jest.clearAllMocks();
+  const previous = mockReminderBooking.status;
+  mockReminderBooking.status = 'completed';
+  let renderer: ReactTestRenderer.ReactTestRenderer | undefined;
+  try {
+    await ReactTestRenderer.act(async () => {
+      renderer = ReactTestRenderer.create(
+        <EventRemindersSync enabled role="employee" />,
+      );
+    });
+    expect(
+      jest.mocked(syncTriggerNotifications).mock.calls[0]?.[2],
+    ).toHaveLength(3);
+  } finally {
+    mockReminderBooking.status = previous;
+    await ReactTestRenderer.act(async () => renderer?.unmount());
+  }
+});

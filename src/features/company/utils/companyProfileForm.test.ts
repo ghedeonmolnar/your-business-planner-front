@@ -48,3 +48,51 @@ test('permite profil fără date fiscale și respinge facturarea incompletă', (
       .success,
   ).toBe(false);
 });
+
+test('normalizează CUI și IBAN fără a elimina caractere invalide', () => {
+  const values = {
+    ...companyProfileDefaults(company),
+    fiscal_code: ' RO 12345678 ',
+    legal_name: 'Firma SRL',
+    fiscal_address: 'Adresa fiscală',
+    iban: 'ro49 aaaa 1b31 0075 9384 0000',
+  };
+  const parsed = companySettingsSchema.parse(values);
+  expect(companyProfilePayload(parsed).billing_profile).toMatchObject({
+    fiscal_code: '12345678',
+    iban: 'RO49AAAA1B31007593840000',
+    country: 'RO',
+    vat_registered: false,
+  });
+  expect(
+    companySettingsSchema.safeParse({ ...values, fiscal_code: 'RO 12A34' })
+      .success,
+  ).toBe(false);
+  expect(
+    companySettingsSchema.safeParse({ ...values, fiscal_code: '012345' })
+      .success,
+  ).toBe(false);
+  expect(
+    companySettingsSchema.safeParse({ ...values, iban: 'RO00INVALID' }).success,
+  ).toBe(false);
+});
+
+test('datele bancare rămân opționale, iar contactul și adresa fiscală sunt independente', () => {
+  const values = companySettingsSchema.parse({
+    ...companyProfileDefaults(company),
+    address: 'Adresă contact',
+    fiscal_code: '12345678',
+    legal_name: 'Firma SRL',
+    fiscal_address: 'Adresă fiscală separată',
+  });
+  expect(companyProfilePayload(values)).toMatchObject({
+    address: 'Adresă contact',
+    email: null,
+    phone: null,
+    billing_profile: {
+      address: 'Adresă fiscală separată',
+      iban: null,
+      bank_name: null,
+    },
+  });
+});

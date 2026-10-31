@@ -14,7 +14,7 @@ export const directoryFormValues = (
   phone: item?.phone ?? '',
   notes: item?.notes ?? '',
   job_role: item?.job_role ?? 'other',
-  hourly_rate: String(item?.hourly_rate ?? 0),
+  hourly_rate: String(item?.hourly_rate ?? (kind === 'employees' ? '' : 0)),
   capacity: String(item?.capacity ?? ''),
   address: item?.address ?? '',
   active: item?.is_active === false ? 'no' : 'yes',

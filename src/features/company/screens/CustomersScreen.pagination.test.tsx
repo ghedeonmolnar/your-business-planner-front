@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
+import { FlatList } from 'react-native';
 import { CustomersScreen } from '@/features/company/screens/CustomersScreen';
-import { CustomerCard } from '@/features/company/components/CustomerCard';
 import { PaginationFooter } from '@/shared/components/PaginationFooter';
 import { AppButton } from '@/shared/components/AppButton';
 import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
@@ -49,7 +49,7 @@ test('o pagină eșuată păstrează clienții încărcați și retry adaugă re
   const { renderer, unmount } = await renderWithProviders(<CustomersScreen />);
   try {
     await waitForUi(() =>
-      expect(renderer.root.findAllByType(CustomerCard)).toHaveLength(1),
+      expect(renderer.root.findByType(FlatList).props.data).toHaveLength(1),
     );
     await ReactTestRenderer.act(async () => {
       const press = renderer.root
@@ -66,23 +66,23 @@ test('o pagină eșuată păstrează clienții încărcați și retry adaugă re
     expect(pageTwoCalls).toBe(1);
     expect(
       renderer.root
-        .findAllByType(CustomerCard)
-        .map(card => card.props.customer.id),
+        .findByType(FlatList)
+        .props.data.map((customer: { id: string }) => customer.id),
     ).toEqual(['client-1']);
     await ReactTestRenderer.act(async () => {
-      await renderer.root
+      void renderer.root
         .findByType(PaginationFooter)
         .findByType(AppButton)
         .props.onPress();
     });
     await waitForUi(() =>
-      expect(renderer.root.findAllByType(CustomerCard)).toHaveLength(2),
+      expect(renderer.root.findByType(FlatList).props.data).toHaveLength(2),
     );
     expect(pageTwoCalls).toBe(2);
     expect(
       renderer.root
-        .findAllByType(CustomerCard)
-        .map(card => card.props.customer.id),
+        .findByType(FlatList)
+        .props.data.map((customer: { id: string }) => customer.id),
     ).toEqual(['client-1', 'client-2']);
   } finally {
     await unmount();

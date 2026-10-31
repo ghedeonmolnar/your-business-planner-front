@@ -81,11 +81,10 @@ export function MoreScreen() {
             name={user.name}
             email={user.email}
             companyName={user.company?.name}
-            onOpenProfile={
-              user.role === 'owner'
-                ? () => navigation.navigate('CompanyProfile')
-                : undefined
+            profileLabel={
+              user.role === 'owner' ? 'Profil și facturare' : 'Profilul meu'
             }
+            onOpenProfile={() => navigation.navigate('CompanyProfile')}
           />
         ) : null}
         {management.length ? (

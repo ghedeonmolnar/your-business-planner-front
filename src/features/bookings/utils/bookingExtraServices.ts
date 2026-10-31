@@ -61,7 +61,7 @@ export const bookingCommercialAmounts = (
   >,
 ) => {
   let adultPrice = toCents(booking.menu_price);
-  let childPrice = toCents(booking.child_menu_price);
+  let childPrice = toCents(booking.child_menu_price ?? '0');
   let fixedServices = 0;
   for (const service of booking.extra_services ?? []) {
     const amount = toCents(service.amount);

@@ -23,9 +23,7 @@ export const staffRoleOptions = [
 export const bookingPaymentCategories = {
   incoming: [
     { id: 'advance', name: 'Avans' },
-    { id: 'partial', name: 'Tranșă' },
-    { id: 'full', name: 'Plată finală' },
-    { id: 'other', name: 'Altă încasare' },
+    { id: 'payment', name: 'Plată' },
   ],
   outgoing: [
     { id: 'staff', name: 'Personal' },

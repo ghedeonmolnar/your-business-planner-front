@@ -1,60 +1,40 @@
-import React, { useRef } from 'react';
-import { useAppForm } from '@/shared/hooks/useAppForm';
-import { zodResolver } from '@hookform/resolvers/zod';
+﻿import React from 'react';
+import { UseFormReturn } from 'react-hook-form';
+import { Text, TextInput } from 'react-native-paper';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { useSaveOwnerProfile } from '@/features/company/hooks/useCompanyProfile';
-import {
-  ownerProfileSchema,
-  OwnerProfileValues,
-} from '@/features/company/schemas/ownerProfileSchema';
-import { FormActions } from '@/shared/components/FormActions';
+import { OwnerProfileValues } from '@/features/company/schemas/ownerProfileSchema';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
-import { FormModalFrame } from '@/shared/components/FormModalFrame';
-import { showError } from '@/shared/feedback/showError';
+import { FormPanel } from '@/shared/components/FormPanel';
+import { contentStyles as styles } from '@/shared/components/contentStyles';
 
-export function OwnerProfileForm({ onClose }: { onClose: () => void }) {
-  const { user, retryBootstrap } = useAuth();
-  const save = useSaveOwnerProfile();
-  const submitting = useRef(false);
-  const form = useAppForm<OwnerProfileValues>({
-    resolver: zodResolver(ownerProfileSchema),
-    defaultValues: { name: user?.name ?? '' },
-  });
-  const submit = form.handleSubmit(values => {
-    if (submitting.current) return;
-    submitting.current = true;
-    save.mutate(values, {
-      onSuccess: () => {
-        onClose();
-        retryBootstrap();
-      },
-      onError: error => showError(error, 'Nu am putut salva profilul tău.'),
-      onSettled: () => {
-        submitting.current = false;
-      },
-    });
-  });
+export function OwnerProfileForm({
+  form,
+}: {
+  form: UseFormReturn<OwnerProfileValues>;
+}) {
+  const { user } = useAuth();
   return (
-    <FormModalFrame
-      visible
-      busy={save.isPending}
-      title="Profilul meu"
-      onClose={onClose}
-      hasUnsavedChanges={form.formState.isDirty}
-      footer={
-        <FormActions
-          busy={save.isPending}
-          primary={{ label: 'Salvează profilul', onPress: submit }}
-        />
-      }
-    >
+    <FormPanel title="Date personale">
       <ControlledTextField
         control={form.control}
         name="name"
         required
+        disabled={user?.role !== 'owner'}
         label="Numele tău"
         placeholder="Nume și prenume"
+        autoComplete="name"
       />
-    </FormModalFrame>
+      <TextInput
+        label="Email autentificare"
+        accessibilityLabel="Email autentificare"
+        accessibilityHint="Emailul nu poate fi modificat din acest formular."
+        value={user?.email ?? ''}
+        editable={false}
+        mode="outlined"
+      />
+      <Text style={styles.muted}>
+        Emailul de autentificare nu poate fi modificat aici.
+      </Text>
+    </FormPanel>
   );
 }

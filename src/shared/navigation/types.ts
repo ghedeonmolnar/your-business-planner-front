@@ -3,8 +3,9 @@ export type RootStackParamList = {
     view: 'events' | 'attention' | 'received' | 'due';
     month: string;
   };
-  AgendaWeekend: { date: string };
   CompanyProfile: undefined;
+  AccountSettings: { tab?: 'profile' | 'security' } | undefined;
+  CompanySettings: { tab?: 'general' | 'billing' } | undefined;
   CustomerHistory: { clientId: string };
   CompanyHalls: undefined;
   HallDetails: { hallId: string };

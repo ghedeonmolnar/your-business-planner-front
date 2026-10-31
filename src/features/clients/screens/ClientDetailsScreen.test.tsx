@@ -47,6 +47,7 @@ const navigation = { goBack: jest.fn(), navigate: jest.fn() };
 let client: Client;
 let historyPages: number;
 let historyFails: boolean;
+let unmountDetails: (() => Promise<void>) | undefined;
 
 const requestsTo = (path: string, method = 'GET') =>
   jest
@@ -115,7 +116,16 @@ beforeEach(() => {
   }) as typeof globalThis.fetch;
 });
 
-afterEach(() => jest.restoreAllMocks());
+const cleanupDetails = async () => {
+  const cleanup = unmountDetails;
+  unmountDetails = undefined;
+  await cleanup?.();
+};
+
+afterEach(async () => {
+  await cleanupDetails();
+  jest.restoreAllMocks();
+});
 
 const renderDetails = async () => {
   const rendered = await renderWithProviders(
@@ -124,6 +134,7 @@ const renderDetails = async () => {
       route={{ params: { clientId: initialClient.id } } as never}
     />,
   );
+  unmountDetails = rendered.unmount;
   await waitForUi(() => {
     expect(
       rendered.renderer.root.findAllByType(EventCard).length > 0 ||
@@ -131,7 +142,7 @@ const renderDetails = async () => {
           rendered.renderer.root.findAllByType(ErrorBanner).length > 0),
     ).toBe(true);
   });
-  return rendered;
+  return { ...rendered, unmount: cleanupDetails };
 };
 
 const pressAction = async (
@@ -182,12 +193,12 @@ test('incarca paginile la cerere si filtreaza istoricul pe server', async () => 
     renderer.root.findByType(FlatList).props.onEndReached();
   });
   await waitForUi(() => {
-    expect(renderer.root.findAllByType(EventCard)).toHaveLength(2);
+    expect(renderer.root.findByType(FlatList).props.data).toHaveLength(2);
   });
   expect(
     requestsTo('/events').some(([url]) => String(url).includes('page=2&')),
   ).toBe(true);
-  expect(renderer.root.findAllByType(EventCard)).toHaveLength(2);
+  expect(renderer.root.findByType(FlatList).props.data).toHaveLength(2);
   await ReactTestRenderer.act(async () => {
     renderer.root.findByType(EventTimeframeFilter).props.onChange('past');
   });

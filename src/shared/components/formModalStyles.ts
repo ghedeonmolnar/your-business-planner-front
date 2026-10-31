@@ -10,6 +10,8 @@ export const formModalStyles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   centered: { justifyContent: 'center' },
+  bottom: { justifyContent: 'flex-end' },
+  compact: { flex: 0, flexShrink: 1 },
   content: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,

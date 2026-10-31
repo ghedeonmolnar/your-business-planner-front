@@ -74,7 +74,12 @@ export function BookingDocuments({ eventId }: { eventId: string }) {
                   message: document.title,
                   confirmLabel: 'Șterge',
                   onConfirm: () =>
-                    remove.mutateAsync(document.id).catch(onError),
+                    remove
+                      .mutateAsync({
+                        id: document.id,
+                        version: document.version,
+                      })
+                      .catch(onError),
                 })
               }
             />

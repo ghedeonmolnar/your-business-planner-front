@@ -57,6 +57,12 @@ export function BookingReviewFields({
         booking={booking}
         preview={preview}
       />
+      {values.status === 'completed' ? (
+        <Text>
+          Finalizarea manuală păstrează soldul și nu înregistrează o încasare.
+          Orice rest de încasat rămâne datorat de client.
+        </Text>
+      ) : null}
       <ControlledTextField
         control={form.control}
         name="notes"

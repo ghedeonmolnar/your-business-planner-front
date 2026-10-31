@@ -53,7 +53,8 @@ export function CalendarDayHalls({
           label="Lista sălilor"
           updatedAt={query.dataUpdatedAt}
           fetching={query.isFetching}
-          stale={query.isError}
+          stale={query.isError || query.fetchStatus === 'paused'}
+          offline={query.fetchStatus === 'paused'}
         />
       </View>
       <QueryState
@@ -67,7 +68,13 @@ export function CalendarDayHalls({
         error={catalogs.error}
         retry={() => catalogs.refetch()}
       />
-      {!query.isLoading && !query.error && !halls.length ? (
+      {!query.data && query.fetchStatus === 'paused' ? (
+        <Text>
+          Datele zilei nu sunt disponibile fără conexiune. Reconectează-te
+          pentru a verifica sălile.
+        </Text>
+      ) : null}
+      {query.isSuccess && !query.error && !halls.length ? (
         <EmptyState
           icon="business-outline"
           title="Nicio sală disponibilă"

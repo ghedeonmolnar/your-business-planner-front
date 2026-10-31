@@ -82,8 +82,14 @@ export const updateBookingDocumentApi = ({
     body: payload,
     schema: bookingDocumentApiSchema,
   });
-export const deleteBookingDocumentApi = (id: string) =>
-  apiRequest('/event-documents/' + id, { method: 'DELETE' });
+export const deleteBookingDocumentApi = ({
+  id,
+  version,
+}: {
+  id: string;
+  version: number;
+}) =>
+  apiRequest('/event-documents/' + id, { method: 'DELETE', body: { version } });
 export const getBookingDownloadApi = (id: string) =>
   apiRequest('/event-documents/' + id + '/download-url', {
     schema: bookingDownloadSchema,

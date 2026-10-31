@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   KeyboardTypeOptions,
   StyleProp,
@@ -11,7 +11,10 @@ import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { FormInput } from '@/shared/components/FormInput';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
-import { useFormBusy } from '@/shared/components/FormInteractionContext';
+import {
+  FormFocusContext,
+  useFormBusy,
+} from '@/shared/components/FormInteractionContext';
 import { formFieldLabel } from '@/shared/utils/formFieldLabel';
 
 type ControlledTextFieldProps<T extends FieldValues> = {
@@ -33,6 +36,7 @@ type ControlledTextFieldProps<T extends FieldValues> = {
   inputStyle?: StyleProp<TextStyle>;
   disabled?: boolean;
   onValueChange?: (value: string) => void;
+  autoComplete?: React.ComponentProps<typeof TextInput>['autoComplete'];
 };
 
 export function ControlledTextField<T extends FieldValues>({
@@ -54,8 +58,10 @@ export function ControlledTextField<T extends FieldValues>({
   inputStyle,
   disabled = false,
   onValueChange,
+  autoComplete,
 }: ControlledTextFieldProps<T>) {
   const busy = useFormBusy();
+  const revealFocusedInput = useContext(FormFocusContext);
   const blocked = busy || disabled;
   return (
     <Controller
@@ -78,6 +84,7 @@ export function ControlledTextField<T extends FieldValues>({
             accessibilityHint={required ? 'Câmp obligatoriu' : undefined}
             autoCapitalize={autoCapitalize ?? (isPassword ? 'none' : undefined)}
             autoCorrect={isPassword ? false : undefined}
+            autoComplete={autoComplete}
             contentStyle={[
               styles.input,
               multiline ? styles.textArea : undefined,
@@ -99,6 +106,7 @@ export function ControlledTextField<T extends FieldValues>({
             mode="outlined"
             multiline={multiline}
             onBlur={onBlur}
+            onFocus={() => revealFocusedInput?.()}
             onChangeText={text => {
               if (!blocked) {
                 onChange(text);

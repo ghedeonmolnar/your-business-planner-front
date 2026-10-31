@@ -2,7 +2,6 @@ import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { AgendaSummary } from '@/features/company/components/AgendaSummary';
 import { AgendaMetric } from '@/features/company/components/AgendaMetric';
-import { AppButton } from '@/shared/components/AppButton';
 import { plannerAccount } from '@/features/bookings/utils/plannerTestFixtures';
 import { agendaSummaryFixture } from '@/features/company/utils/agendaTestFixtures';
 import {
@@ -56,12 +55,11 @@ test('cele patru carduri folosesc sumarul serverului și deschid perioada și li
       month: '2026-10',
     });
   }
-  await ReactTestRenderer.act(async () =>
-    renderer.root.findByType(AppButton).props.onPress(),
-  );
-  expect(mockNavigate).toHaveBeenLastCalledWith('AgendaWeekend', {
-    date: '2026-10-31',
-  });
+  expect(
+    renderer.root.findAllByProps({
+      accessibilityLabel: 'Verifică sălile libere în weekend',
+    }),
+  ).toHaveLength(0);
   expect(
     jest
       .mocked(globalThis.fetch)
@@ -70,7 +68,7 @@ test('cele patru carduri folosesc sumarul serverului și deschid perioada și li
   await unmount();
 });
 
-test('fără modul financiar rămân indicatorii operaționali și accesul la calendar', async () => {
+test('fără modul financiar rămân doar indicatorii operaționali', async () => {
   globalThis.fetch = jest.fn(url =>
     Promise.resolve(
       jsonResponse(

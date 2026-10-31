@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { bookingPaymentCategories } from '@/features/bookings/utils/bookingLabels';
+import { companyNow } from '@/shared/utils/formatDate';
 import {
   MAX_BOOKING_AMOUNT,
   MAX_PAYMENT_NOTES_LENGTH,
@@ -27,6 +28,21 @@ export const bookingPaymentSchema = z
   })
   .superRefine((value, context) => {
     if (
+      value.status === 'completed' &&
+      value.paid_at > companyNow().format('YYYY-MM-DD')
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['paid_at'],
+        message:
+          'O operațiune efectuată trebuie să aibă data de azi sau din trecut.',
+      });
+    }
+    if (
+      !(
+        value.type === 'incoming' &&
+        ['partial', 'full', 'other'].includes(value.category)
+      ) &&
       !bookingPaymentCategories[value.type].some(
         category => category.id === value.category,
       )

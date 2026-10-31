@@ -22,6 +22,7 @@ import { assertCurrentRequestSession } from '@/shared/api/requestSession';
 import { VersionConflictNotice } from '@/shared/components/VersionConflictNotice';
 import { useReloadBookingPayment } from '@/features/bookings/hooks/useReloadBookingPayment';
 import { bookingPaymentDefaults } from '@/features/bookings/utils/bookingPaymentDefaults';
+import { companyNow } from '@/shared/utils/formatDate';
 
 export function BookingPaymentEditor({
   eventId,
@@ -192,6 +193,11 @@ export function BookingPaymentEditor({
         name="paid_at"
         required
         label="Data operațiunii"
+        maximumDate={
+          form.watch('status') === 'completed'
+            ? companyNow().toDate()
+            : undefined
+        }
         placeholder="Alege data"
       />
       <ControlledSelectField

@@ -107,6 +107,10 @@ export const useDeleteBookingDocument = (eventId: string) => {
   const { client, companyId } = useCompanyQueryClient();
   return useMutation({
     mutationFn: deleteBookingDocumentApi,
+    onError: error => {
+      if (apiErrorCode(error) === 'RESOURCE_VERSION_CONFLICT')
+        return invalidatePlannerDocuments(client, companyId, eventId);
+    },
     onSuccess: () => invalidatePlannerDocuments(client, companyId, eventId),
   });
 };

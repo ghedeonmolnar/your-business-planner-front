@@ -1,4 +1,6 @@
 import { apiRequest } from '@/shared/api/client';
+import { z } from 'zod';
+import { ChangePasswordValues } from '@/features/auth/schemas/changePasswordSchema';
 import {
   ForgotPasswordPayload,
   AuthUser,
@@ -28,6 +30,13 @@ export const loginApi = (payload: LoginPayload) =>
 
 export const getMeApi = () =>
   apiRequest<AuthUser>('/me', { schema: authUserSchema });
+
+export const changePasswordApi = (payload: ChangePasswordValues) =>
+  apiRequest('/password', {
+    method: 'PUT',
+    body: payload,
+    schema: z.object({ status: z.literal('password_changed') }),
+  });
 
 export const registerEmployeeApi = (payload: EmployeeRegistrationPayload) =>
   apiRequest<LoginResponse>('/invitations/accept', {

@@ -35,7 +35,11 @@ export const bookingEditorSchema = (booking?: Booking, financeEnabled = true) =>
       const received = toCents(
         values.advance_received_amount?.replace(',', '.') || '0',
       );
-      if (received <= 0 && needsBookingAdvanceReceipt(booking)) {
+      if (
+        received <= 0 &&
+        (!booking || values.status !== 'completed') &&
+        needsBookingAdvanceReceipt(booking)
+      ) {
         context.addIssue({
           code: 'custom',
           path: ['advance_received_amount'],

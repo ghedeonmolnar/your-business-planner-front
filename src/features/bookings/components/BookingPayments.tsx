@@ -78,9 +78,11 @@ export function BookingPayments({ eventId }: { eventId: string }) {
           <InfoRow
             label="Categorie"
             value={
-              bookingPaymentCategories[payment.type].find(
-                category => category.id === payment.category,
-              )?.name ?? payment.category
+              payment.type === 'incoming' && payment.category !== 'advance'
+                ? 'Plată'
+                : (bookingPaymentCategories[payment.type].find(
+                    category => category.id === payment.category,
+                  )?.name ?? payment.category)
             }
           />
           <InfoRow

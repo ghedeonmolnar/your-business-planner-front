@@ -92,6 +92,8 @@ export const invalidatePlannerPayments = (
   invalidateAll(client, [
     queryKeys.planner.bookingLists(companyId),
     queryKeys.planner.booking(companyId, bookingId),
+    queryKeys.planner.calendars(companyId),
+    queryKeys.planner.directories(companyId, 'hall-day'),
     queryKeys.planner.overviews(companyId),
     queryKeys.planner.finance(companyId, bookingId, 'payments'),
     queryKeys.planner.reminderWindows(companyId),

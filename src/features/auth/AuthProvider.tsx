@@ -35,6 +35,7 @@ type AuthContextValue = {
   user: AuthUser | null;
   bootstrapError: boolean;
   retryBootstrap: () => void;
+  refreshProfile: () => Promise<void>;
   signIn: (token: string, user?: AuthUser) => Promise<void>;
   signOut: (options?: SignOutOptions) => Promise<void>;
 };
@@ -129,6 +130,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
     [queryClient],
   );
 
+  const refreshProfile = useCallback(async () => {
+    const version = sessionVersion.current;
+    const profile = await getMeApi();
+    if (version === sessionVersion.current) setUser(profile);
+  }, []);
+
   useEffect(() => {
     let mounted = true;
     const version = sessionVersion.current;
@@ -199,6 +206,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       bootstrapError,
       retryBootstrap,
+      refreshProfile,
       signIn,
       signOut,
     }),
@@ -208,6 +216,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       user,
       bootstrapError,
       retryBootstrap,
+      refreshProfile,
       signIn,
       signOut,
     ],
