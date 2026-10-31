@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { BrandLogo } from '@/shared/components/BrandLogo';
 import { theme } from '@/shared/theme/theme';
 
-const LOGIN_LOGO_WIDTH = 280;
+const LOGIN_LOGO_WIDTH = theme.controls.fieldHeight * 3;
 
 export function LoginBrandLogo() {
   return (

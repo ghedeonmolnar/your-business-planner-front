@@ -11,7 +11,7 @@ type ScreenHeaderProps = {
   action?: ReactNode;
 };
 
-const HEADER_LOGO_WIDTH = 104;
+const HEADER_LOGO_WIDTH = theme.controls.fieldHeight;
 
 export function ScreenHeader({
   eyebrow,

@@ -6,18 +6,15 @@ const { Resvg } = require(process.argv[2]);
 
 const repository = path.resolve(__dirname, '../..');
 const source = fs.readFileSync(
-  path.join(repository, 'assets/brand/gatify-animated.svg'),
-  'utf8',
+  path.join(repository, 'assets/brand/ybp-logo.png'),
 );
-const paths = [...source.matchAll(/<clipPath[^>]*>(.*?)<\/clipPath>/gs)][0][1];
-const letters = [...paths.matchAll(/<path d="([^"]+)"\/>/g)].map(
-  match => match[1],
-);
-if (letters.length !== 6) throw new Error('LOGO_PATHS_INVALID');
-const ink = source.match(/style="color:([^";]+)/)[1];
-const word = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 50 1400 410" width="280" height="82"><g fill="${ink}">${letters.map(letter => `<path d="${letter}"/>`).join('')}</g></svg>`;
+const sourceWidth = source.readUInt32BE(16);
+const sourceHeight = source.readUInt32BE(20);
+if (sourceWidth !== sourceHeight || sourceWidth < 1024)
+  throw new Error('LOGO_SQUARE_MINIMUM_1024_REQUIRED');
+const image = `<image width="${sourceWidth}" height="${sourceHeight}" href="data:image/png;base64,${source.toString('base64')}"/>`;
 const mark = round =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="400 -53 608 608" width="608" height="608">${round ? '<circle cx="704" cy="251" r="304" fill="white"/>' : '<path fill="white" d="M400-53h608v608H400z"/>'}<g fill="${ink}"><path transform="translate(414 0)" d="${letters[0]}"/><path transform="translate(140 0)" d="${letters[2]}"/></g></svg>`;
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sourceWidth} ${sourceHeight}">${round ? `<defs><clipPath id="round"><circle cx="${sourceWidth / 2}" cy="${sourceHeight / 2}" r="${sourceWidth / 2}"/></clipPath></defs><g clip-path="url(#round)">${image}</g>` : image}</svg>`;
 const write = (relative, data) => {
   const target = path.resolve(repository, relative);
   const workspace = path.dirname(repository);
@@ -34,19 +31,19 @@ const chunk = (type, content) => {
   checksum.writeUInt32BE(zlib.crc32(Buffer.concat([name, content])));
   return Buffer.concat([length, name, content, checksum]);
 };
-const rgbPng = image => {
-  const pixels = image.pixels;
-  const rows = Buffer.alloc((image.width * 3 + 1) * image.height);
-  for (let y = 0; y < image.height; y++) {
-    for (let x = 0; x < image.width; x++) {
-      const sourceOffset = (y * image.width + x) * 4;
-      const targetOffset = y * (image.width * 3 + 1) + 1 + x * 3;
+const rgbPng = rendered => {
+  const pixels = rendered.pixels;
+  const rows = Buffer.alloc((rendered.width * 3 + 1) * rendered.height);
+  for (let y = 0; y < rendered.height; y++) {
+    for (let x = 0; x < rendered.width; x++) {
+      const sourceOffset = (y * rendered.width + x) * 4;
+      const targetOffset = y * (rendered.width * 3 + 1) + 1 + x * 3;
       pixels.copy(rows, targetOffset, sourceOffset, sourceOffset + 3);
     }
   }
   const header = Buffer.alloc(13);
-  header.writeUInt32BE(image.width, 0);
-  header.writeUInt32BE(image.height, 4);
+  header.writeUInt32BE(rendered.width, 0);
+  header.writeUInt32BE(rendered.height, 4);
   header[8] = 8;
   header[9] = 2;
   return Buffer.concat([
@@ -56,11 +53,11 @@ const rgbPng = image => {
     chunk('IEND', Buffer.alloc(0)),
   ]);
 };
-const render = (svg, width, opaque = false) => {
-  const image = new Resvg(svg, {
+const render = (width, round = false) => {
+  const rendered = new Resvg(mark(round), {
     fitTo: { mode: 'width', value: width },
   }).render();
-  return opaque ? rgbPng(image) : image.asPng();
+  return round ? rendered.asPng() : rgbPng(rendered);
 };
 for (const [density, size] of Object.entries({
   mdpi: 48,
@@ -71,25 +68,26 @@ for (const [density, size] of Object.entries({
 })) {
   write(
     `android/app/src/main/res/mipmap-${density}/ic_launcher.png`,
-    render(mark(false), size, true),
+    render(size),
   );
   write(
     `android/app/src/main/res/mipmap-${density}/ic_launcher_round.png`,
-    render(mark(true), size),
+    render(size, true),
   );
 }
 const icons = 'ios/GTEventsApp/Images.xcassets/AppIcon.appiconset';
-for (const image of JSON.parse(
+for (const asset of JSON.parse(
   fs.readFileSync(path.join(repository, icons, 'Contents.json'), 'utf8'),
 ).images) {
   const size =
-    Number(image.size.split('x')[0]) * Number(image.scale.replace('x', ''));
-  write(`${icons}/${image.filename}`, render(mark(false), size, true));
+    Number(asset.size.split('x')[0]) * Number(asset.scale.replace('x', ''));
+  write(`${icons}/${asset.filename}`, render(size));
 }
-const launch = 'ios/GTEventsApp/Images.xcassets/GatifyLogo.imageset';
+const launch = 'ios/GTEventsApp/Images.xcassets/BrandLogo.imageset';
+const launchLogoWidth = 156;
 const launchImages = [1, 2, 3].map(scale => {
-  const filename = `gatify-${scale}x.png`;
-  write(`${launch}/${filename}`, render(word, 280 * scale));
+  const filename = `ybp-${scale}x.png`;
+  write(`${launch}/${filename}`, render(launchLogoWidth * scale));
   return { idiom: 'universal', filename, scale: `${scale}x` };
 });
 write(
@@ -100,17 +98,18 @@ write(
     2,
   ) + '\n',
 );
-write('assets/brand/gatify-static.png', render(word, 840));
-write('assets/app-icon/gatify-icon.png', render(mark(false), 1024, true));
-const api = path.resolve(repository, '../business-api');
-if (fs.existsSync(api)) {
-  write('../business-api/public/brand/gatify-static.png', render(word, 840));
-  const png = render(mark(false), 64, true);
+const displayLogoWidth = 512;
+write('src/shared/branding/ybp-logo.png', render(displayLogoWidth));
+write('assets/app-icon/ybp-icon.png', render(1024));
+if (fs.existsSync(path.resolve(repository, '../business-api'))) {
+  write('../business-api/public/brand/ybp-logo.png', render(displayLogoWidth));
+  const faviconSize = 64;
+  const png = render(faviconSize);
   const ico = Buffer.alloc(22);
   ico.writeUInt16LE(1, 2);
   ico.writeUInt16LE(1, 4);
-  ico[6] = 64;
-  ico[7] = 64;
+  ico[6] = faviconSize;
+  ico[7] = faviconSize;
   ico.writeUInt16LE(1, 10);
   ico.writeUInt16LE(24, 12);
   ico.writeUInt32LE(png.length, 14);

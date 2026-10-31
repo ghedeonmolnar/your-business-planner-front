@@ -15,13 +15,11 @@ const png = file => {
   };
 };
 
-test('pastreaza SVG-ul furnizat si toate formatele Android de launcher', () => {
-  const svg = fs.readFileSync(
-    path.join(root, 'assets/brand/gatify-animated.svg'),
-  );
+test('pastreaza PNG-ul furnizat si toate formatele Android de launcher', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/brand/ybp-logo.png'));
   assert.equal(
-    crypto.createHash('sha256').update(svg).digest('hex'),
-    '479f748cfaccfe490165ee8a17d1ecc412f806bb0572d8cdda73b83d97ec042b',
+    crypto.createHash('sha256').update(source).digest('hex'),
+    'a5862b52185fc89cda355c2229e3cbafa11b1f158dca9e6fc8fd53ccdadd79d4',
   );
   for (const [density, size] of Object.entries({
     mdpi: 48,
@@ -37,6 +35,21 @@ test('pastreaza SVG-ul furnizat si toate formatele Android de launcher', () => {
       assert.equal(image.width, size);
       assert.equal(image.height, size);
     }
+  }
+});
+
+test('foloseste logo-ul patrat pe mobil si la pornirea iOS', () => {
+  assert.equal(png('src/shared/branding/ybp-logo.png').width, 512);
+  assert.equal(png('src/shared/branding/ybp-logo.png').height, 512);
+  const directory = 'ios/GTEventsApp/Images.xcassets/BrandLogo.imageset';
+  const catalog = JSON.parse(
+    fs.readFileSync(path.join(root, directory, 'Contents.json'), 'utf8'),
+  );
+  for (const asset of catalog.images) {
+    const size = 156 * Number(asset.scale.replace('x', ''));
+    const image = png(`${directory}/${asset.filename}`);
+    assert.equal(image.width, size);
+    assert.equal(image.height, size);
   }
 });
 
