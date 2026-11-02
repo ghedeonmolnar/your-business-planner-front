@@ -18,6 +18,7 @@ function readContractSnapshots(directory) {
   const limitations = JSON.parse(snapshots['limitations.json']);
   if (
     !isObject(specification) ||
+    typeof specification.openapi !== 'string' ||
     !/^3\.1\.\d+$/.test(specification.openapi) ||
     !isObject(specification.paths) ||
     !isObject(specification.components) ||

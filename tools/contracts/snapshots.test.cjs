@@ -61,6 +61,16 @@ test('sincronizarea refuza intrari incomplete fara sa rescrie snapshotul curent'
   fs.unlinkSync(path.join(backend, 'limitations.json'));
   assert.throws(() => syncContractSnapshots(backend, destination));
   assert.deepEqual(readContractSnapshots(destination), original);
+  fs.writeFileSync(
+    path.join(backend, 'limitations.json'),
+    original['limitations.json'],
+  );
+  fs.writeFileSync(
+    path.join(backend, 'openapi.json'),
+    JSON.stringify({ openapi: ['3.1.0'], paths: {}, components: {} }),
+  );
+  assert.throws(() => syncContractSnapshots(backend, destination));
+  assert.deepEqual(readContractSnapshots(destination), original);
 });
 
 test('verificarea accepta CRLF si checkout frontend izolat', t => {
