@@ -22,6 +22,8 @@ type ControlledTextFieldProps<T extends FieldValues> = {
   name: FieldPath<T>;
   label: string;
   required?: boolean;
+  labelPlacement?: 'floating' | 'above';
+  hint?: string;
   placeholder: string;
   keyboardType?: KeyboardTypeOptions;
   secureTextEntry?: boolean;
@@ -44,6 +46,8 @@ export function ControlledTextField<T extends FieldValues>({
   name,
   label,
   required = false,
+  labelPlacement = 'floating',
+  hint,
   placeholder,
   keyboardType,
   secureTextEntry,
@@ -75,7 +79,8 @@ export function ControlledTextField<T extends FieldValues>({
           error={error?.message}
           label={label}
           required={required}
-          hideLabel
+          hideLabel={labelPlacement === 'floating'}
+          hint={hint}
         >
           <TextInput
             testID={`input:${name}`}
@@ -92,7 +97,11 @@ export function ControlledTextField<T extends FieldValues>({
             ]}
             error={Boolean(error)}
             keyboardType={keyboardType}
-            label={formFieldLabel(label, required)}
+            label={
+              labelPlacement === 'floating'
+                ? formFieldLabel(label, required)
+                : undefined
+            }
             left={
               leftIcon ? (
                 <TextInput.Icon

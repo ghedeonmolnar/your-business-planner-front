@@ -1,6 +1,8 @@
 import React from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Dialog, Surface, Text } from 'react-native-paper';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
+import { IconName } from '@/shared/types/icon';
 import { AppButton } from '@/shared/components/AppButton';
 import { theme } from '@/shared/theme/theme';
 import { useDialogLayout } from '@/shared/hooks/useDialogLayout';
@@ -13,6 +15,9 @@ export type AppDialogContent = {
   confirmLabel: string;
   cancelLabel?: string;
   destructive?: boolean;
+  icon?: IconName;
+  tone?: 'success' | 'warning';
+  centered?: boolean;
 };
 
 type AppDialogProps = {
@@ -63,32 +68,83 @@ export function AppDialog({
             elevation={3}
             style={[styles.panel, { maxHeight: modalMaxHeight }]}
           >
-            <Dialog.Title accessibilityRole="header" style={styles.title}>
+            {content.icon ? (
+              <View
+                accessible={false}
+                importantForAccessibility="no-hide-descendants"
+                style={[
+                  styles.icon,
+                  {
+                    borderColor:
+                      content.tone === 'warning'
+                        ? theme.colors.menu.invitations
+                        : theme.colors.menu.success,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={content.icon}
+                  size={theme.spacing.xxl}
+                  color={
+                    content.tone === 'warning'
+                      ? theme.colors.menu.invitations
+                      : theme.colors.menu.success
+                  }
+                />
+              </View>
+            ) : null}
+            <Dialog.Title
+              accessibilityRole="header"
+              style={[
+                styles.title,
+                content.centered ? styles.centeredText : undefined,
+              ]}
+            >
               {content.title}
             </Dialog.Title>
             <ScrollView style={styles.messageScroll}>
               <Dialog.Content>
-                <Text style={styles.message}>{content.message}</Text>
+                <Text
+                  style={[
+                    styles.message,
+                    content.centered ? styles.centeredText : undefined,
+                  ]}
+                >
+                  {content.message}
+                </Text>
               </Dialog.Content>
             </ScrollView>
-            <Dialog.Actions style={styles.actions}>
+            <Dialog.Actions
+              style={[
+                styles.actions,
+                content.centered ? styles.centeredActions : undefined,
+              ]}
+            >
               <AppButton
                 label={content.confirmLabel}
                 variant={content.destructive ? 'danger' : 'primary'}
                 onPress={onConfirm}
                 loading={busy}
+                multiline={content.centered}
                 size="large"
-                sizingLabels={actionLabels}
-                style={styles.action}
+                sizingLabels={content.centered ? undefined : actionLabels}
+                style={[
+                  styles.action,
+                  content.centered ? styles.centeredAction : undefined,
+                ]}
               />
               {content.cancelLabel ? (
                 <AppButton
                   label={content.cancelLabel}
                   onPress={onCancel}
                   disabled={busy}
+                  multiline={content.centered}
                   size="large"
-                  sizingLabels={actionLabels}
-                  style={styles.action}
+                  sizingLabels={content.centered ? undefined : actionLabels}
+                  style={[
+                    styles.action,
+                    content.centered ? styles.centeredAction : undefined,
+                  ]}
                   variant="outline"
                 />
               ) : null}
@@ -136,4 +192,17 @@ const styles = StyleSheet.create({
     padding: theme.spacing.xl,
   },
   action: { flexGrow: 1 },
+  centeredText: { textAlign: 'center' },
+  centeredActions: { flexDirection: 'column', alignItems: 'stretch' },
+  centeredAction: { width: '100%' },
+  icon: {
+    alignItems: 'center',
+    alignSelf: 'center',
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    height: theme.spacing.xxl * 2,
+    justifyContent: 'center',
+    marginTop: theme.spacing.xl,
+    width: theme.spacing.xxl * 2,
+  },
 });

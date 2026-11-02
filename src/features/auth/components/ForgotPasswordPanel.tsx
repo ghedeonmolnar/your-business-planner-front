@@ -1,9 +1,9 @@
 import React from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
-import { FormActions } from '@/shared/components/FormActions';
 import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
+import { AuthSubmitButton } from '@/features/auth/components/AuthSubmitButton';
 import { useForgotPassword } from '@/features/auth/hooks/useAuthMutations';
 import {
   ForgotPasswordFormValues,
@@ -54,28 +54,35 @@ export function ForgotPasswordPanel({
   });
 
   return (
-    <FormPanel title="Resetare parolă" busy={forgotPassword.isPending}>
+    <FormPanel
+      title="Recuperare parolă"
+      busy={forgotPassword.isPending}
+      style={authPanelStyles.panel}
+      titleStyle={authPanelStyles.panelTitle}
+    >
       <ControlledTextField
         autoCapitalize="none"
         control={forgotForm.control}
         keyboardType="email-address"
         required
         label="Email"
+        labelPlacement="above"
+        autoComplete="email"
+        hint="Dacă adresa este asociată unui cont, vei primi un cod de resetare."
         leftIcon="at-circle-outline"
         name="email"
         placeholder="email@exemplu.ro"
       />
-      <FormActions
-        busy={forgotPassword.isPending}
-        primary={{
-          label: 'Trimite cod',
-          loadingLabel: 'Se trimite…',
-          onPress: onSubmit,
-          icon: 'mail-outline',
-        }}
+      <AuthSubmitButton
+        label="Trimite codul"
+        loadingLabel="Se trimite…"
+        loading={forgotPassword.isPending}
+        onPress={onSubmit}
+        icon="mail-outline"
       />
       <AppButton
         fullWidth
+        multiline
         label="Înapoi la autentificare"
         onPress={onBack}
         size="small"

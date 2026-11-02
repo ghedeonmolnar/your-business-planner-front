@@ -1,20 +1,15 @@
 import { z } from 'zod';
+import {
+  hallOptionalPrice,
+  hallMenuRuleSchema,
+  MAX_HALL_MENU_RULES,
+  validateHallMenuRules,
+} from '@/features/halls/schemas/hallMenuPricingSchema';
 
 export const MAX_HALL_PHOTOS = 10;
 export const MAX_HALL_PHOTO_BYTES = 4 * 1024 * 1024;
 export const MAX_HALL_AMENITIES = 50;
 const MAX_HALL_GUESTS = 100_000;
-const MAX_MENU_PRICE = 99_999_999.99;
-const optionalPrice = z
-  .string()
-  .refine(
-    value =>
-      !value ||
-      (/^\d+([.,]\d{1,2})?$/.test(value) &&
-        Number(value.replace(',', '.')) <= MAX_MENU_PRICE),
-    'Introdu un preț valid, cu cel mult două zecimale.',
-  )
-  .optional();
 const MAX_ORGANIZATION_MINUTES = 10_080;
 const optionalCount = z
   .string()
@@ -39,12 +34,20 @@ export const hallFormSchema = z
         'Capacitatea trebuie să fie între 1 și 100.000.',
       ),
     minimum_guests: optionalCount.refine(
-      value => !value || Number(value) > 0,
-      'Minimul trebuie să fie pozitiv.',
+      value => Boolean(value) && Number(value) > 0,
+      'Completează capacitatea minimă, mai mare decât zero.',
     ),
-    address: z.string().trim().max(255, 'Folosește cel mult 255 de caractere.'),
-    menu_price: optionalPrice,
-    child_menu_price: optionalPrice,
+    address: z
+      .string()
+      .trim()
+      .min(1, 'Completează adresa sălii.')
+      .max(255, 'Folosește cel mult 255 de caractere.'),
+    menu_price: hallOptionalPrice.optional(),
+    child_menu_price: hallOptionalPrice.optional(),
+    menu_pricing_mode: z.enum(['simple', 'advanced']),
+    menu_price_rules: z
+      .array(hallMenuRuleSchema)
+      .max(MAX_HALL_MENU_RULES, 'Poți adăuga cel mult 50 de reguli.'),
     description: z
       .string()
       .trim()
@@ -98,6 +101,7 @@ export const hallFormSchema = z
       .length(7),
   })
   .superRefine((values, context) => {
+    validateHallMenuRules(values, context);
     if (
       values.minimum_guests &&
       Number(values.minimum_guests) > Number(values.capacity)

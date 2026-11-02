@@ -98,14 +98,17 @@ export function HallPhotosField({
         Până la 10 imagini, cel mult 4 MB fiecare. Prima imagine este coperta
         sălii.
       </Text>
-      <AppButton
-        label={picking ? 'Se deschide galeria…' : 'Adaugă imagini'}
-        icon="images-outline"
-        variant="outline"
-        onPress={pick}
-        loading={picking}
-        disabled={busy || picking || photos.length >= MAX_HALL_PHOTOS}
-      />
+      <View style={styles.upload}>
+        <AppButton
+          label={picking ? 'Se deschide galeria…' : 'Adaugă imagini'}
+          icon="images-outline"
+          variant="ghost"
+          onPress={pick}
+          loading={picking}
+          disabled={busy || picking || photos.length >= MAX_HALL_PHOTOS}
+        />
+        <Text style={styles.subtitle}>Alege fotografii din galerie</Text>
+      </View>
       {photos.length ? (
         <ScrollView
           horizontal

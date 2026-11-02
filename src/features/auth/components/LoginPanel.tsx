@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
-import { FormActions } from '@/shared/components/FormActions';
+import { View } from 'react-native';
+import { Text } from 'react-native-paper';
 import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
+import { AuthSubmitButton } from '@/features/auth/components/AuthSubmitButton';
 import { useLogin } from '@/features/auth/hooks/useAuthMutations';
 import {
   LoginFormValues,
@@ -49,56 +51,75 @@ export function LoginPanel({
   });
 
   return (
-    <FormPanel title="Autentificare" busy={login.isPending}>
-      <ControlledTextField
-        autoCapitalize="none"
-        control={loginForm.control}
-        required
-        label="Email"
-        leftIcon="at-circle-outline"
-        name="username"
-        placeholder="email@exemplu.ro"
-      />
-      <ControlledTextField
-        control={loginForm.control}
-        required
-        label="Parolă"
-        leftIcon="key-outline"
-        name="password"
-        isPassword
-        onRightIconPress={() => setPasswordVisible(visible => !visible)}
-        placeholder="Parola contului"
-        rightIcon={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-        rightIconAccessibilityLabel={
-          isPasswordVisible ? 'Ascunde parola' : 'Arată parola'
-        }
-        secureTextEntry={!isPasswordVisible}
-      />
-      <FormActions
+    <>
+      <FormPanel
+        title="Autentificare"
         busy={login.isPending}
-        primary={{
-          label: 'Intră în aplicație',
-          loadingLabel: 'Se autentifică…',
-          onPress: onSubmit,
-          icon: 'arrow-forward',
-        }}
-      />
-      <AppButton
-        fullWidth
-        label="Ai uitat parola?"
-        onPress={() => onForgotPassword(loginForm.getValues('username'))}
-        size="small"
-        style={authPanelStyles.linkButton}
-        variant="ghost"
-      />
-      <AppButton
-        fullWidth
-        label="Am primit invitație"
-        onPress={onRegisterEmployee}
-        size="small"
-        style={authPanelStyles.linkButton}
-        variant="ghost"
-      />
-    </FormPanel>
+        style={authPanelStyles.panel}
+        titleStyle={authPanelStyles.panelTitle}
+      >
+        <ControlledTextField
+          autoCapitalize="none"
+          control={loginForm.control}
+          required
+          label="Email"
+          labelPlacement="above"
+          keyboardType="email-address"
+          autoComplete="email"
+          leftIcon="mail-outline"
+          name="username"
+          placeholder="email@exemplu.ro"
+        />
+        <ControlledTextField
+          control={loginForm.control}
+          required
+          label="Parolă"
+          labelPlacement="above"
+          autoComplete="current-password"
+          leftIcon="key-outline"
+          name="password"
+          isPassword
+          onRightIconPress={() => setPasswordVisible(visible => !visible)}
+          placeholder="Introdu parola"
+          rightIcon={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+          rightIconAccessibilityLabel={
+            isPasswordVisible ? 'Ascunde parola' : 'Arată parola'
+          }
+          secureTextEntry={!isPasswordVisible}
+        />
+        <AppButton
+          label="Ai uitat parola?"
+          onPress={() => onForgotPassword(loginForm.getValues('username'))}
+          size="small"
+          style={authPanelStyles.forgotLink}
+          variant="ghost"
+        />
+        <AuthSubmitButton
+          label="Intră în aplicație"
+          loadingLabel="Se autentifică…"
+          loading={login.isPending}
+          onPress={onSubmit}
+          icon="arrow-forward"
+        />
+      </FormPanel>
+      <View style={authPanelStyles.invitation}>
+        <View style={authPanelStyles.divider}>
+          <View style={authPanelStyles.line} />
+          <Text style={[authPanelStyles.muted, authPanelStyles.dividerText]}>
+            Ai primit o invitație în echipă?
+          </Text>
+          <View style={authPanelStyles.line} />
+        </View>
+        <AppButton
+          fullWidth
+          multiline
+          label="Activează contul"
+          disabled={login.isPending}
+          onPress={onRegisterEmployee}
+          style={authPanelStyles.outlineButton}
+          variant="outline"
+        />
+      </View>
+    </>
   );
 }

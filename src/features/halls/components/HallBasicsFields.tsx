@@ -1,95 +1,106 @@
 import React from 'react';
-import { Control } from 'react-hook-form';
+import { View, useWindowDimensions } from 'react-native';
+import { Text } from 'react-native-paper';
+import { UseFormReturn } from 'react-hook-form';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { HallFormValues } from '@/features/halls/schemas/hallFormSchema';
+import { HallAddressField } from '@/features/halls/components/HallAddressField';
+import {
+  hallWizardStyles as styles,
+  HALL_FIELD_COLUMNS_MAX_FONT_SCALE,
+} from '@/features/halls/components/hallWizardStyles';
 import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { ControlledSelectField } from '@/shared/components/ControlledSelectField';
 import { FormPanel } from '@/shared/components/FormPanel';
+import { theme } from '@/shared/theme/theme';
 
 export function HallBasicsFields({
-  control,
+  form,
+  editing,
 }: {
-  control: Control<HallFormValues>;
+  form: UseFormReturn<HallFormValues>;
+  editing: boolean;
 }) {
+  const { fontScale } = useWindowDimensions();
+  const { control } = form;
+  const columns = fontScale <= HALL_FIELD_COLUMNS_MAX_FONT_SCALE;
   return (
-    <FormPanel title="Informații generale">
+    <FormPanel title="Date principale">
+      <Text style={styles.subtitle}>Informațiile esențiale despre sală.</Text>
       <ControlledTextField
         control={control}
         name="name"
         required
-        label="Nume sală *"
+        label="Nume sală"
         placeholder="Numele sălii"
+        leftIcon="business-outline"
       />
-      <ControlledTextField
-        control={control}
-        name="capacity"
-        required
-        label="Capacitate maximă (persoane) *"
-        placeholder="Capacitatea sălii"
-        keyboardType="number-pad"
-        leftIcon="people-outline"
-      />
-      <ControlledTextField
-        control={control}
-        name="minimum_guests"
-        label="Minim comercial implicit (persoane)"
-        placeholder="Nespecificat"
-        keyboardType="number-pad"
-      />
-      <ControlledTextField
-        control={control}
-        name="address"
-        label="Adresă"
-        placeholder="Adresa spațiului"
-      />
-      <ControlledTextField
-        control={control}
-        name="menu_price"
-        label="Preț meniu adulți (lei)"
-        numeric
-        placeholder="Nespecificat"
-        keyboardType="decimal-pad"
-      />
-      <ControlledTextField
-        control={control}
-        name="child_menu_price"
-        label="Preț meniu copii (lei)"
-        numeric
-        placeholder="Nespecificat"
-        keyboardType="decimal-pad"
-      />
+      <View style={columns ? styles.row : styles.stack}>
+        <View style={columns ? styles.responsiveField : undefined}>
+          <ControlledTextField
+            control={control}
+            name="capacity"
+            required
+            label="Capacitate maximă"
+            placeholder="Ex.: 300"
+            keyboardType="number-pad"
+            leftIcon="people-outline"
+          />
+        </View>
+        <View style={columns ? styles.responsiveField : undefined}>
+          <ControlledTextField
+            control={control}
+            name="minimum_guests"
+            required
+            label="Capacitate minimă"
+            placeholder="Ex.: 50"
+            keyboardType="number-pad"
+            leftIcon="people-outline"
+          />
+        </View>
+      </View>
+      <HallAddressField form={form} />
       <ControlledTextField
         control={control}
         name="description"
-        label="Descriere"
-        placeholder="Descrie spațiul și evenimentele potrivite"
+        label="Descriere (opțional)"
+        placeholder="Ex.: Sală elegantă pentru nunți și evenimente corporate."
         multiline
       />
       <ControlledTextField
         control={control}
         name="area_sqm"
-        label="Suprafață (m²)"
-        placeholder="Nespecificată"
+        label="Suprafață (m²) (opțional)"
+        placeholder="Ex.: 520"
         keyboardType="decimal-pad"
+        leftIcon="scan-outline"
       />
-      <ControlledTextField
-        control={control}
-        name="arrangement"
-        label="Aranjament"
-        placeholder="De exemplu: mese rotunde"
-      />
-      <ControlledSelectField
-        control={control}
-        name="is_active"
-        required
-        label="Status"
-        options={[
-          { id: 'yes', name: 'Activă' },
-          { id: 'no', name: 'Inactivă' },
-        ]}
-        placeholder="Selectează statusul"
-        searchPlaceholder="Caută status"
-        single
-      />
+      {editing ? (
+        <ControlledSelectField
+          control={control}
+          name="is_active"
+          required
+          label="Status"
+          options={[
+            { id: 'yes', name: 'Activă' },
+            { id: 'no', name: 'Inactivă' },
+          ]}
+          placeholder="Selectează statusul"
+          searchPlaceholder="Caută status"
+          single
+        />
+      ) : (
+        <View style={styles.info}>
+          <Ionicons
+            name="information-circle-outline"
+            size={theme.typography.sectionTitle}
+            color={theme.colors.menu.primary}
+          />
+          <Text style={[styles.subtitle, styles.flex]}>
+            Statusul se setează automat pe Activă la creare.
+          </Text>
+        </View>
+      )}
     </FormPanel>
   );
 }

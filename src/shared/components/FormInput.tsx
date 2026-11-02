@@ -10,6 +10,7 @@ type FormInputProps = {
   label: string;
   required?: boolean;
   hideLabel?: boolean;
+  hint?: string;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -19,6 +20,7 @@ export function FormInput({
   label,
   required = false,
   hideLabel = false,
+  hint,
   style,
 }: FormInputProps) {
   return (
@@ -37,6 +39,10 @@ export function FormInput({
           type="error"
         >
           {error}
+        </HelperText>
+      ) : hint ? (
+        <HelperText padding="none" type="info" style={styles.hint}>
+          {hint}
         </HelperText>
       ) : null}
     </View>
@@ -78,5 +84,10 @@ const styles = StyleSheet.create({
   },
   labelError: {
     color: theme.colors.danger,
+  },
+  hint: {
+    color: theme.colors.muted,
+    fontFamily: theme.fonts.body,
+    fontSize: theme.typography.meta,
   },
 });

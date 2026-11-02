@@ -3,7 +3,10 @@ import { Animated } from 'react-native';
 import ReactTestRenderer from 'react-test-renderer';
 import { TextInput as TextField } from 'react-native-paper';
 import { LoginScreen } from '@/features/auth/screens/LoginScreen';
-import { getAuthToken } from '@/shared/storage/authTokenStorage';
+import {
+  clearAuthToken,
+  getAuthToken,
+} from '@/shared/storage/authTokenStorage';
 import {
   getVisibleDialog,
   jsonResponse,
@@ -40,7 +43,8 @@ const pressButton = async (
 const submitLogin = (renderer: ReactTestRenderer.ReactTestRenderer) =>
   pressButton(renderer, 'Intră în aplicație');
 
-beforeEach(() => {
+beforeEach(async () => {
+  await clearAuthToken();
   globalThis.fetch = jest.fn();
   jest.spyOn(Animated, 'loop').mockReturnValue({
     start: jest.fn(),
@@ -151,7 +155,7 @@ test('carries the typed email from login to the reset code form', async () => {
 
   await fillLoginForm(renderer, 'gigi@godlyhub.com', '');
   await pressButton(renderer, 'Ai uitat parola?');
-  await pressButton(renderer, 'Trimite cod');
+  await pressButton(renderer, 'Trimite codul');
 
   expect(globalThis.fetch).toHaveBeenCalledWith(
     expect.stringContaining('/password/forgot'),
@@ -165,12 +169,40 @@ test('carries the typed email from login to the reset code form', async () => {
       'Dacă adresa există, vei primi prin email codul de resetare. Expedierea se reîncearcă automat la nevoie.',
   });
   expect(
-    renderer.root.findAllByProps({ accessibilityLabel: 'Cod' }).length,
+    renderer.root.findAllByProps({ accessibilityLabel: 'Cod de resetare' })
+      .length,
   ).toBeGreaterThan(0);
   expect(
     renderer.root.findAllByProps({ accessibilityLabel: 'Email' })[0].props
       .value,
   ).toBe('gigi@godlyhub.com');
+
+  await unmount();
+});
+
+test('invalid login fields stay on the form without calling the API', async () => {
+  const { renderer, unmount } = await renderWithProviders(<LoginScreen />);
+
+  await fillLoginForm(renderer, 'email@', '');
+  await submitLogin(renderer);
+
+  expect(globalThis.fetch).not.toHaveBeenCalled();
+  expect(getVisibleDialog(renderer)).toBeNull();
+  const content = JSON.stringify(renderer.toJSON());
+  expect(content).toContain('Completează un email valid.');
+  expect(content).toContain('Parola este obligatorie.');
+
+  await unmount();
+});
+
+test('opens invitation signup and returns to login from its header', async () => {
+  const { renderer, unmount } = await renderWithProviders(<LoginScreen />);
+
+  await pressButton(renderer, 'Activează contul');
+  expect(JSON.stringify(renderer.toJSON())).toContain('Alătură-te echipei');
+  await pressButton(renderer, 'Înapoi la autentificare');
+  expect(JSON.stringify(renderer.toJSON())).toContain('Bine ai revenit!');
+  expect(globalThis.fetch).not.toHaveBeenCalled();
 
   await unmount();
 });

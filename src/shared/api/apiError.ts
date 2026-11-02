@@ -32,6 +32,14 @@ const TOO_MANY_REQUESTS_MESSAGE =
   'Prea multe încercări. Așteaptă puțin și încearcă din nou.';
 const REQUEST_FAILED_MESSAGE = 'Cererea nu a putut fi procesată.';
 const errorMessagesByCode: Record<string, string> = {
+  HALL_ADDRESS_UNAVAILABLE:
+    'Sugestiile de adresă nu sunt disponibile acum. Poți completa adresa manual.',
+  HALL_MENU_RULE_OVERLAP:
+    'Două reguli de preț se aplică aceleiași date. Modifică perioada sau zilele selectate.',
+  HALL_MENU_RULES_REQUIRE_ADVANCED:
+    'Alege modul Avansat pentru prețuri diferite în funcție de perioadă și zile.',
+  HALL_MENU_RULE_REQUIRED:
+    'Adaugă cel puțin o regulă de preț sau alege modul Simplu.',
   BILLING_NOT_CONFIGURED:
     'Facturarea abonamentului nu este încă disponibilă. Contactează echipa Gatify.',
   BILLING_DOWNLOAD_UNAVAILABLE:
@@ -169,7 +177,8 @@ const errorMessagesByCode: Record<string, string> = {
   EMPLOYEE_EMAIL_TAKEN: 'Adresa de email este deja folosită.',
   EMPLOYEE_MUST_BE_ACTIVE: 'Activează angajatul înainte de deblocare.',
   INVITATION_ALREADY_USED: 'Invitația a fost deja folosită.',
-  INVITATION_INVALID: 'Codul de invitație este invalid sau expirat.',
+  INVITATION_INVALID:
+    'Codul de invitație este invalid sau expirat. Solicită o invitație nouă de la administratorul companiei.',
   MASCOT_NOT_FOUND: 'Mascota nu mai este disponibilă.',
   MASCOT_MUST_BE_INACTIVE:
     'Dezactivează mascota înainte de ștergerea definitivă.',

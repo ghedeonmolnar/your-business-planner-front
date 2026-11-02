@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { hallMenuPriceRuleApiSchema } from '@/features/halls/schemas/hallMenuPricingSchema';
 import { apiPageRequest, apiRequest } from '@/shared/api/client';
 import { authUserSchema } from '@/features/auth/schemas/authApiSchemas';
 import {
@@ -25,6 +26,8 @@ const directorySchema = z.object({
   minimum_guests: z.number().int().positive().nullable().optional(),
   menu_price: z.string().nullable().optional(),
   child_menu_price: z.string().nullable().optional(),
+  menu_pricing_mode: z.enum(['simple', 'advanced']).optional(),
+  menu_price_rules: z.array(hallMenuPriceRuleApiSchema).optional(),
   address: z.string().nullable().optional(),
 });
 const versionedDirectorySchema = directorySchema.extend({

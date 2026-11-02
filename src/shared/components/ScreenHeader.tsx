@@ -11,7 +11,7 @@ type ScreenHeaderProps = {
   action?: ReactNode;
 };
 
-const HEADER_LOGO_WIDTH = theme.controls.fieldHeight;
+const HEADER_LOGO_WIDTH = theme.controls.fieldHeight * 4;
 
 export function ScreenHeader({
   eyebrow,
@@ -22,9 +22,7 @@ export function ScreenHeader({
   return (
     <View style={styles.header}>
       <View style={styles.brandArea}>
-        <View style={styles.logoWrap}>
-          <BrandLogo width={HEADER_LOGO_WIDTH} />
-        </View>
+        <BrandLogo width={HEADER_LOGO_WIDTH} />
         <View style={styles.textWrap}>
           <Text style={styles.eyebrow}>{eyebrow}</Text>
           <Text style={styles.title}>{title}</Text>
@@ -45,17 +43,11 @@ const styles = StyleSheet.create({
   },
   brandArea: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logoWrap: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: theme.spacing.md,
-    width: HEADER_LOGO_WIDTH,
+    alignItems: 'flex-start',
   },
   textWrap: {
-    flex: 1,
+    alignSelf: 'stretch',
+    marginTop: theme.spacing.sm,
     paddingRight: theme.spacing.md,
   },
   action: { alignItems: 'flex-end' },

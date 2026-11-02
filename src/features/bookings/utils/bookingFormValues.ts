@@ -2,12 +2,16 @@ import { Booking, BookingPayload } from '@/features/bookings/types';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
 import { normalizePhone } from '@/shared/utils/contactLinks';
 import {
+  HallPricing,
+  hallMenuPricesForDate,
+} from '@/features/halls/utils/hallMenuPricing';
+import {
   formatCompanyInput,
   companyNow,
   toCompanyTimestamp,
 } from '@/shared/utils/formatDate';
 
-export type BookingHallDefaults = {
+export type BookingHallDefaults = HallPricing & {
   minimum_guests?: number | null;
   menu_price?: string | null;
   child_menu_price?: string | null;
@@ -46,10 +50,12 @@ export const bookingFormDefaults = (
     booking?.child_guests == null ? '' : String(booking.child_guests),
   child_menu_price: booking
     ? (booking.child_menu_price ?? '0')
-    : (hall?.child_menu_price ?? '0'),
+    : (hallMenuPricesForDate(hall, date).child_menu_price ?? '0'),
   final_guests:
     booking?.final_guests == null ? '' : String(booking.final_guests),
-  menu_price: booking ? (booking.menu_price ?? '0') : (hall?.menu_price ?? '0'),
+  menu_price: booking
+    ? (booking.menu_price ?? '0')
+    : (hallMenuPricesForDate(hall, date).menu_price ?? '0'),
   menu_name: booking?.menu_name ?? '',
   agreed_advance: booking?.agreed_advance ?? '0',
   advance_due_at: booking?.advance_due_at ?? '',

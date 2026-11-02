@@ -15,11 +15,13 @@ const png = file => {
   };
 };
 
-test('pastreaza PNG-ul furnizat si toate formatele Android de launcher', () => {
-  const source = fs.readFileSync(path.join(root, 'assets/brand/ybp-logo.png'));
+test('pastreaza iconul furnizat si toate formatele Android de launcher', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'assets/app-icon/ybp-icon-source.png'),
+  );
   assert.equal(
     crypto.createHash('sha256').update(source).digest('hex'),
-    'a5862b52185fc89cda355c2229e3cbafa11b1f158dca9e6fc8fd53ccdadd79d4',
+    '53ffaabb6f2912f9f126f94035369f9b09b3639a93a841b2fd39316a4a91e2cc',
   );
   for (const [density, size] of Object.entries({
     mdpi: 48,
@@ -38,18 +40,29 @@ test('pastreaza PNG-ul furnizat si toate formatele Android de launcher', () => {
   }
 });
 
-test('foloseste logo-ul patrat pe mobil si la pornirea iOS', () => {
-  assert.equal(png('src/shared/branding/ybp-logo.png').width, 512);
-  assert.equal(png('src/shared/branding/ybp-logo.png').height, 512);
+test('pastreaza logo-ul orizontal transparent pe mobil si la pornirea iOS', () => {
+  const source = fs.readFileSync(path.join(root, 'assets/brand/ybp-logo.png'));
+  assert.equal(
+    crypto.createHash('sha256').update(source).digest('hex'),
+    '5467f7b4852d0d4c8a153cc0dc032569b86859ade6f8cf98394210d3ea746440',
+  );
+  assert.deepEqual(
+    fs.readFileSync(path.join(root, 'src/shared/branding/ybp-logo.png')),
+    source,
+  );
+  assert.equal(png('src/shared/branding/ybp-logo.png').width, 2172);
+  assert.equal(png('src/shared/branding/ybp-logo.png').height, 724);
+  assert.equal(png('src/shared/branding/ybp-logo.png').colorType, 6);
   const directory = 'ios/GTEventsApp/Images.xcassets/BrandLogo.imageset';
   const catalog = JSON.parse(
     fs.readFileSync(path.join(root, directory, 'Contents.json'), 'utf8'),
   );
   for (const asset of catalog.images) {
-    const size = 156 * Number(asset.scale.replace('x', ''));
+    const scale = Number(asset.scale.replace('x', ''));
     const image = png(`${directory}/${asset.filename}`);
-    assert.equal(image.width, size);
-    assert.equal(image.height, size);
+    assert.equal(image.width, 312 * scale);
+    assert.equal(image.height, 104 * scale);
+    assert.equal(image.colorType, 6);
   }
 });
 

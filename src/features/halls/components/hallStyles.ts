@@ -137,6 +137,9 @@ export const hallStyles = StyleSheet.create({
   },
   danger: { color: theme.colors.danger },
   chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
     borderWidth: 1,
     borderColor: theme.colors.menu.border,
     borderRadius: theme.radius.md,
@@ -151,4 +154,14 @@ export const hallStyles = StyleSheet.create({
     backgroundColor: theme.colors.menu.primarySoft,
   },
   photoStrip: { gap: theme.spacing.sm, paddingVertical: theme.spacing.sm },
+  upload: {
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: theme.colors.menu.border,
+    backgroundColor: theme.colors.menu.background,
+    borderRadius: theme.radius.md,
+    padding: theme.spacing.md,
+    gap: theme.spacing.sm,
+    alignItems: 'center',
+  },
 });

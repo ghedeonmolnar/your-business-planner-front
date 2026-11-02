@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
 import { FormPanel } from '@/shared/components/FormPanel';
-import { FormActions } from '@/shared/components/FormActions';
+import { Keyboard, View } from 'react-native';
+import { Text } from 'react-native-paper';
 import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authPanelStyles } from '@/features/auth/components/authPanelStyles';
-import { useResetPassword } from '@/features/auth/hooks/useAuthMutations';
+import { AuthSubmitButton } from '@/features/auth/components/AuthSubmitButton';
+import {
+  useForgotPassword,
+  useResetPassword,
+} from '@/features/auth/hooks/useAuthMutations';
 import {
   ResetPasswordFormValues,
   resetPasswordSchema,
@@ -17,16 +22,17 @@ import { showMessage } from '@/shared/feedback/showMessage';
 type ResetPasswordPanelProps = {
   initialEmail: string;
   onPasswordReset: (email: string) => void;
-  onResendCode: (email: string) => void;
 };
 
 export function ResetPasswordPanel({
   initialEmail,
   onPasswordReset,
-  onResendCode,
 }: ResetPasswordPanelProps) {
   const resetPassword = useResetPassword();
+  const resendCode = useForgotPassword();
+  const busy = resetPassword.isPending || resendCode.isPending;
   const [isNewPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [isConfirmationVisible, setConfirmationVisible] = useState(false);
   const resetForm = useAppForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
@@ -49,10 +55,18 @@ export function ResetPasswordPanel({
       },
       {
         onSuccess: () => {
-          onPasswordReset(email);
+          Keyboard.dismiss();
           showMessage(
-            'Parola resetată',
-            'Parola a fost resetată. Te poți autentifica din nou.',
+            'Parolă actualizată',
+            'Te poți autentifica folosind parola nouă.',
+            {
+              icon: 'checkmark',
+              tone: 'success',
+              centered: true,
+              confirmLabel: 'Înapoi la autentificare',
+              onConfirm: () => onPasswordReset(email),
+              onCancel: () => onPasswordReset(email),
+            },
           );
         },
         onError: error => {
@@ -62,14 +76,34 @@ export function ResetPasswordPanel({
     );
   });
 
+  const resend = async () => {
+    if (!(await resetForm.trigger('email'))) return;
+    resendCode.mutate(
+      { email: resetForm.getValues('email').trim() },
+      {
+        onSuccess: () => {
+          Keyboard.dismiss();
+          resetForm.resetField('code');
+          showMessage(
+            'Solicitare înregistrată',
+            'Dacă adresa există, vei primi prin email codul de resetare. Expedierea se reîncearcă automat la nevoie.',
+          );
+        },
+        onError: error => showError(error, 'Nu am putut retrimite codul.'),
+      },
+    );
+  };
+
   return (
-    <FormPanel title="Cod resetare" busy={resetPassword.isPending}>
+    <FormPanel busy={busy} style={authPanelStyles.panel}>
       <ControlledTextField
         autoCapitalize="none"
         control={resetForm.control}
         keyboardType="email-address"
         required
         label="Email"
+        labelPlacement="above"
+        autoComplete="email"
         leftIcon="at-circle-outline"
         name="email"
         placeholder="email@exemplu.ro"
@@ -78,7 +112,10 @@ export function ResetPasswordPanel({
         control={resetForm.control}
         keyboardType="number-pad"
         required
-        label="Cod"
+        label="Cod de resetare"
+        labelPlacement="above"
+        autoComplete="one-time-code"
+        hint="Codul conține 6 cifre."
         leftIcon="shield-checkmark-outline"
         name="code"
         placeholder="123456"
@@ -87,11 +124,14 @@ export function ResetPasswordPanel({
         control={resetForm.control}
         required
         label="Parolă nouă"
+        labelPlacement="above"
+        autoComplete="new-password"
+        hint="Minimum 8 caractere"
         leftIcon="key-outline"
         name="password"
         isPassword
         onRightIconPress={() => setNewPasswordVisible(visible => !visible)}
-        placeholder="Minim 8 caractere"
+        placeholder="Introdu parola nouă"
         rightIcon={isNewPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
         rightIconAccessibilityLabel={
           isNewPasswordVisible ? 'Ascunde parola' : 'Arată parola'
@@ -102,29 +142,39 @@ export function ResetPasswordPanel({
         control={resetForm.control}
         required
         label="Confirmă parola"
+        labelPlacement="above"
+        autoComplete="new-password"
         leftIcon="key-outline"
         name="password_confirmation"
         isPassword
-        placeholder="Repetă parola"
-        secureTextEntry={!isNewPasswordVisible}
+        placeholder="Introdu parola din nou"
+        onRightIconPress={() => setConfirmationVisible(visible => !visible)}
+        rightIcon={isConfirmationVisible ? 'eye-off-outline' : 'eye-outline'}
+        rightIconAccessibilityLabel={
+          isConfirmationVisible
+            ? 'Ascunde confirmarea parolei'
+            : 'Arată confirmarea parolei'
+        }
+        secureTextEntry={!isConfirmationVisible}
       />
-      <FormActions
-        busy={resetPassword.isPending}
-        primary={{
-          label: 'Resetează parola',
-          loadingLabel: 'Se salvează…',
-          onPress: onSubmit,
-          icon: 'checkmark',
-        }}
+      <AuthSubmitButton
+        label="Resetează parola"
+        loadingLabel="Se salvează…"
+        loading={resetPassword.isPending}
+        onPress={onSubmit}
+        icon="arrow-forward"
       />
-      <AppButton
-        fullWidth
-        label="Retrimite cod"
-        onPress={() => onResendCode(resetForm.getValues('email').trim())}
-        size="small"
-        style={authPanelStyles.linkButton}
-        variant="ghost"
-      />
+      <View style={authPanelStyles.linkRow}>
+        <Text style={authPanelStyles.muted}>Nu ai primit codul?</Text>
+        <AppButton
+          label="Retrimite codul"
+          loading={resendCode.isPending}
+          loadingLabel="Se trimite…"
+          onPress={resend}
+          size="small"
+          variant="ghost"
+        />
+      </View>
     </FormPanel>
   );
 }
