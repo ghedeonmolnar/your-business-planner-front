@@ -1,9 +1,43 @@
 const reactNativeConfig = require('@react-native/eslint-config/flat');
+const boundaries = require('eslint-plugin-boundaries');
+const architecture = require('./tools/architecture/boundaries.cjs');
 
 const internalImports = { patterns: ['./*', '../*'] };
 
 module.exports = [
   ...reactNativeConfig.filter(config => !config.plugins?.['ft-flow']),
+  {
+    ignores: ['src/shared/api/generated/**'],
+  },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: [
+      'src/**/*.d.ts',
+      'src/**/*.test.*',
+      'src/**/*{.testUtils,TestUtils,TestFixtures,TestHelpers}.*',
+      'src/shared/test/**',
+    ],
+    plugins: { boundaries },
+    settings: {
+      'boundaries/root-path': __dirname,
+      'boundaries/elements': architecture.elements,
+      'boundaries/files': [
+        {
+          pattern:
+            'src/**/*{.test,testUtils,TestUtils,TestFixtures,TestHelpers}.*',
+          category: 'test',
+        },
+      ],
+      'import/resolver': {
+        typescript: { project: './tsconfig.json' },
+      },
+    },
+    rules: {
+      'boundaries/dependencies': ['error', architecture.dependencies],
+      'boundaries/no-unknown-dependencies': 'error',
+      'boundaries/no-unknown-files': 'error',
+    },
+  },
   {
     rules: {
       'react/no-unstable-nested-components': ['warn', { allowAsProps: true }],

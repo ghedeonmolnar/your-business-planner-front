@@ -1,5 +1,13 @@
 # Your Business Planner — contractul actual
 
+## Automatizari de dezvoltare si contracte generate
+
+Backendul exporta `contracts/openapi.json` printr-un proces CLI cu schema SQLite noua, exclusiv in memorie. Nu publica rute HTTP de documentatie si nu modifica baza locala sau productia. Frontendul sincronizeaza snapshotul si genereaza numai tipuri TypeScript in `src/shared/api/generated`; clientul HTTP, schemele Zod, hook-urile si cheile de query raman cele existente. Politica mobila verifica si compatibilitatea schemei sale runtime cu tipul generat.
+
+Verificarea frontend compara si inventarul `limitations.json` cu API-ul local; sincronizarea valideaza ambele surse inainte de scriere. Regulile arhitecturale interzic importurile de teste in codul de productie inclusiv in acelasi feature. Containerele dedicate testelor refuza configurari alternative de conexiune si cache care ar putea ocoli baza izolata.
+
+Inferenta initiala pastreaza explicit 79 de tipuri nerezolvate si cinci avertismente in `contracts/limitations.json`, fara presupunerea ca sunt string. Acest export nu este dovada acoperirii complete a validarilor conditionale ori a compatibilitatii Android. Gate-urile includ Larastan nivel 5 cu 31 constatari preexistente inventariate, Deptrac, dependentele ESLint intre feature-uri si compararea artefactelor generate. Comenzile, izolarea proiectelor Docker si limitele sunt in `primary-docs/QUALITY_AUTOMATION.md`. Nu se schimba endpointurile, datele persistate sau politica versiunilor mobile prin aceste unelte.
+
 Acest document descrie comportamentul curent. Documentatia comuna este in primary-docs; criteriile nevalidate pentru lansare sunt in primary-docs/ROADMAP_LANSARE.md, iar planul integral este in primary-docs/PLAN_CALITATE_2026-10-26.md. Copiile din radacinile proiectelor se sincronizeaza cu aceasta sursa. Reorganizarea documentatiei din 30 octombrie 2026 nu reprezinta o noua validare a contractelor.
 
 ## Aplicatii si medii

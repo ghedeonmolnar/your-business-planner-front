@@ -8,7 +8,12 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "test:affected": "node tools/testing/test-affected.cjs"
+    "test:affected": "node tools/testing/test-affected.cjs",
+    "typecheck": "tsc --noEmit",
+    "api:sync": "node tools/contracts/sync.cjs && npm run api:generate",
+    "api:generate": "node tools/contracts/generate.mjs",
+    "api:check": "node tools/contracts/generate.mjs --check",
+    "quality": "npm run typecheck && npm run lint -- --max-warnings=0 && npm run api:check && jest --runInBand"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.9.2",
@@ -43,6 +48,7 @@
     "@babel/plugin-transform-export-namespace-from": "^7.29.7",
     "@babel/preset-env": "^7.29.7",
     "@babel/runtime": "^7.29.10",
+    "@hey-api/openapi-ts": "0.97.3",
     "@react-native-community/cli": "20.2.0",
     "@react-native-community/cli-platform-android": "20.2.0",
     "@react-native-community/cli-platform-ios": "20.2.0",
@@ -58,6 +64,8 @@
     "babel-plugin-module-resolver": "^5.0.3",
     "babel-plugin-optional-require": "^0.3.1",
     "eslint": "^9.39.5",
+    "eslint-import-resolver-typescript": "4.4.5",
+    "eslint-plugin-boundaries": "7.4.1",
     "jest": "^30.5.2",
     "prettier": "^3.9.10",
     "react-test-renderer": "^19.3.1",
@@ -67,6 +75,9 @@
     "node": "^22.13.0 || ^24.3.0 || >=26.0.0"
   },
   "overrides": {
+    "@hey-api/json-schema-ref-parser": {
+      "js-yaml": "4.3.2"
+    },
     "@react-native/eslint-config": {
       "eslint-plugin-ft-flow": "^3.0.11"
     },

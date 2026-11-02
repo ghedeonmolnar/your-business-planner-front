@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { apiRequest, ApiError } from '@/shared/api/client';
+import type { MobilePolicyShowResponse } from '@/shared/api/generated/types.gen';
 
-const policySchema = z.object({
+const policySchema: z.ZodType<MobilePolicyShowResponse> = z.object({
   mode: z.enum(['observe', 'recommend', 'enforce']),
   min_build: z.number().int().nonnegative(),
   recommended_build: z.number().int().nonnegative(),
