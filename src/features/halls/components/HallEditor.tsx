@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { Text } from 'react-native-paper';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppForm } from '@/shared/hooks/useAppForm';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { HallWizard } from '@/features/halls/components/HallWizard';
 import { Hall, HallPhotoDraft } from '@/features/halls/types';
 import {
   hallFormSchema,
@@ -17,16 +18,9 @@ import { useHallSubmission } from '@/features/halls/hooks/useHallSubmission';
 import { getHallCreationAttempt } from '@/features/halls/utils/hallCreationRecovery';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useHallFormNavigation } from '@/features/halls/hooks/useHallFormNavigation';
-import { HallBasicsFields } from '@/features/halls/components/HallBasicsFields';
-import { HallAmenitiesFields } from '@/features/halls/components/HallAmenitiesFields';
-import { HallHoursFields } from '@/features/halls/components/HallHoursFields';
-import { HallPhotosField } from '@/features/halls/components/HallPhotosField';
 import { hallStyles as styles } from '@/features/halls/components/hallStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { AppButton } from '@/shared/components/AppButton';
-import { ControlledTextField } from '@/shared/components/ControlledTextField';
-import { FormPanel } from '@/shared/components/FormPanel';
-import { FormInteractionContext } from '@/shared/components/FormInteractionContext';
 import { confirmAction } from '@/shared/feedback/confirmAction';
 import { showError } from '@/shared/feedback/showError';
 import { createOperationId } from '@/shared/utils/createOperationId';
@@ -41,6 +35,7 @@ const photoDrafts = (hall?: Hall): HallPhotoDraft[] =>
 
 export function HallEditor({
   hall,
+  title,
   duplicate,
   blocked,
   navigation,
@@ -48,6 +43,7 @@ export function HallEditor({
   onReload,
 }: {
   hall?: Hall;
+  title: string;
   duplicate: boolean;
   blocked: boolean;
   navigation: NativeStackNavigationProp<RootStackParamList, 'HallForm'>;
@@ -65,13 +61,18 @@ export function HallEditor({
   );
   const form = useAppForm<HallFormValues>({
     resolver: zodResolver(hallFormSchema),
-    defaultValues: initialAttempt?.values ?? hallFormDefaults(hall, duplicate),
+    defaultValues: {
+      ...hallFormDefaults(hall, duplicate),
+      ...initialAttempt?.values,
+    },
   });
   const [version, setVersion] = useState(duplicate ? undefined : hall?.version);
   const [photos, setPhotos] = useState<HallPhotoDraft[]>(
     () => initialAttempt?.photos ?? (duplicate ? [] : photoDrafts(hall)),
   );
   const [photosDirty, setPhotosDirty] = useState(false);
+  const [ruleDraftDirty, setRuleDraftDirty] = useState(false);
+  const [reloadGeneration, setReloadGeneration] = useState(0);
   const [picking, setPicking] = useState(false);
   const [operationId] = useState(
     () => initialAttempt?.operationId ?? createOperationId(),
@@ -101,7 +102,7 @@ export function HallEditor({
   useHallFormNavigation({
     navigation,
     busy,
-    dirty: form.formState.isDirty || photosDirty,
+    dirty: form.formState.isDirty || photosDirty || ruleDraftDirty,
     savedHallId: savedHall?.id,
     editing: Boolean(editingId),
     sessionGeneration,
@@ -121,6 +122,8 @@ export function HallEditor({
             setVersion(current.version);
             setPhotos(photoDrafts(current));
             setPhotosDirty(false);
+            setRuleDraftDirty(false);
+            setReloadGeneration(currentGeneration => currentGeneration + 1);
             setConflict(false);
           })
           .catch(error => {
@@ -140,81 +143,58 @@ export function HallEditor({
       : photo,
   );
   return (
-    <>
-      <FormInteractionContext.Provider value={busy || blocked || uncertain}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          automaticallyAdjustKeyboardInsets
-        >
-          {duplicate ? (
-            <Text style={styles.subtitle}>
-              Ciornă nouă cu datele și facilitățile sălii. Galeria, notele
-              interne și rezervările nu sunt copiate.
-            </Text>
-          ) : null}
-          {uncertain && !conflict ? (
-            <Text style={styles.body}>
-              Rezultatul creării nu este încă sigur. Reîncearcă salvarea pentru
-              a recupera sala folosind aceleași date și fotografii.
-            </Text>
-          ) : null}
-          {conflict ? (
-            <View style={styles.stack}>
-              <Text style={styles.body}>
-                Verifică versiunea salvată înainte de a continua. Ciorna ta este
-                păstrată.
-              </Text>
-              {editingId ? (
-                <AppButton
-                  label="Încarcă versiunea salvată"
-                  variant="outline"
-                  onPress={reload}
-                />
-              ) : (
-                <Text style={styles.subtitle}>
-                  Verifică lista sălilor înainte de a porni o altă creare.
-                </Text>
-              )}
-            </View>
-          ) : null}
-          <HallBasicsFields control={form.control} />
-          <HallPhotosField
-            photos={currentPhotos}
-            onChange={items => {
-              setPhotos(items);
-              setPhotosDirty(true);
-            }}
-            picking={picking}
-            onPicking={setPicking}
-          />
-          <HallAmenitiesFields form={form} />
-          <HallHoursFields control={form.control} />
-          <FormPanel title="Note interne">
-            <ControlledTextField
-              control={form.control}
-              name="internal_notes"
-              label="Note interne"
-              placeholder="Observații pentru echipa de administrare"
-              multiline
+    <HallWizard
+      key={reloadGeneration}
+      form={form}
+      title={title}
+      editing={Boolean(editingId)}
+      busy={busy}
+      disabled={blocked || conflict || Boolean(savedHall)}
+      uncertain={uncertain}
+      saving={submission.saving}
+      photos={currentPhotos}
+      onPhotosChange={items => {
+        setPhotos(items);
+        setPhotosDirty(true);
+      }}
+      picking={picking}
+      onPicking={setPicking}
+      onSubmit={submit}
+      ruleDraftDirty={ruleDraftDirty}
+      onRuleDraftChange={setRuleDraftDirty}
+      onBack={() => navigation.goBack()}
+    >
+      {duplicate ? (
+        <Text style={styles.subtitle}>
+          Ciornă nouă cu datele și facilitățile sălii. Galeria, notele interne
+          și rezervările nu sunt copiate.
+        </Text>
+      ) : null}
+      {uncertain && !conflict ? (
+        <Text style={styles.body}>
+          Rezultatul creării nu este încă sigur. Reîncearcă salvarea pentru a
+          recupera sala folosind aceleași date și fotografii.
+        </Text>
+      ) : null}
+      {conflict ? (
+        <View style={styles.stack}>
+          <Text style={styles.body}>
+            Verifică versiunea salvată înainte de a continua. Ciorna ta este
+            păstrată.
+          </Text>
+          {editingId ? (
+            <AppButton
+              label="Încarcă versiunea salvată"
+              variant="outline"
+              onPress={reload}
             />
+          ) : (
             <Text style={styles.subtitle}>
-              Nu se includ în mesajele trimise clientului.
+              Verifică lista sălilor înainte de a porni o altă creare.
             </Text>
-          </FormPanel>
-        </ScrollView>
-      </FormInteractionContext.Provider>
-      <View style={styles.footer}>
-        <AppButton
-          label={editingId ? 'Salvează modificările' : 'Salvează sala'}
-          loadingLabel="Se salvează…"
-          loading={submission.saving}
-          fullWidth
-          disabled={busy || blocked || conflict || Boolean(savedHall)}
-          onPress={submit}
-        />
-      </View>
-    </>
+          )}
+        </View>
+      ) : null}
+    </HallWizard>
   );
 }

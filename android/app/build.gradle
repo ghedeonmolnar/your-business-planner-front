@@ -20,9 +20,13 @@ gradle.projectsEvaluated {
     }
 }
 
-def enableProguardInReleaseBuilds = false
 def maximumCmakeObjectPathLength = 250
-def releaseRequested = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+def requestedTasks = gradle.startParameter.taskNames.collect { it.tokenize(':').last().toLowerCase(Locale.ROOT) }
+def releaseRequested = requestedTasks.any { it.contains('release') }
+def releaseBundleRequested = requestedTasks.contains('bundlerelease')
+if (releaseBundleRequested && requestedTasks.contains('assemblerelease')) {
+    throw new GradleException('Generati APK-urile si AAB-ul in comenzi separate: :app:assembleRelease, apoi :app:bundleRelease.')
+}
 def appEnvironmentFile = rootProject.file('../' + (System.getenv('ENVFILE') ?: (releaseRequested ? '.env.production' : '.env')))
 def appEnvironment = new Properties()
 if (appEnvironmentFile.exists()) {
@@ -32,7 +36,7 @@ def configuredAppBuild = appEnvironment.getProperty('APP_BUILD')
 if (configuredAppBuild == null || !(configuredAppBuild ==~ /[1-9][0-9]{0,8}/)) {
     throw new GradleException('APP_BUILD trebuie configurat identic pentru Android si JavaScript in fisierul de mediu selectat.')
 }
-def nativeBuildDirectory = new File(System.getProperty("java.io.tmpdir"), "ybp-" + Integer.toHexString(rootProject.projectDir.absolutePath.hashCode()))
+def nativeBuildDirectory = new File(System.getProperty("user.home"), ".ybp-cxx/" + Integer.toHexString(rootProject.projectDir.absolutePath.hashCode()))
 def releaseSigningProperties = new Properties()
 def releaseSigningPropertiesFile = rootProject.file("app/signing.properties")
 
@@ -80,6 +84,14 @@ android {
             }
         }
     }
+    splits {
+        abi {
+            enable releaseRequested && !releaseBundleRequested
+            reset()
+            include(*project.property('reactNativeArchitectures').toString().split(','))
+            universalApk false
+        }
+    }
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -107,7 +119,8 @@ android {
             if (hasReleaseSigning) {
                 signingConfig signingConfigs.release
             }
-            minifyEnabled enableProguardInReleaseBuilds
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
         }
     }

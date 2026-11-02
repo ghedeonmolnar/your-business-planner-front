@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
+import { TextInput } from 'react-native-paper';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Hall } from '@/features/halls/types';
@@ -24,6 +25,8 @@ export const hallFetch = (overrides: Partial<Hall> = {}) => {
   let hall = { ...hallFixture, ...overrides };
   globalThis.fetch = jest.fn((url, init) => {
     const path = String(url);
+    if (path.endsWith('/halls/address-suggestions'))
+      return Promise.resolve(jsonResponse(200, { suggestions: [] }));
     if (path.endsWith('/me'))
       return Promise.resolve(jsonResponse(200, plannerAccount));
     if (path.endsWith('/catalogs'))
@@ -88,6 +91,24 @@ export const pressHallButton = async (
   await ReactTestRenderer.act(async () => {
     const buttons = renderer.root.findAllByProps({ accessibilityLabel: label });
     if (!buttons.length) throw new Error(`Nu există acțiunea ${label}`);
-    buttons[0].props.onPress();
+    const action = buttons[0].props.onPress();
+    if (label === 'Continuă') await action;
   });
+};
+
+export const finishHallSteps = async (
+  renderer: ReactTestRenderer.ReactTestRenderer,
+) => {
+  await ReactTestRenderer.act(async () => {
+    for (const [name, value] of [
+      ['minimum_guests', '50'],
+      ['address', 'Strada Test 12, Oradea'],
+    ])
+      renderer.root
+        .findAllByType(TextInput)
+        .find(field => field.props.testID === `input:${name}`)
+        ?.props.onChangeText(value);
+  });
+  await pressHallButton(renderer, 'Continuă');
+  await pressHallButton(renderer, 'Continuă');
 };

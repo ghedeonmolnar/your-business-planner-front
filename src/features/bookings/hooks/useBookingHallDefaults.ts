@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import { UseFormReturn, useWatch } from 'react-hook-form';
+import { hallMenuPricesForDate } from '@/features/halls/utils/hallMenuPricing';
 import { Booking } from '@/features/bookings/types';
 import { DirectoryItem } from '@/features/company/types';
 import { BookingFormValues } from '@/features/bookings/schemas/bookingFormSchema';
@@ -31,8 +32,14 @@ export function useBookingHallDefaults(
 ) {
   const hall = halls.find(item => item.id === hallId);
   const minimum = hall?.minimum_guests;
-  const adultPrice = hall?.menu_price;
-  const childPrice = hall?.child_menu_price;
+  const date = useWatch({ control: form.control, name: 'date' });
+  const prices = hallMenuPricesForDate(hall, date);
+  const adultPrice =
+    prices.menu_price ??
+    (hall?.menu_pricing_mode === 'advanced' ? null : undefined);
+  const childPrice =
+    prices.child_menu_price ??
+    (hall?.menu_pricing_mode === 'advanced' ? null : undefined);
   const historical = booking?.hall_id === hallId;
   const defaults = useRef({
     estimated_guests: form.getValues('estimated_guests') ?? '',

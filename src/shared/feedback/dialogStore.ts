@@ -4,14 +4,11 @@ import {
   subscribeSessionChanges,
 } from '@/shared/api/sessionExpiry';
 import type { ButtonAction } from '@/shared/hooks/useButtonAction';
+import type { AppDialogContent } from '@/shared/components/AppDialog';
 
-export type DialogRequest = {
-  title: string;
-  message: string;
-  confirmLabel: string;
-  cancelLabel?: string;
-  destructive?: boolean;
+export type DialogRequest = AppDialogContent & {
   onConfirm?: ButtonAction;
+  onCancel?: ButtonAction;
   sessionGeneration?: number;
 };
 
@@ -46,6 +43,9 @@ export const showDialog = (request: DialogRequest) => {
       sessionGeneration: generation,
       onConfirm: () => {
         if (generation === getSessionGeneration()) return request.onConfirm?.();
+      },
+      onCancel: () => {
+        if (generation === getSessionGeneration()) return request.onCancel?.();
       },
     },
   ];

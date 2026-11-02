@@ -27,20 +27,21 @@ export function HallFormScreen({
       ? query.data?.permissions.can_duplicate
       : query.data?.permissions.can_edit);
   const ready = Boolean(companyId) && (!sourceId || Boolean(query.data));
+  const title = route.params.hallId
+    ? 'Editează sală'
+    : duplicate
+      ? 'Duplică sală'
+      : 'Adaugă sală';
   return (
     <Screen>
-      <HallScreenHeader
-        title={
-          route.params.hallId
-            ? 'Editează sală'
-            : duplicate
-              ? 'Duplică sală'
-              : 'Adaugă sală'
-        }
-        onBack={() => {
-          if (!busy) navigation.goBack();
-        }}
-      />
+      {!ready || !allowed ? (
+        <HallScreenHeader
+          title={title}
+          onBack={() => {
+            if (!busy) navigation.goBack();
+          }}
+        />
+      ) : null}
       {isBootstrapping ? <QueryState loading /> : null}
       {sourceId && (query.isLoading || query.error || !allowed) ? (
         <View style={styles.content}>
@@ -65,6 +66,7 @@ export function HallFormScreen({
         <HallEditor
           key={`${companyId}:${sourceId ?? 'new'}`}
           hall={query.data}
+          title={title}
           duplicate={duplicate}
           blocked={Boolean(query.error)}
           navigation={navigation}

@@ -6,7 +6,7 @@ export const hallFixture: Hall = {
   name: 'Sala test',
   capacity: 350,
   minimum_guests: 200,
-  address: null,
+  address: 'Strada Test 12, Oradea',
   is_active: true,
   description: null,
   area_sqm: null,

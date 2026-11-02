@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { AppDialog } from '@/shared/components/AppDialog';
 import { closeDialog, useActiveDialog } from '@/shared/feedback/dialogStore';
 import { useButtonAction } from '@/shared/hooks/useButtonAction';
 
 export function DialogHost() {
   const dialog = useActiveDialog();
+  const action = useRef<'confirm' | 'cancel'>('confirm');
   const confirmation = useButtonAction(() => {
     if (!dialog) return;
     try {
-      const result = dialog.onConfirm?.();
+      const result =
+        action.current === 'confirm'
+          ? dialog.onConfirm?.()
+          : dialog.onCancel?.();
       if (
         result !== null &&
         (typeof result === 'object' || typeof result === 'function') &&
@@ -26,8 +30,14 @@ export function DialogHost() {
 
   const cancel = () => {
     if (dialog && !confirmation.pending) {
-      closeDialog(dialog.id);
+      action.current = 'cancel';
+      return confirmation.press();
     }
+  };
+
+  const confirm = () => {
+    action.current = 'confirm';
+    return confirmation.press();
   };
 
   return (
@@ -35,7 +45,7 @@ export function DialogHost() {
       dialog={dialog}
       busy={confirmation.pending}
       onCancel={cancel}
-      onConfirm={confirmation.press}
+      onConfirm={confirm}
     />
   );
 }

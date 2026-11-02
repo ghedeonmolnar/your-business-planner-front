@@ -12,11 +12,13 @@ export const hallFormDefaults = (
   address: hall?.address ?? '',
   menu_price: hall?.menu_price ?? '',
   child_menu_price: hall?.child_menu_price ?? '',
+  menu_pricing_mode: hall?.menu_pricing_mode ?? 'simple',
+  menu_price_rules: hall?.menu_price_rules ?? [],
   description: hall?.description ?? '',
   internal_notes: duplicate ? '' : (hall?.internal_notes ?? ''),
   area_sqm: hall?.area_sqm ?? '',
   arrangement: hall?.arrangement ?? '',
-  is_active: hall?.is_active === false ? 'no' : 'yes',
+  is_active: !duplicate && hall?.is_active === false ? 'no' : 'yes',
   amenities: hall?.amenities ?? [],
   setup_minutes: hall?.setup_minutes == null ? '' : String(hall.setup_minutes),
   cleanup_minutes:
@@ -51,9 +53,17 @@ export const hallSaveBody = (
       capacity: Number(values.capacity),
       menu_price: values.menu_price?.replace(',', '.') || null,
       child_menu_price: values.child_menu_price?.replace(',', '.') || null,
+      menu_price_rules:
+        values.menu_pricing_mode === 'advanced'
+          ? values.menu_price_rules.map(rule => ({
+              ...rule,
+              menu_price: rule.menu_price.replace(',', '.'),
+              child_menu_price: rule.child_menu_price.replace(',', '.'),
+            }))
+          : [],
       minimum_guests: optionalNumber(values.minimum_guests),
       area_sqm: values.area_sqm ? values.area_sqm.replace(',', '.') : null,
-      is_active: values.is_active === 'yes',
+      is_active: version === undefined ? true : values.is_active === 'yes',
       setup_minutes: optionalNumber(values.setup_minutes),
       cleanup_minutes: optionalNumber(values.cleanup_minutes),
       business_hours: values.business_hours

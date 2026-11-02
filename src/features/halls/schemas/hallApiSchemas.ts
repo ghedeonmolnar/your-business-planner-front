@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { hallMenuPriceRuleApiSchema } from '@/features/halls/schemas/hallMenuPricingSchema';
 
 export const hallBookingSchema = z.object({
   id: z.string(),
@@ -29,6 +30,8 @@ export const hallSchema = z.object({
   minimum_guests: z.number().int().positive().nullable(),
   menu_price: z.string().nullable().optional(),
   child_menu_price: z.string().nullable().optional(),
+  menu_pricing_mode: z.enum(['simple', 'advanced']).optional(),
+  menu_price_rules: z.array(hallMenuPriceRuleApiSchema).optional(),
   description: z.string().nullable(),
   area_sqm: z.string().nullable(),
   arrangement: z.string().nullable(),

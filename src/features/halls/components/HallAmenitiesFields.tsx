@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, View } from 'react-native';
 import { Text } from 'react-native-paper';
+import { Ionicons } from '@react-native-vector-icons/ionicons/static';
 import { Controller, UseFormReturn } from 'react-hook-form';
 import { useAppForm } from '@/shared/hooks/useAppForm';
 import { z } from 'zod';
@@ -16,6 +17,7 @@ import { ControlledTextField } from '@/shared/components/ControlledTextField';
 import { FormPanel } from '@/shared/components/FormPanel';
 import { useFormBusy } from '@/shared/components/FormInteractionContext';
 import { showMessage } from '@/shared/feedback/showMessage';
+import { theme } from '@/shared/theme/theme';
 
 const amenitySchema = z.object({
   name: z
@@ -35,6 +37,7 @@ export function HallAmenitiesFields({
     defaultValues: { name: '' },
   });
   const busy = useFormBusy();
+  const [adding, setAdding] = useState(false);
   const add = custom.handleSubmit(({ name }) => {
     const current = form.getValues('amenities');
     if (
@@ -54,6 +57,7 @@ export function HallAmenitiesFields({
       shouldValidate: true,
     });
     custom.reset();
+    setAdding(false);
   });
   return (
     <FormPanel title="Facilități">
@@ -96,6 +100,15 @@ export function HallAmenitiesFields({
                         );
                       }}
                     >
+                      <Ionicons
+                        name={selected ? 'checkmark' : 'ellipse-outline'}
+                        size={theme.typography.bodyLarge}
+                        color={
+                          selected
+                            ? theme.colors.menu.primary
+                            : theme.colors.menu.muted
+                        }
+                      />
                       <Text style={selected ? styles.link : styles.body}>
                         {label}
                       </Text>
@@ -110,19 +123,21 @@ export function HallAmenitiesFields({
           );
         }}
       />
-      <ControlledTextField
-        control={custom.control}
-        name="name"
-        required
-        label="Facilitate personalizată"
-        placeholder="Numele facilității"
-      />
+      {adding ? (
+        <ControlledTextField
+          control={custom.control}
+          name="name"
+          required
+          label="Facilitate personalizată"
+          placeholder="Numele facilității"
+        />
+      ) : null}
       <AppButton
-        label="Adaugă facilitate"
+        label={adding ? 'Adaugă facilitate' : 'Adaugă facilitate personalizată'}
         icon="add"
         variant="outline"
         disabled={busy}
-        onPress={add}
+        onPress={adding ? add : () => setAdding(true)}
       />
     </FormPanel>
   );

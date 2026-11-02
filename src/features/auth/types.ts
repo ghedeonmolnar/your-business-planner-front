@@ -1,3 +1,5 @@
+export type AuthMode = 'login' | 'forgot' | 'reset' | 'register';
+
 export type AuthUser = {
   id: string;
   name: string;

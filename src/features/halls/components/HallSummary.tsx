@@ -10,6 +10,7 @@ import { Card } from '@/shared/components/Card';
 import { theme } from '@/shared/theme/theme';
 import { IconName } from '@/shared/types/icon';
 import { formatExactMoney } from '@/shared/utils/money';
+import { HallMenuPricingSummary } from '@/features/halls/components/HallMenuPricingSummary';
 
 export function HallSummary({ hall }: { hall: Hall }) {
   const metrics: { icon: IconName; value: string; label: string }[] = [
@@ -21,7 +22,7 @@ export function HallSummary({ hall }: { hall: Hall }) {
     {
       icon: 'person-outline',
       value: hallNumber(hall.minimum_guests),
-      label: 'minim invitați implicit',
+      label: 'capacitate minimă',
     },
     {
       icon: 'calendar-outline',
@@ -73,6 +74,7 @@ export function HallSummary({ hall }: { hall: Hall }) {
           ? 'Preț neconfigurat'
           : formatExactMoney(hall.child_menu_price)}
       </Text>
+      <HallMenuPricingSummary hall={hall} />
       {hall.area_sqm !== null ? (
         <Text style={styles.body}>
           Suprafață: {hallNumber(hall.area_sqm)} m²

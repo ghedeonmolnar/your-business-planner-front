@@ -6,12 +6,17 @@ const { Resvg } = require(process.argv[2]);
 
 const repository = path.resolve(__dirname, '../..');
 const source = fs.readFileSync(
-  path.join(repository, 'assets/brand/ybp-logo.png'),
+  path.join(repository, 'assets/app-icon/ybp-icon-source.png'),
 );
+const logo = fs.readFileSync(path.join(repository, 'assets/brand/ybp-logo.png'));
+const logoWidth = logo.readUInt32BE(16);
+const logoHeight = logo.readUInt32BE(20);
+if (logoWidth !== logoHeight * 3)
+  throw new Error('LOGO_ASPECT_RATIO_3_TO_1_REQUIRED');
 const sourceWidth = source.readUInt32BE(16);
 const sourceHeight = source.readUInt32BE(20);
 if (sourceWidth !== sourceHeight || sourceWidth < 1024)
-  throw new Error('LOGO_SQUARE_MINIMUM_1024_REQUIRED');
+  throw new Error('ICON_SQUARE_MINIMUM_1024_REQUIRED');
 const image = `<image width="${sourceWidth}" height="${sourceHeight}" href="data:image/png;base64,${source.toString('base64')}"/>`;
 const mark = round =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${sourceWidth} ${sourceHeight}">${round ? `<defs><clipPath id="round"><circle cx="${sourceWidth / 2}" cy="${sourceHeight / 2}" r="${sourceWidth / 2}"/></clipPath></defs><g clip-path="url(#round)">${image}</g>` : image}</svg>`;
@@ -59,6 +64,13 @@ const render = (width, round = false) => {
   }).render();
   return round ? rendered.asPng() : rgbPng(rendered);
 };
+const renderLogo = width =>
+  new Resvg(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${logoWidth} ${logoHeight}"><image width="${logoWidth}" height="${logoHeight}" href="data:image/png;base64,${logo.toString('base64')}"/></svg>`,
+    { fitTo: { mode: 'width', value: width } },
+  )
+    .render()
+    .asPng();
 for (const [density, size] of Object.entries({
   mdpi: 48,
   hdpi: 72,
@@ -84,10 +96,10 @@ for (const asset of JSON.parse(
   write(`${icons}/${asset.filename}`, render(size));
 }
 const launch = 'ios/GTEventsApp/Images.xcassets/BrandLogo.imageset';
-const launchLogoWidth = 156;
+const launchLogoWidth = 312;
 const launchImages = [1, 2, 3].map(scale => {
   const filename = `ybp-${scale}x.png`;
-  write(`${launch}/${filename}`, render(launchLogoWidth * scale));
+  write(`${launch}/${filename}`, renderLogo(launchLogoWidth * scale));
   return { idiom: 'universal', filename, scale: `${scale}x` };
 });
 write(
@@ -98,11 +110,10 @@ write(
     2,
   ) + '\n',
 );
-const displayLogoWidth = 512;
-write('src/shared/branding/ybp-logo.png', render(displayLogoWidth));
+write('src/shared/branding/ybp-logo.png', logo);
 write('assets/app-icon/ybp-icon.png', render(1024));
 if (fs.existsSync(path.resolve(repository, '../business-api'))) {
-  write('../business-api/public/brand/ybp-logo.png', render(displayLogoWidth));
+  write('../business-api/public/brand/ybp-logo.png', logo);
   const faviconSize = 64;
   const png = render(faviconSize);
   const ico = Buffer.alloc(22);

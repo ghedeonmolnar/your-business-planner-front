@@ -1,3 +1,5 @@
+import { HallMenuPriceRule } from '@/features/halls/schemas/hallMenuPricingSchema';
+
 export type DirectoryKind = 'clients' | 'employees' | 'halls';
 export type CustomerSort = 'name_asc' | 'name_desc' | 'bookings_desc';
 export type CustomerFilters = {
@@ -21,6 +23,8 @@ export type DirectoryItem = {
   minimum_guests?: number | null;
   menu_price?: string | null;
   child_menu_price?: string | null;
+  menu_pricing_mode?: 'simple' | 'advanced';
+  menu_price_rules?: HallMenuPriceRule[];
   address?: string | null;
 };
 export type DirectoryPayload = {
